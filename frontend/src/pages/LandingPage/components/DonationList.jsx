@@ -6,6 +6,11 @@ import DonationCard from "./DonationCard";
 
 const DonationList = () => {
   const [viewMode, setViewMode] = useState("grid");
+  const [mode, setMode] = useState('donation');
+
+  const toggleMode = () => {
+    setMode(mode === 'donation' ? 'request' : 'donation');
+  };
 
   // Sample donation data
   const donations = [
@@ -68,6 +73,70 @@ const DonationList = () => {
       matchPercentage: 83,
       imageUrl:
         "https://readdy.ai/api/search-image?query=A%20wooden%20bookshelf%20with%20five%20shelves%2C%20photographed%20straight-on%20against%20a%20clean%20white%20background.%20The%20bookshelf%20is%20made%20of%20warm%20oak%20wood%20with%20a%20natural%20finish.%20The%20lighting%20is%20bright%20and%20even%2C%20highlighting%20the%20grain%20of%20the%20wood%20and%20the%20sturdy%20construction%20of%20the%20furniture%20piece.&width=400&height=300&seq=6&orientation=landscape",
+    },
+  ];
+
+  // Sample request data
+  const requests = [
+    {
+      id: 101,
+      title: "Baby Crib",
+      category: "Kids & Toys",
+      location: "Belltown, Seattle",
+      distance: "0.6 miles",
+      matchPercentage: 88,
+      imageUrl:
+        "https://readdy.ai/api/search-image?query=A%20white%20wooden%20baby%20crib%20with%20adjustable%20height%20settings%2C%20photographed%20against%20a%20clean%20white%20background.%20The%20crib%20has%20slated%20sides%20and%20a%20simple%2C%20modern%20design.%20The%20lighting%20is%20bright%20and%20even%2C%20clearly%20showing%20the%20details%20of%20the%20crib.&width=400&height=300&orientation=landscape",
+    },
+    {
+      id: 102,
+      title: "Winter Boots (Size 9)",
+      category: "Clothing",
+      location: "South Lake Union, Seattle",
+      distance: "1.4 miles",
+      matchPercentage: 91,
+      imageUrl:
+        "https://readdy.ai/api/search-image?query=A%20pair%20of%20black%20insulated%20winter%20boots%20with%20thick%20treads%2C%20photographed%20against%20a%20clean%20white%20background.%20The%20boots%20have%20fur%20lining%20visible%20at%20the%20top%20and%20waterproof%20exterior.%20The%20lighting%20is%20bright%20and%20even%2C%20showing%20the%20texture%20and%20details%20of%20the%20footwear.&width=400&height=300&orientation=landscape",
+    },
+    {
+      id: 103,
+      title: "Dining Table",
+      category: "Furniture",
+      location: "Central District, Seattle",
+      distance: "2.8 miles",
+      matchPercentage: 76,
+      imageUrl:
+        "https://readdy.ai/api/search-image?query=A%20rectangular%20wooden%20dining%20table%20with%20seating%20for%20six%2C%20photographed%20against%20a%20clean%20white%20background.%20The%20table%20has%20a%20medium%20brown%20finish%20and%20simple%2C%20sturdy%20legs.%20The%20lighting%20is%20bright%20and%20even%2C%20highlighting%20the%20wood%20grain%20and%20smooth%20surface%20of%20the%20table.&width=400&height=300&orientation=landscape",
+    },
+    {
+      id: 104,
+      title: "Blender",
+      category: "Appliances",
+      location: "First Hill, Seattle",
+      distance: "1.1 miles",
+      matchPercentage: 84,
+      imageUrl:
+        "https://readdy.ai/api/search-image?query=A%20countertop%20blender%20with%20multiple%20speed%20settings%20and%20a%20large%20glass%20jar%2C%20photographed%20against%20a%20clean%20white%20background.%20The%20blender%20has%20a%20modern%20design%20with%20a%20sturdy%20base%20and%20control%20buttons.%20The%20lighting%20is%20bright%20and%20even%2C%20highlighting%20the%20appliance%27s%20features.&width=400&height=300&orientation=landscape",
+    },
+    {
+      id: 105,
+      title: "Children's Books Set",
+      category: "Books & Media",
+      location: "Greenwood, Seattle",
+      distance: "3.7 miles",
+      matchPercentage: 95,
+      imageUrl:
+        "https://readdy.ai/api/search-image?query=A%20small%20stack%20of%20colorful%20children%27s%20picture%20books%20with%20illustrated%20covers%2C%20photographed%20against%20a%20clean%20white%20background.%20The%20books%20are%20arranged%20in%20a%20neat%20pile%20showing%20their%20spines%20and%20covers.%20The%20lighting%20is%20bright%20and%20even%2C%20highlighting%20the%20vibrant%20colors%20and%20titles%20of%20the%20books.&width=400&height=300&orientation=landscape",
+    },
+    {
+      id: 106,
+      title: "Laptop for School",
+      category: "Electronics",
+      location: "Wallingford, Seattle",
+      distance: "2.3 miles",
+      matchPercentage: 89,
+      imageUrl:
+        "https://readdy.ai/api/search-image?query=A%20modern%20laptop%20computer%20with%20the%20lid%20open%20showing%20a%20blank%20screen%2C%20photographed%20against%20a%20clean%20white%20background.%20The%20laptop%20is%20thin%20with%20a%20silver%20finish%20and%20black%20keyboard.%20The%20lighting%20is%20bright%20and%20even%2C%20highlighting%20the%20sleek%20design%20of%20the%20device.&width=400&height=300&orientation=landscape",
     },
   ];
 
@@ -194,16 +263,48 @@ const DonationList = () => {
   }, [viewMode]);
   
   return (
-    <main className="container mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
-        Available Donations
-      </h2>
+    <main className="max-w-7xl mx-auto px-4 py-8">
+      {/* แถวเดียวกันสำหรับ header และ toggle switch */}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-800">
+           {mode === 'donation' ? 'Available Donations' : 'Requested Items'}
+        </h2>
+        
+        {/* Toggle Switch */}
+        <div className="flex items-center p-1 bg-gray-200 rounded-full w-64 h-12">
+          <button 
+            onClick={toggleMode}
+            className={`flex-1 h-10 rounded-full flex items-center justify-center transition-all ${
+              mode === 'donation' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-transparent text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Donation
+          </button>
+          <button 
+            onClick={toggleMode}
+            className={`flex-1 h-10 rounded-full flex items-center justify-center transition-all ${
+              mode === 'request' 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-transparent text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Request
+          </button>
+        </div>
+      </div>
       
       {viewMode === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {donations.map((donation) => (
-            <DonationCard key={donation.id} donation={donation} />
-          ))}
+          {mode === 'donation' 
+            ? donations.map((donation) => (
+                <DonationCard key={donation.id} donation={donation} mode={mode} />
+              ))
+            : requests.map((request) => (
+                <DonationCard key={request.id} donation={request} mode={mode} />
+              ))
+          }
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-md overflow-hidden" style={{ height: "600px" }}>

@@ -9,7 +9,7 @@ const HeroSection = () => {
   return (
       <section className="bg-gradient-to-r from-violet-500/10 via-fuchsia-500/10 to-amber-500/10 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZjBmMGYwIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40"></div>
-        <div className="container mx-auto px-4 py-16 flex flex-col md:flex-row items-center">
+        <div className="max-w-7xl mx-auto px-4 py-16 flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 z-10">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
               Connect, Give, <span className="text-amber-500">Fulfill</span>

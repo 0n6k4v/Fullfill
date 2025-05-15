@@ -8,7 +8,7 @@ import { faQuoteLeft } from '@fortawesome/free-solid-svg-icons';
 const Testimonials = () => {
   return (
       <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
             Success Stories
           </h2>

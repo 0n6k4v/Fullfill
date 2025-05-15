@@ -4,10 +4,17 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faBookmark, 
-faShareAlt, faHandshake, faTag
+faShareAlt, faHandshake, faTag, faHandHoldingHeart
 } from '@fortawesome/free-solid-svg-icons';
 
-const DonationCard = ({ donation }) => {
+const DonationCard = ({ donation, mode }) => {
+  // Determine button text, icon, and color based on mode
+  const buttonText = mode === 'donation' ? 'Request' : 'Donate';
+  const buttonIcon = mode === 'donation' ? faHandshake : faHandHoldingHeart;
+  const buttonColor = mode === 'donation' 
+    ? 'bg-amber-500 hover:bg-amber-600' 
+    : 'bg-green-500 hover:bg-green-600';
+
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 hover:bg-white/90 cursor-pointer border border-white/20">
       <div className="relative h-48 overflow-hidden">
@@ -37,9 +44,9 @@ const DonationCard = ({ donation }) => {
           </span>
         </div>
         <div className="flex justify-between">
-          <button className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg transition-colors !rounded-button whitespace-nowrap cursor-pointer">
-            <FontAwesomeIcon icon={faHandshake} className="mr-2" />
-            Request
+          <button className={`${buttonColor} text-white px-4 py-2 rounded-lg transition-colors !rounded-button whitespace-nowrap cursor-pointer`}>
+            <FontAwesomeIcon icon={buttonIcon} className="mr-2" />
+            {buttonText}
           </button>
           <div className="flex space-x-2">
             <button className="text-gray-500 hover:text-blue-500 transition-colors p-2 rounded-full hover:bg-blue-50 cursor-pointer">

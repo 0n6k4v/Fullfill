@@ -4,7 +4,7 @@ const Statistics = () => {
   return (
       <section className="bg-gradient-to-b from-blue-50 to-violet-50 py-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
-        <div className="container mx-auto px-4 relative">
+        <div className="max-w-7xl mx-auto px-4 relative">
           <h2 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 mb-12">
             Making a Difference Together
           </h2>

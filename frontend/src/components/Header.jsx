@@ -2,8 +2,6 @@ import React from "react";
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faUserCircle } from '@fortawesome/free-solid-svg-icons';
 
 const Header = () => {
   return (
@@ -41,12 +39,7 @@ const Header = () => {
             </a>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-              <FontAwesomeIcon icon={faBell} className="text-xl" />
-            </button>
-            <button className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-              <FontAwesomeIcon icon={faUserCircle} className="text-xl" />
-            </button>
+
             <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors !rounded-button whitespace-nowrap cursor-pointer">
               Sign In
             </button>

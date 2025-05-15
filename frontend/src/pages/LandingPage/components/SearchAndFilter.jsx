@@ -55,7 +55,7 @@ const SearchAndFilter = ({ onViewModeChange }) => {
 
   return (
       <section className="bg-white py-8 shadow-md">
-        <div className="container mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between mb-6">
             <div className="w-full md:w-2/3 relative mb-4 md:mb-0">
               <input

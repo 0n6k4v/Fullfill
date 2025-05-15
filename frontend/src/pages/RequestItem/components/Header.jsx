@@ -11,7 +11,7 @@ const Header = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center">
             <a
-              href="https://readdy.ai/home/254c1a80-280f-45a0-bdf5-cedf43376478/fc5cef19-b8a0-4528-9b6a-f3c7d4601e45"
+              href="http://localhost:3000/"
               data-readdy="true"
               className="flex items-center text-gray-700 hover:text-blue-600 transition-colors cursor-pointer"
             >
