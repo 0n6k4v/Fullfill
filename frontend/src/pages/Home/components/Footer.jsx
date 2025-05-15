@@ -1,12 +1,14 @@
+"use client";
+
 import React from "react";
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-import { 
+import {
   faFacebookF, faTwitter, faInstagram, faLinkedinIn,
-  faCcVisa, faCcMastercard, faCcPaypal 
+  faCcVisa, faCcMastercard, faCcPaypal
 } from '@fortawesome/free-brands-svg-icons';
 
 const Footer = () => {
