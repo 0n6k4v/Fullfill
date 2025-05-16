@@ -27,7 +27,7 @@ const RequestItemPage = () => {
   // Update form progress
   const updateFormProgress = () => {
     let fieldsCompleted = 0;
-    const totalRequiredFields = 3; // itemName, category, location
+    const totalRequiredFields = 3;
 
     if (formData.itemName) fieldsCompleted++;
     if (formData.category) fieldsCompleted++;

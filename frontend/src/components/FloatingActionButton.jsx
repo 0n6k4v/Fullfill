@@ -18,7 +18,7 @@ const FloatingActionButton = () => {
             {isOpen && (
                 <div className="flex flex-col-reverse gap-3 mb-3 items-end">
                 {/* Post Donation */}
-                <Link href="/post-donation" className="flex items-center">
+                <Link href="/PostDonation" className="flex items-center">
                     <span className="bg-white shadow-md rounded-lg py-2 px-4 mr-3 text-sm font-medium text-gray-700">
                     Post Donation
                     </span>
@@ -28,7 +28,7 @@ const FloatingActionButton = () => {
                 </Link>
                 
                 {/* Request Item */}
-                <Link href="/request-item" className="flex items-center">
+                <Link href="/RequestItem" className="flex items-center">
                     <span className="bg-white shadow-md rounded-lg py-2 px-4 mr-3 text-sm font-medium text-gray-700">
                     Request Item
                     </span>

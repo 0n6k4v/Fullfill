@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link"; // เพิ่ม import Link จาก next/link
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
@@ -20,24 +21,18 @@ const HeroSection = () => {
               process efficient and meaningful.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <a
-                href="https://readdy.ai/home/254c1a80-280f-45a0-bdf5-cedf43376478/3c19d671-1a9f-4560-893b-35efc5346251"
-                data-readdy="true"
-              >
+              <Link href="/PostDonation">
                 <button className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors shadow-md !rounded-button whitespace-nowrap cursor-pointer">
                   <FontAwesomeIcon icon={faGift} className="mr-2" />
                   Post Donation
                 </button>
-              </a>
-              <a
-                href="https://readdy.ai/home/254c1a80-280f-45a0-bdf5-cedf43376478/2a53e202-8c79-4823-8681-726262fb3618"
-                data-readdy="true"
-              >
+              </Link>
+              <Link href="/RequestItem">
                 <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors shadow-md !rounded-button whitespace-nowrap cursor-pointer">
                   <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" />
                   Request Item
                 </button>
-              </a>
+              </Link>
             </div>
           </div>
           <div className="md:w-1/2 mt-10 md:mt-0 z-10">

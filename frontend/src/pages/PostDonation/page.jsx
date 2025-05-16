@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Header from "../../components/Header";
+import Header from "./components/Header";
 import Footer from "../../components/Footer";
 import DonationForm from "./components/DonationForm";
 import DonationPreview from "./components/DonationPreview";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
-const PostDonationPage = () => {
+const PostDonationPage = () => {  
   // Form state
   const [formData, setFormData] = useState({
     title: "",
@@ -59,19 +57,8 @@ const PostDonationPage = () => {
     <div className="min-h-screen bg-gray-50 font-sans">
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
-          {/* Back button */}
-          <div className="mb-6">
-            <a
-              href="#"
-              className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
-            >
-              <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-              Back to Donations
-            </a>
-          </div>
-
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        <div>
           {/* Page Title */}
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">

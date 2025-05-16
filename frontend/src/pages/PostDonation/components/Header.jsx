@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link";
+import Link from "next/link"; // เพิ่ม import สำหรับ Link
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
@@ -9,7 +9,7 @@ import { faBell, faUserCircle, faArrowLeft } from '@fortawesome/free-solid-svg-i
 const Header = () => {
   return (
       <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between items-center">
           <div className="flex items-center">
             <Link
               href="/"

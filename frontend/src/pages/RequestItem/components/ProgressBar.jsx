@@ -3,7 +3,7 @@ import React from "react";
 const ProgressBar = ({ formProgress }) => {
   return (
     <div className="bg-white shadow-sm">
-      <div className="container mx-auto px-4 py-3">
+      <div className="max-w-7xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-xl font-bold text-gray-800">Request an Item</h2>
           <span className="text-sm text-gray-600">
