@@ -1,4 +1,5 @@
 import os
+import cloudinary
 
 from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
@@ -13,12 +14,21 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # Database connection
-    DATABASE_URI: str = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@db:5432/fullfill")
+    DATABASE_URI: str = os.getenv("DATABASE_URL")
+
+    # Cloudinary settings
+    CLOUDINARY_CLOUD_NAME: str = os.getenv("CLOUDINARY_CLOUD_NAME")
+    CLOUDINARY_API_KEY: str = os.getenv("CLOUDINARY_API_KEY")
+    CLOUDINARY_API_SECRET: str = os.getenv("CLOUDINARY_API_SECRET")
     
     class Config:
         case_sensitive = True
 
 settings = Settings()
 
-# Add debugging print
-print(f"DEBUG: DATABASE_URI = {settings.DATABASE_URI}")
+cloudinary.config(
+    cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+    api_key=settings.CLOUDINARY_API_KEY,
+    api_secret=settings.CLOUDINARY_API_SECRET,
+    secure=True
+)

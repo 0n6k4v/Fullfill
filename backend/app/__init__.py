@@ -7,13 +7,16 @@ database models, and business logic services.
 """
 
 from app.api import api_router
-from app.core import settings
+from app.core import settings, cloudinary
 from app.db import Base, engine
 from app.models import User
 from app.services import (
     create_new_user,
     authenticate_user,
     refresh_user_token,
+    upload_image,
+    delete_image,
+    upload_multiple_images,
 )
 
 __version__ = "0.1.0"
@@ -27,5 +30,9 @@ __all__ = [
     "create_new_user",
     "authenticate_user",
     "refresh_user_token",
-    "__version__",
+    "cloudinary",
+    "upload_image",
+    "delete_image",
+    "upload_multiple_images",
+    "__version__"
 ]

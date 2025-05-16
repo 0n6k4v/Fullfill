@@ -1,3 +1,4 @@
+--upgrade pip
 fastapi
 uvicorn
 sqlalchemy
@@ -9,3 +10,4 @@ python-jose
 argon2-cffi
 python-multipart
 python-dotenv
+cloudinary

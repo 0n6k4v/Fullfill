@@ -5,9 +5,13 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+from fastapi import Depends, HTTPException, status
+from jose import JWTError
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
-
+from app.db.session import get_db
+from app.models.user import User
 # Initialize Argon2 password hasher
 password_hasher = PasswordHasher()
 
@@ -52,3 +56,27 @@ def get_password_hash(password: str) -> str:
     Hash a password using Argon2
     """
     return password_hasher.hash(password)
+
+def get_current_user(
+    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+) -> User:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        # ถอดรหัส token ด้วย SECRET_KEY
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    
+    # ดึงข้อมูลผู้ใช้จากฐานข้อมูล
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise credentials_exception
+    
+    return user

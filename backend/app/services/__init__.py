@@ -7,6 +7,7 @@ between API endpoints and data models.
 
 from app.services.user_service import create_new_user, get_user_by_username, get_user_by_email, get_user_by_id
 from app.services.auth_service import authenticate_user, refresh_user_token
+from app.services.image_service import upload_image, delete_image, upload_multiple_images
 
 __all__ = [
     "create_new_user",
@@ -15,4 +16,7 @@ __all__ = [
     "get_user_by_id",
     "authenticate_user",
     "refresh_user_token",
+    "upload_image",
+    "delete_image",
+    "upload_multiple_images",
 ]

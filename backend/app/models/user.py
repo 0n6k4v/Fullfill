@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, JSON
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 
-from app.db.session import Base
+from app.db.base import Base
 
 class User(Base):
     __tablename__ = "users"
