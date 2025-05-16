@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from "react";
-import Header from './components/Header';
+import Header from '@/components/Header';
 import UserProfileCard from './components/UserProfileCard';
 import FilterControls from './components/FilterControls';
 import ActivitySummaryCards from './components/ActivitySummaryCards';

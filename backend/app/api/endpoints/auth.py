@@ -18,9 +18,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login
 
 @router.post("/register", response_model=UserResponse)
 def register(*, db: Session = Depends(get_db), user_in: UserCreate) -> Any:
-    """
-    Register a new user.
-    """
     return create_new_user(db, user_in)
 
 
@@ -28,9 +25,6 @@ def register(*, db: Session = Depends(get_db), user_in: UserCreate) -> Any:
 def login(
     db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
-    """
-    OAuth2 compatible token login, get access and refresh tokens.
-    """
     return authenticate_user(db, form_data.username, form_data.password)
 
 
@@ -38,7 +32,4 @@ def login(
 def refresh_token(
     token_data: TokenRefresh, db: Session = Depends(get_db)
 ) -> Any:
-    """
-    Get a new access token using the refresh token
-    """
     return refresh_user_token(db, token_data.refresh_token)

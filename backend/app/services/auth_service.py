@@ -14,18 +14,20 @@ from app.core.security import (
 )
 from app.models.user import User
 from app.schemas.token import TokenPayload
-from app.services.user_service import get_user_by_username, get_user_by_id
+from app.services.user_service import get_user_by_id, get_user_by_username, get_user_by_email
 
 def authenticate_user(db: Session, username: str, password: str) -> Dict[str, str]:
-    """
-    Authenticate a user and return tokens.
-    """
-    user = get_user_by_username(db, username)
-
+    # ค้นหาผู้ใช้โดยใช้ email
+    user = get_user_by_email(db, username)
+    
+    if not user:
+        # ถ้าไม่พบ email ให้ลองค้นหาโดยใช้ username
+        user = get_user_by_username(db, username)
+    
     if not user or not verify_password(password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect email/username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
