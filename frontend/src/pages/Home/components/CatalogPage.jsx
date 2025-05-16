@@ -334,7 +334,7 @@ const CatalogPage = () => {
       TYPE: 'donation',
       name: 'Rice Cooker',
       category: 'Kitchen',
-      Condition: 'Like New',
+      Condition: 'like_new',
       Description: '5-cup automatic rice cooker with steamer basket. Used only a few times.',
       Location: 'Downtown',
       image: { url: '/api/placeholder/300/200' },
@@ -430,7 +430,7 @@ const CatalogPage = () => {
       TYPE: 'donation',
       name: 'Knife Set',
       category: 'Kitchen',
-      Condition: 'Like New',
+      Condition: 'like_new',
       Description: '15-piece kitchen knife set with block. High-quality stainless steel, barely used.',
       Location: 'Downtown',
       image: { url: '/api/placeholder/300/200' },
@@ -748,17 +748,18 @@ const CatalogPage = () => {
                   <label className="block text-sm font-medium text-indigo-600 flex items-center">
                     <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" /> Location
                   </label>
-                  <select
-                    value={locationFilter}
-                    onChange={(e) => setLocationFilter(e.target.value)}
-                    className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    {locations.map(location => (
-                      <option key={location} value={location === "All Locations" ? "" : location}>
-                        {location}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FontAwesomeIcon icon={faMapMarkerAlt} className="text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Enter location..."
+                      value={locationFilter}
+                      onChange={(e) => setLocationFilter(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
                 </div>
 
                 {/* Date Filter */}
