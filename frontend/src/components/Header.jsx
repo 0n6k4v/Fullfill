@@ -193,7 +193,7 @@ const GlobalHeader = () => {
               >
                 About Us
               </Link>
-              <Link href="/auth" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors !rounded-button whitespace-nowrap cursor-pointer">
+              <Link href="/Auth" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors !rounded-button whitespace-nowrap cursor-pointer">
                 Sign In
               </Link>
             </>
