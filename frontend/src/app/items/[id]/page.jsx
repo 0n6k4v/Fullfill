@@ -76,14 +76,6 @@ const ItemPage = ({ params }) => {
     }
   }, [unwrappedParams.id]); // Fixed dependency array
 
-  // if (loading) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-  //     </div>
-  //   );
-  // }
-
   if (!item) {
     return (
 
@@ -110,27 +102,6 @@ const ItemPage = ({ params }) => {
     setShowContactModal(true);
   };
 
-  const handleSaveItem = () => {
-    if (item) {
-      toggleSavedItem(item.id);
-    }
-  };
-
-  const isItemSaved = (itemId) => {
-    return savedItems.includes(itemId);
-  };
-
-  const toggleSavedItem = (itemId) => {
-    const updatedSavedItems = isItemSaved(itemId)
-      ? savedItems.filter(id => id !== itemId)
-      : [...savedItems, itemId];
-
-    setSavedItems(updatedSavedItems);
-
-    // Update localStorage
-    localStorage.setItem('savedItems', JSON.stringify(updatedSavedItems));
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Back to catalog navigation */}
@@ -154,18 +125,12 @@ const ItemPage = ({ params }) => {
                   alt={item.name}
                   className="w-full h-full object-cover"
                 /> */}
-                <div className="absolute top-4 right-4 flex space-x-2">
-                  <button
-                    onClick={handleSaveItem}
-                    className={`p-2 rounded-full ${isItemSaved(item.id) ? 'bg-red-500 text-white' : 'bg-white text-gray-700'} shadow-md hover:bg-opacity-90 transition-colors`}
-                    aria-label={isItemSaved(item.id) ? "Remove from saved items" : "Save this item"}
-                  >
-                    <Heart size={20} className={isItemSaved(item.id) ? 'fill-current' : ''} />
-                  </button>
+                {/* เผื่อทำเพิ่ม */}
+                {/* <div className="absolute top-4 right-4 flex space-x-2">
                   <button className="p-2 rounded-full bg-white text-gray-700 shadow-md hover:bg-gray-100">
                     <Share2 size={20} />
                   </button>
-                </div>
+                </div> */}
               </div>
 
               {/* Thumbnails */}
@@ -195,8 +160,8 @@ const ItemPage = ({ params }) => {
             <div className="bg-white rounded-lg shadow-md p-6 mt-6">
               <div className="flex justify-between items-start mb-4">
                 <h1 className="text-2xl font-bold text-gray-900">{item.name}</h1>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusClass[item.Status]}`}>
-                  {statusText[item.Status]}
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusClass[item.Status] || 'bg-gray-100 text-gray-800'}`}>
+                  {statusText[item.Status] || item.Status || 'Available'}
                 </span>
               </div>
 
@@ -207,6 +172,10 @@ const ItemPage = ({ params }) => {
                 </span>
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getConditionColors(item.Condition).bg} ${getConditionColors(item.Condition).text}`}>
                   Condition: {item.Condition}
+                </span>
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                  <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
+                  {item.TYPE || 'Donation'}
                 </span>
               </div>
 
@@ -224,7 +193,12 @@ const ItemPage = ({ params }) => {
                   <div>
                     <h3 className="font-medium text-gray-900">Listed</h3>
                     <p className="text-gray-600">{formatDate(item.created_at)}</p>
-                    <p className="text-gray-500 text-sm">Expires: {formatDate(item.Expire)}</p>
+                    <p className="text-gray-500 text-sm">Updated: {formatDate(item.updated_at)}</p>
+                    {item.Expire && (
+                      <p className="text-gray-500 text-sm">
+                        Expires: {formatDate(item.Expire)}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -242,20 +216,20 @@ const ItemPage = ({ params }) => {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="font-medium text-gray-900 mb-4">Contact Information</h3>
               <div className="flex items-center mb-4">
-                <img src={item.user.avatar} alt={item.user.name} className="h-12 w-12 rounded-full mr-3" />
+                <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3">
+                  {item.uploaded_by ? item.uploaded_by.Username?.charAt(0).toUpperCase() : 'U'}
+                </div>
                 <div>
-                  <h4 className="font-medium text-gray-900">{item.user.name}</h4>
+                  <h4 className="font-medium text-gray-900">{item.uploaded_by ? item.uploaded_by.Username : 'User'}</h4>
                   <div className="flex items-center">
-                    <span className="text-yellow-500 mr-1">★</span>
-                    <span className="text-gray-700">{item.user.rating}</span>
-                    <span className="mx-2 text-gray-300">•</span>
-                    <span className="text-gray-500 text-sm">{item.user.itemsShared} items shared</span>
+                    <span className="text-gray-500 text-sm">{item.uploaded_by ? `User ID: ${item.uploaded_by}` : 'Anonymous'}</span>
                   </div>
                 </div>
               </div>
-              <p className="text-gray-600 text-sm mb-4">Member since {formatDate(item.user.joinDate)}</p>
+              <p className="text-gray-600 text-sm mb-4">Member since {formatDate(item.uploaded_by ? item.uploaded_by.create_at : new Date())}</p>
 
-              {item.Status === 1 && (
+              {/* Available Status */}
+              {(!item.matched_userid || item.matched_userid === 0) && (
                 <button
                   onClick={handleRequestItem}
                   className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition shadow-sm"
@@ -264,7 +238,8 @@ const ItemPage = ({ params }) => {
                 </button>
               )}
 
-              {item.Status === 2 && (
+              {/* Reserved Status */}
+              {item.matched_userid && item.Status === 'reserved' && (
                 <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <div className="flex items-start">
                     <AlertCircle size={20} className="text-yellow-500 mr-2 flex-shrink-0 mt-0.5" />
@@ -275,7 +250,8 @@ const ItemPage = ({ params }) => {
                 </div>
               )}
 
-              {item.Status === 3 && (
+              {/* Fulfilled Status */}
+              {item.matched_userid && item.Status === 'fulfilled' && (
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="flex items-start">
                     <AlertCircle size={20} className="text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
@@ -352,43 +328,56 @@ const ItemPage = ({ params }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Request "{item.name}"</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                {item.TYPE === 'donation' ? `Request "${item.name}"` : `Offer to Fulfill "${item.name}" Request`}
+              </h2>
               <p className="text-gray-600 mb-6">
-                To request this item, please fill out this form. The owner will be notified and can contact you directly.
+                {item.TYPE === 'donation'
+                  ? `To request this donated item, please fill out this form. The owner will be notified and can contact you directly.`
+                  : `To offer this requested item, please fill out this form. The requester will be notified of your offer.`
+                }
               </p>
 
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Message to Owner
+                    Message to {item.TYPE === 'donation' ? 'Owner' : 'Requester'}
                   </label>
                   <textarea
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     rows="4"
-                    placeholder="Introduce yourself and explain why you're interested in this item..."
+                    placeholder={item.TYPE === 'donation'
+                      ? "Introduce yourself and explain why you're interested in this item..."
+                      : "Introduce yourself and let them know you can fulfill their request..."}
                   ></textarea>
+                  <p className="text-xs text-gray-500 mt-1">
+                    This will be sent as a notification to the {item.TYPE === 'donation' ? 'item owner' : 'person who requested this item'}
+                  </p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Preferred Pickup/Meetup Location
+                    {item.TYPE === 'donation' ? 'Preferred Pickup Location' : 'Suggested Meetup Location'}
                   </label>
                   <input
                     type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="E.g., Downtown coffee shop, Community center, etc."
+                    className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder={item.TYPE === 'donation'
+                      ? "E.g., Downtown coffee shop, Community center, etc."
+                      : "Where would you like to meet to deliver the item?"}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Preferred Contact Method
+                    Notification Options
                   </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option>In-app messaging</option>
-                    <option>Email</option>
-                    <option>Phone</option>
-                  </select>
+                  <div className="flex flex-col gap-2">
+                    <label className="inline-flex items-center">
+                      <input type="checkbox" className="rounded text-indigo-600" defaultChecked />
+                      <span className="ml-2 text-gray-700 text-sm">Receive in-app notifications when another user matched</span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -405,11 +394,11 @@ const ItemPage = ({ params }) => {
                   // Here we would submit the request
                   setShowContactModal(false);
                   // Show confirmation or success message
-                  alert("Your request has been sent!");
+                  alert(item.TYPE === 'donation' ? "Your request has been sent!" : "Your offer has been sent!");
                 }}
                 className="px-4 py-2 bg-indigo-600 border border-transparent rounded-md text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
-                Send Request
+                {item.TYPE === 'donation' ? 'Send Request' : 'Send Offer'}
               </button>
             </div>
           </div>

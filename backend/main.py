@@ -465,15 +465,6 @@ def get_item_by_id(item_id: int):
 
     # If the item is found, return it with additional user info
     if item:
-        # Add user information to match the expected structure in the frontend
-        item["user"] = {
-            "id": item["uploaded_by"],
-            "name": f"User {item['uploaded_by']}",
-            "avatar": "https://placehold.co/50x50",
-            "rating": 4.8,
-            "joinDate": "2023-01-01T00:00:00Z",
-            "itemsShared": 15
-        }
         return item
 
     # If the item is not found, return None or raise an exception
