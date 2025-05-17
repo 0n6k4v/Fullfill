@@ -5,8 +5,8 @@ import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faThLarge, faCouch, faTshirt, faLaptop, faBlender, faBaby, 
+import {
+  faTableCells, faCouch, faTshirt, faLaptop, faBlender, faBaby,
   faBook, faUtensils, faMapMarkerAlt, faSearch, faFilter, faChevronUp, faChevronDown
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -20,7 +20,7 @@ const SearchAndFilter = ({ onViewModeChange }) => {
 
   // Categories with icons
   const categories = [
-    { name: "All Categories", icon: faThLarge },
+    { name: "All Categories", icon: faTableCells },
     { name: "Furniture", icon: faCouch },
     { name: "Clothing", icon: faTshirt },
     { name: "Electronics", icon: faLaptop },
@@ -50,7 +50,7 @@ const SearchAndFilter = ({ onViewModeChange }) => {
 
   const getCategoryIcon = (categoryName) => {
     const category = categories.find(c => c.name === categoryName);
-    return category ? category.icon : faThLarge;
+    return category ? category.icon : faTableCells;
   };
 
   return (
@@ -72,7 +72,7 @@ const SearchAndFilter = ({ onViewModeChange }) => {
                 className={`px-4 py-2 rounded-lg transition-colors !rounded-button whitespace-nowrap cursor-pointer ${viewMode === "grid" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                 onClick={() => setViewMode("grid")}
               >
-                <FontAwesomeIcon icon={faThLarge} className="mr-2" />
+                <FontAwesomeIcon icon={faTableCells} className="mr-2" />
                 Grid View
               </button>
               <button
@@ -93,15 +93,15 @@ const SearchAndFilter = ({ onViewModeChange }) => {
                 }
               >
                 <span className="flex items-center">
-                  <FontAwesomeIcon 
-                    icon={getCategoryIcon(selectedCategory)} 
-                    className="mr-2 text-blue-500" 
+                  <FontAwesomeIcon
+                    icon={getCategoryIcon(selectedCategory)}
+                    className="mr-2 text-blue-500"
                   />
                   {selectedCategory}
                 </span>
-                <FontAwesomeIcon 
-                  icon={isCategoryDropdownOpen ? faChevronUp : faChevronDown} 
-                  className="text-gray-400" 
+                <FontAwesomeIcon
+                  icon={isCategoryDropdownOpen ? faChevronUp : faChevronDown}
+                  className="text-gray-400"
                 />
               </button>
               {isCategoryDropdownOpen && (
@@ -115,9 +115,9 @@ const SearchAndFilter = ({ onViewModeChange }) => {
                         setIsCategoryDropdownOpen(false);
                       }}
                     >
-                      <FontAwesomeIcon 
-                        icon={category.icon} 
-                        className="mr-2 text-blue-500 w-5" 
+                      <FontAwesomeIcon
+                        icon={category.icon}
+                        className="mr-2 text-blue-500 w-5"
                       />
                       {category.name}
                     </div>
@@ -133,15 +133,15 @@ const SearchAndFilter = ({ onViewModeChange }) => {
                 }
               >
                 <span className="flex items-center">
-                  <FontAwesomeIcon 
-                    icon={faMapMarkerAlt} 
-                    className="mr-2 text-red-500" 
+                  <FontAwesomeIcon
+                    icon={faMapMarkerAlt}
+                    className="mr-2 text-red-500"
                   />
                   {selectedLocation}
                 </span>
-                <FontAwesomeIcon 
-                  icon={isLocationDropdownOpen ? faChevronUp : faChevronDown} 
-                  className="text-gray-400" 
+                <FontAwesomeIcon
+                  icon={isLocationDropdownOpen ? faChevronUp : faChevronDown}
+                  className="text-gray-400"
                 />
               </button>
               {isLocationDropdownOpen && (
@@ -164,16 +164,16 @@ const SearchAndFilter = ({ onViewModeChange }) => {
             <div className="w-full md:w-1/3">
               <div className="flex space-x-2">
                 <button className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 !rounded-button whitespace-nowrap cursor-pointer">
-                  <FontAwesomeIcon 
-                    icon={faFilter} 
-                    className="mr-2 text-gray-500" 
+                  <FontAwesomeIcon
+                    icon={faFilter}
+                    className="mr-2 text-gray-500"
                   />
                   More Filters
                 </button>
                 <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 !rounded-button whitespace-nowrap cursor-pointer">
-                  <FontAwesomeIcon 
-                    icon={faSearch} 
-                    className="mr-2" 
+                  <FontAwesomeIcon
+                    icon={faSearch}
+                    className="mr-2"
                   />
                   Search
                 </button>

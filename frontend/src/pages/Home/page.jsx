@@ -14,14 +14,14 @@ import CatalogPage from "./components/CatalogPage";
 const page = () => {
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
-      <Header />
-      <HeroSection />
+      {/* <Header /> */}
+      {/* <HeroSection /> */}
       <CatalogPage />
-      <Statistics />
-      <HowItWorks />
-      <Testimonials />
-      <CTASection />
-      <Footer />
+      {/* <Statistics /> */}
+      {/* <HowItWorks /> */}
+      {/* <Testimonials />
+      <CTASection /> */}
+      {/* <Footer /> */}
     </div>
   );
 };

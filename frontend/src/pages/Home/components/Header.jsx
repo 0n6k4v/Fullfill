@@ -5,16 +5,17 @@ import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faUserCircle } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faUserCircle, faHeart } from '@fortawesome/free-solid-svg-icons';
+import Link from 'next/link';
 
 const Header = () => {
   return (
       <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center">
-            <h1 className="text-3xl font-bold text-blue-600">
+            <Link href="/" className="text-3xl font-bold text-blue-600">
               <span className="text-indigo-500">Ful</span>fill
-            </h1>
+            </Link>
           </div>
           <div className="hidden md:flex items-center space-x-6 text-gray-600">
             <a
@@ -43,6 +44,9 @@ const Header = () => {
             </a>
           </div>
           <div className="flex items-center space-x-4">
+            <Link href="/saved-items" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer" aria-label="Saved Items">
+              <FontAwesomeIcon icon={faHeart} className="text-xl" />
+            </Link>
             <button className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
               <FontAwesomeIcon icon={faBell} className="text-xl" />
             </button>
