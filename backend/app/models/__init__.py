@@ -6,5 +6,11 @@ represent database tables and their relationships.
 """
 
 from app.models.user import User
+from app.models.geography import Province, District, Subdistrict
 
-__all__ = ["User"]
+__all__ = [
+    "User",
+    "Province",
+    "District",
+    "Subdistrict",
+]

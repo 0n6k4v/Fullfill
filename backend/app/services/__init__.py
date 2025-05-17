@@ -8,15 +8,31 @@ between API endpoints and data models.
 from app.services.user_service import create_new_user, get_user_by_username, get_user_by_email, get_user_by_id
 from app.services.auth_service import authenticate_user, refresh_user_token
 from app.services.image_service import upload_image, delete_image, upload_multiple_images
+from app.services.province_service import get_provinces, get_province_by_id
+from app.services.district_service import get_districts, get_district_by_id
+from app.services.subdistrict_service import get_subdistricts, get_subdistrict_by_id
 
 __all__ = [
+    # User services
     "create_new_user",
     "get_user_by_username",
     "get_user_by_email",
     "get_user_by_id",
+    
+    # Auth services
     "authenticate_user",
     "refresh_user_token",
+    
+    # Image services
     "upload_image",
     "delete_image",
     "upload_multiple_images",
+    
+    # Geography services
+    "get_provinces",
+    "get_province_by_id",
+    "get_districts",
+    "get_district_by_id",
+    "get_subdistricts",
+    "get_subdistrict_by_id",
 ]

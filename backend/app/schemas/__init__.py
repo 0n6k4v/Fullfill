@@ -27,6 +27,17 @@ from app.schemas.image import (
     DeleteImageResponse
 )
 
+# Geography schemas
+from app.schemas.geography import (
+    GeometryModel,
+    ProvinceBase,
+    Province,
+    DistrictBase,
+    District,
+    SubdistrictBase,
+    Subdistrict
+)
+
 __all__ = [
     # User schemas
     "UserBase",
@@ -43,5 +54,14 @@ __all__ = [
     "ImageResponse",
     "MultipleImagesResponse",
     "DeleteImageRequest",
-    "DeleteImageResponse"
+    "DeleteImageResponse",
+    
+    # Geography schemas
+    "GeometryModel",
+    "ProvinceBase",
+    "Province",
+    "DistrictBase",
+    "District",
+    "SubdistrictBase",
+    "Subdistrict"
 ]

@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # Database connection
-    DATABASE_URI: str = os.getenv("DATABASE_URL")
+    DATABASE_URI: str = os.getenv("DATABASE_URI", "postgresql+psycopg2://postgres:postgres@db:5432/fullfill")
 
     # Cloudinary settings
     CLOUDINARY_CLOUD_NAME: str = os.getenv("CLOUDINARY_CLOUD_NAME")
