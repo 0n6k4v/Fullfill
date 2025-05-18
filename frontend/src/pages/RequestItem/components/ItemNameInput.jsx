@@ -1,32 +1,25 @@
-import React from "react";
+'use client';
 
-const ItemNameInput = ({ formData = {}, handleInputChange = () => {}, errors = {} }) => {
-  // Ensure formData and errors are objects
-  const safeFormData = typeof formData === 'object' && formData !== null ? formData : {};
-  const safeErrors = typeof errors === 'object' && errors !== null ? errors : {};
+import React from 'react';
 
+const ItemNameInput = ({ value, onChange }) => {
   return (
-    <div className="mb-8">
-      <label
-        htmlFor="itemName"
-        className="block text-lg font-medium text-gray-700 mb-2"
-      >
-        คุณกำลังมองหาสิ่งของอะไร? <span className="text-red-500">*</span>
+    <div className="space-y-2">
+      <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+        ชื่อสิ่งของ
       </label>
       <input
         type="text"
-        id="itemName"
-        name="itemName"
-        value={safeFormData.itemName || ""}
-        onChange={handleInputChange}
-        placeholder="เช่น รถเข็นเด็ก เก้าอี้สำนักงาน เสื้อโค้ทฤดูหนาว"
-        className={`w-full px-4 py-3 rounded-lg border ${safeErrors.itemName ? "border-red-500" : "border-gray-300"} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-base`}
+        id="title"
+        name="title"
+        value={value}
+        onChange={onChange}
+        placeholder="ระบุชื่อสิ่งของที่คุณต้องการ"
+        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        required
       />
-      {safeErrors.itemName && (
-        <p className="mt-1 text-red-500 text-sm">{safeErrors.itemName}</p>
-      )}
-      <p className="mt-1 text-sm text-gray-500">
-        ระบุรายละเอียดของสิ่งของที่คุณต้องการให้ชัดเจนเพื่อเพิ่มโอกาสในการหาคู่ที่เหมาะสม
+      <p className="text-xs text-gray-500">
+        กรุณาระบุชื่อสิ่งของที่ชัดเจน เพื่อให้ผู้บริจาคเข้าใจง่าย
       </p>
     </div>
   );

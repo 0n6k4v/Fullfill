@@ -1,69 +1,57 @@
-import React from "react";
+'use client';
+
+import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faCouch, faTshirt, faLaptop, faBlender, faBaby, 
-  faBook, faUtensils, faBox
+  faCouch, faTshirt, faLaptop, faBlender, faBaby,
+  faBook, faUtensils, faFutbol, faHome, faBox
 } from '@fortawesome/free-solid-svg-icons';
 
-const CategorySelection = ({ formData = {}, handleCategorySelect = () => {}, categories = [], errors = {} }) => {
-  // Ensure formData, categories, and errors are objects/arrays
-  const safeFormData = typeof formData === 'object' && formData !== null ? formData : {};
-  const safeCategories = Array.isArray(categories) ? categories : [];
-  const safeErrors = typeof errors === 'object' && errors !== null ? errors : {};
-
-  const getCategoryIcon = (iconName) => {
-    switch(iconName) {
-      case 'fa-couch': return faCouch;
-      case 'fa-tshirt': return faTshirt;
-      case 'fa-laptop': return faLaptop;
-      case 'fa-blender': return faBlender;
-      case 'fa-baby': return faBaby;
-      case 'fa-book': return faBook;
-      case 'fa-utensils': return faUtensils;
-      case 'fa-box': return faBox;
-      default: return faBox;
-    }
-  };
-
-  // Map category names to Thai
-  const getThaiCategoryName = (name) => {
-    const categoryMap = {
-      'Furniture': 'เฟอร์นิเจอร์',
-      'Clothing': 'เสื้อผ้า',
-      'Electronics': 'อิเล็กทรอนิกส์',
-      'Appliances': 'เครื่องใช้ไฟฟ้า',
-      'Kids Toys': 'ของเล่นเด็ก',
-      'Books': 'หนังสือ',
-      'Kitchen': 'เครื่องครัว',
-      'Other': 'อื่นๆ'
-    };
-    return categoryMap[name] || name;
-  };
+const CategorySelection = ({ value, onChange }) => {
+  const categories = [
+    { value: 'เฟอร์นิเจอร์', icon: faCouch },
+    { value: 'เสื้อผ้า', icon: faTshirt },
+    { value: 'อิเล็กทรอนิกส์', icon: faLaptop },
+    { value: 'เครื่องใช้ไฟฟ้า', icon: faBlender },
+    { value: 'ของเล่นเด็ก', icon: faBaby },
+    { value: 'หนังสือ', icon: faBook },
+    { value: 'เครื่องครัว', icon: faUtensils },
+    { value: 'กีฬา', icon: faFutbol },
+    { value: 'ของใช้ในบ้าน', icon: faHome },
+    { value: 'อื่นๆ', icon: faBox }
+  ];
 
   return (
-    <div className="mb-8">
-      <label className="block text-lg font-medium text-gray-700 mb-2">
-        เลือกหมวดหมู่ <span className="text-red-500">*</span>
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        หมวดหมู่
       </label>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {safeCategories.map((category) => (
-          <div
-            key={category.name}
-            onClick={() => handleCategorySelect(category.name)}
-            className={`flex flex-col items-center justify-center p-4 rounded-lg border ${(safeFormData.category || '') === category.name ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-blue-300 hover:bg-blue-50/50"} cursor-pointer transition-all`}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
+        {categories.map((category) => (
+          <button
+            key={category.value}
+            type="button"
+            onClick={() => onChange({ target: { name: 'category', value: category.value } })}
+            className={`p-3 rounded-lg border ${
+              value === category.value
+                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                : 'border-gray-200 hover:border-blue-300'
+            } transition-colors`}
           >
-            <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 ${(safeFormData.category || '') === category.name ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-600"}`}
-            >
-              <FontAwesomeIcon icon={getCategoryIcon(category.icon)} className="text-xl" />
+            <div className="flex flex-col items-center space-y-2">
+              <FontAwesomeIcon
+                icon={category.icon}
+                className={`w-6 h-6 ${
+                  value === category.value
+                    ? 'text-blue-500'
+                    : 'text-gray-500'
+                }`}
+              />
+              <span className="text-sm font-medium">{category.value}</span>
             </div>
-            <span className="text-sm font-medium">{getThaiCategoryName(category.name)}</span>
-          </div>
+          </button>
         ))}
       </div>
-      {safeErrors.category && (
-        <p className="mt-1 text-red-500 text-sm">{safeErrors.category}</p>
-      )}
     </div>
   );
 };

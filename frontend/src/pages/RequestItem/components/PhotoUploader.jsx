@@ -1,111 +1,125 @@
-import React, { useState } from "react";
+'use client';
+
+import React, { useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCloudUploadAlt, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faCloudUploadAlt, faTimes, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import Image from 'next/image';
 
-const PhotoUploader = ({ files = [], setFiles = () => {}, updateFormProgress = () => {} }) => {
-  const [isDragging, setIsDragging] = useState(false);
+const PhotoUploader = ({ photos = [], onChange }) => {
+  const [dragActive, setDragActive] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
-  // Ensure files is an array
-  const safeFiles = Array.isArray(files) ? files : [];
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
 
-  // Handle file drop
   const handleDrop = (e) => {
     e.preventDefault();
-    setIsDragging(false);
+    e.stopPropagation();
+    setDragActive(false);
+    setIsUploading(true);
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const newFiles = Array.from(e.dataTransfer.files);
-      setFiles([...safeFiles, ...newFiles]);
-
-      // Update form progress
-      updateFormProgress();
+      handleFiles(e.dataTransfer.files);
     }
   };
 
-  // Handle file selection
-  const handleFileSelect = (e) => {
+  const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newFiles = Array.from(e.target.files);
-      setFiles([...safeFiles, ...newFiles]);
-
-      // Update form progress
-      updateFormProgress();
+      setIsUploading(true);
+      handleFiles(e.target.files);
     }
   };
 
-  // Remove file
-  const removeFile = (index) => {
-    const newFiles = [...safeFiles];
-    newFiles.splice(index, 1);
-    setFiles(newFiles);
+  const handleFiles = (files) => {
+    const newFiles = Array.from(files).slice(0, 5 - photos.length);
+    onChange([...photos, ...newFiles]);
+    setIsUploading(false);
+  };
 
-    // Update form progress
-    updateFormProgress();
+  const removePhoto = (index) => {
+    const newPhotos = [...photos];
+    newPhotos.splice(index, 1);
+    onChange(newPhotos);
+  };
+
+  const openFileDialog = () => {
+    fileInputRef.current?.click();
   };
 
   return (
-    <div className="mb-8">
-      <label className="block text-lg font-medium text-gray-700 mb-2">
-        อัปโหลดรูปภาพ (ไม่บังคับ)
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
+        รูปภาพ
       </label>
       <div
-        className={`border-2 border-dashed rounded-lg p-6 text-center ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300"} transition-colors`}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setIsDragging(true);
-        }}
-        onDragLeave={() => setIsDragging(false)}
+        className={`relative border-2 border-dashed rounded-lg p-6 ${
+          dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+        } transition-colors`}
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <div className="space-y-2">
-          <div className="mx-auto flex justify-center">
-            <FontAwesomeIcon icon={faCloudUploadAlt} className="text-4xl text-gray-400" />
-          </div>
-          <div className="text-gray-700">
-            <span className="font-medium">
-              ลากและวางไฟล์ที่นี่
-            </span>{" "}
-            หรือ
-            <label className="ml-1 text-blue-600 hover:text-blue-700 cursor-pointer">
-              เลือกไฟล์
-              <input
-                type="file"
-                multiple
-                onChange={handleFileSelect}
-                className="hidden"
-                accept="image/*"
-              />
-            </label>
-          </div>
-          <p className="text-xs text-gray-500">
-            อัปโหลดรูปภาพที่แสดงสิ่งที่คุณกำลังมองหา (PNG, JPG, GIF ขนาดไม่เกิน 10MB)
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        
+        <div className="text-center">
+          <FontAwesomeIcon
+            icon={isUploading ? faSpinner : faCloudUploadAlt}
+            className={`w-8 h-8 mx-auto mb-2 ${
+              isUploading ? 'text-blue-500 animate-spin' : 'text-gray-400'
+            }`}
+          />
+          <p className="text-sm text-gray-600">
+            {isUploading ? 'กำลังอัปโหลด...' : 'ลากและวางรูปภาพที่นี่ หรือคลิกเพื่อเลือกไฟล์'}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            รองรับไฟล์ JPG, PNG ขนาดสูงสุด 5MB
           </p>
         </div>
-      </div>
 
-      {/* File Preview */}
-      {safeFiles.length > 0 && (
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {safeFiles.map((file, index) => (
-            <div key={index} className="relative group">
-              <div className="h-24 rounded-lg overflow-hidden border border-gray-200">
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt={`ตัวอย่างรูปภาพที่อัปโหลด ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
+        {photos.length > 0 && (
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {photos.map((photo, index) => (
+              <div key={index} className="relative group">
+                <div className="aspect-w-1 aspect-h-1 rounded-lg overflow-hidden">
+                  <Image
+                    src={URL.createObjectURL(photo)}
+                    alt={`รูปภาพ ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removePhoto(index)}
+                  className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="ลบรูปภาพ"
+                >
+                  <FontAwesomeIcon icon={faTimes} className="w-3 h-3" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => removeFile(index)}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-red-600 transition-colors cursor-pointer"
-              >
-                <FontAwesomeIcon icon={faTimes} className="text-xs" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
+      <p className="text-xs text-gray-500">
+        สามารถอัปโหลดได้สูงสุด 5 รูป
+      </p>
     </div>
   );
 };

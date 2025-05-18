@@ -1,28 +1,25 @@
-import React from "react";
+'use client';
 
-const DescriptionInput = ({ formData = {}, handleInputChange = () => {} }) => {
-  // Ensure formData is an object
-  const safeFormData = typeof formData === 'object' && formData !== null ? formData : {};
+import React from 'react';
 
+const DescriptionInput = ({ value, onChange }) => {
   return (
-    <div className="mb-8">
-      <label
-        htmlFor="description"
-        className="block text-lg font-medium text-gray-700 mb-2"
-      >
+    <div className="space-y-2">
+      <label htmlFor="description" className="block text-sm font-medium text-gray-700">
         รายละเอียด
       </label>
       <textarea
         id="description"
         name="description"
-        value={safeFormData.description || ""}
-        onChange={handleInputChange}
-        placeholder="อธิบายรายละเอียดของสิ่งของที่คุณต้องการ เช่น ขนาด สี คุณสมบัติพิเศษ ฯลฯ"
+        value={value}
+        onChange={onChange}
         rows={4}
-        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-800 text-base"
-      ></textarea>
-      <p className="mt-1 text-sm text-gray-500">
-        ยิ่งคุณให้รายละเอียดมากเท่าไหร่ เราจะสามารถจับคู่คุณกับการบริจาคที่เหมาะสมได้ดีขึ้นเท่านั้น
+        placeholder="อธิบายรายละเอียดของสิ่งของที่คุณต้องการ เช่น ขนาด สี วัสดุ หรือความต้องการพิเศษ"
+        className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        required
+      />
+      <p className="text-xs text-gray-500">
+        ยิ่งระบุรายละเอียดมากเท่าไหร่ โอกาสที่จะได้สิ่งของที่ตรงตามความต้องการก็จะมากขึ้นเท่านั้น
       </p>
     </div>
   );

@@ -1,42 +1,55 @@
-import React from "react";
+'use client';
 
-const ConditionSelection = ({ formData = {}, handleConditionSelect = () => {}, conditionOptions = [] }) => {
-  // Ensure formData and conditionOptions are objects/arrays
-  const safeFormData = typeof formData === 'object' && formData !== null ? formData : {};
-  const safeConditionOptions = Array.isArray(conditionOptions) ? conditionOptions : [];
+import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
+import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 
-  // Map condition names to Thai
-  const getThaiConditionName = (condition) => {
-    const conditionMap = {
-      'Poor': 'สภาพไม่ดี',
-      'Fair': 'สภาพพอใช้',
-      'Good': 'สภาพดี',
-      'Like New': 'เหมือนใหม่',
-      'New': 'ใหม่'
-    };
-    return conditionMap[condition] || condition;
-  };
+const ConditionSelection = ({ value, onChange }) => {
+  const conditions = [
+    { value: 'Poor', text: 'สภาพไม่ดี', stars: 1 },
+    { value: 'Fair', text: 'สภาพพอใช้', stars: 2 },
+    { value: 'Good', text: 'สภาพดี', stars: 3 },
+    { value: 'Like_New', text: 'เหมือนใหม่', stars: 4 },
+    { value: 'New', text: 'ใหม่', stars: 5 }
+  ];
 
   return (
-    <div className="mb-8">
-      <label className="block text-lg font-medium text-gray-700 mb-2">
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-gray-700">
         สภาพที่ต้องการ
       </label>
-      <div className="flex flex-wrap gap-3">
-        {safeConditionOptions.map((condition) => (
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
+        {conditions.map((condition) => (
           <button
-            key={condition}
+            key={condition.value}
             type="button"
-            onClick={() => handleConditionSelect(condition)}
-            className={`px-4 py-2 rounded-lg border ${(safeFormData.condition || '') === condition ? "bg-blue-100 border-blue-500 text-blue-700" : "border-gray-300 text-gray-700 hover:bg-gray-50"} transition-colors !rounded-button whitespace-nowrap cursor-pointer`}
+            onClick={() => onChange({ target: { name: 'condition', value: condition.value } })}
+            className={`p-3 rounded-lg border ${
+              value === condition.value
+                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                : 'border-gray-200 hover:border-blue-300'
+            } transition-colors`}
           >
-            {getThaiConditionName(condition)}
+            <div className="flex flex-col items-center space-y-2">
+              <div className="flex">
+                {[...Array(5)].map((_, i) => (
+                  <FontAwesomeIcon
+                    key={i}
+                    icon={i < condition.stars ? fasStar : farStar}
+                    className={`${
+                      i < condition.stars
+                        ? 'text-yellow-400'
+                        : 'text-gray-300'
+                    } w-4 h-4`}
+                  />
+                ))}
+              </div>
+              <span className="text-sm font-medium">{condition.text}</span>
+            </div>
           </button>
         ))}
       </div>
-      <p className="mt-1 text-sm text-gray-500">
-        เลือกสภาพขั้นต่ำที่ยอมรับได้สำหรับสิ่งของที่คุณต้องการ
-      </p>
     </div>
   );
 };
