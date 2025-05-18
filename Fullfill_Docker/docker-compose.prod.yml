@@ -4,7 +4,7 @@ services:
   frontend:
     build:
       context: ..
-      dockerfile: docker/frontend/Dockerfile
+      dockerfile: Fullfill_Docker/frontend/Dockerfile
       args:
         - NODE_ENV=production
     ports:
@@ -17,7 +17,7 @@ services:
   backend:
     build:
       context: ..
-      dockerfile: docker/backend/Dockerfile
+      dockerfile: Fullfill_Docker/backend/Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -25,12 +25,13 @@ services:
       - DEBUG=False
     restart: always
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     build:
       context: ..
-      dockerfile: docker/database/Dockerfile
+      dockerfile: Fullfill_Docker/database/Dockerfile
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -38,6 +39,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: fullfill-frontend
+    env: docker
+    dockerfilePath: ./Fullfill_Docker/frontend/Dockerfile
+    dockerContext: .
+    plan: starter
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+    healthCheckPath: /
+    autoDeploy: true
+
+  - type: web
+    name: fullfill-backend
+    env: docker
+    dockerfilePath: ./Fullfill_Docker/backend/Dockerfile
+    dockerContext: .
+    plan: starter
+    envVars:
+      - key: DATABASE_URI
+        fromDatabase:
+          name: fullfill-db
+          property: connectionString
+      - key: DEBUG
+        value: "False"
+    healthCheckPath: /docs
+    autoDeploy: true
+
+databases:
+  - name: fullfill-db
+    databaseName: fullfill
+    user: postgres
+    plan: starter
