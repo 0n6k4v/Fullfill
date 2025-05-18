@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
         // ตั้งค่า token ใน header
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
-        const response = await api.get('/users/me');
+        const response = await api.get('/api/v1/users/me');
         if (response.data) {
           setUser(response.data);
         } else {
@@ -44,13 +44,12 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       console.log('Attempting login with:', { email });
-      console.log(`${api}`);
 
       const params = new URLSearchParams();
       params.append('username', email);
       params.append('password', password);
 
-      const response = await api.post('/auth/login', params, {
+      const response = await api.post('/api/v1/auth/login', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -64,7 +63,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
       
-      const userResponse = await api.get('/users/me');
+      const userResponse = await api.get('/api/v1/users/me');
       
       setUser(userResponse.data);
       router.push('/User/MyProfile');
@@ -92,8 +91,7 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     try {
-
-      const response = await api.post('/auth/register', userData);
+      const response = await api.post('/api/v1/auth/register', userData);
 
       const { access_token, refresh_token } = response.data;
       
@@ -103,7 +101,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
       
-      const userResponse = await api.get('/users/me');
+      const userResponse = await api.get('/api/v1/users/me');
       
       setUser(userResponse.data);
       router.push('/dashboard');

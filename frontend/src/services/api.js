@@ -1,10 +1,15 @@
 import axios from 'axios';
 
+// ตรวจสอบว่า environment variable มีค่าหรือไม่
+if (!process.env.NEXT_PUBLIC_API_URL) {
+  console.error('NEXT_PUBLIC_API_URL is not defined in environment variables');
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // สร้าง instance ของ axios สำหรับเรียกใช้ API
 const api = axios.create({
-  baseURL: `${API_URL}/api/v1`,
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -30,7 +35,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     
     // ถ้าเกิด 401 error และยังไม่ได้ลอง refresh token
-    if (error.response.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       
       // ลองใช้ refresh token เพื่อขอ token ใหม่
