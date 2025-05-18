@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import PostCard from './PostCard';
+import PostCard from '@/components/PostCard';
 
 const PostFeed = ({ 
   posts = [], 
@@ -10,8 +10,8 @@ const PostFeed = ({
 }) => {
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+      <div className="flex justify-center items-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
@@ -19,7 +19,7 @@ const PostFeed = ({
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-500">เกิดข้อผิดพลาด: {error}</p>
+        <p className="text-red-600">เกิดข้อผิดพลาด: {error}</p>
       </div>
     );
   }
@@ -35,7 +35,7 @@ const PostFeed = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {posts.map((post) => (
-        <PostCard key={post?.id || Math.random()} post={post} />
+        <PostCard key={post?.id} post={post} />
       ))}
     </div>
   );
