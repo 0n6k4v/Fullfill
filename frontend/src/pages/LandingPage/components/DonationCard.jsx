@@ -4,10 +4,17 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faBookmark, 
-faShareAlt, faHandshake, faTag, faHandHoldingHeart
-} from '@fortawesome/free-solid-svg-icons';
+faShareAlt, faHandshake, faTag, faHandHoldingHeart, faHeart } from '@fortawesome/free-solid-svg-icons';
 
-const DonationCard = ({ donation, mode }) => {
+const DonationCard = ({ donation = {}, mode }) => {
+  const {
+    imageUrl = '/images/default-donation.jpg',
+    title = 'No Title',
+    location = 'Unknown Location',
+    distance = '0 km',
+    tags = []
+  } = donation;
+
   // Determine button text, icon, and color based on mode
   const buttonText = mode === 'donation' ? 'Request' : 'Donate';
   const buttonIcon = mode === 'donation' ? faHandshake : faHandHoldingHeart;
@@ -19,8 +26,8 @@ const DonationCard = ({ donation, mode }) => {
     <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 hover:bg-white/90 cursor-pointer border border-white/20">
       <div className="relative h-48 overflow-hidden">
         <img
-          src={donation.imageUrl}
-          alt={donation.title}
+          src={imageUrl}
+          alt={title}
           className="w-full h-full object-cover object-top"
         />
         <div className="absolute top-3 right-3 bg-white rounded-full p-2 shadow">
@@ -28,19 +35,31 @@ const DonationCard = ({ donation, mode }) => {
             {donation.matchPercentage}% Match
           </span>
         </div>
+        <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100">
+          <FontAwesomeIcon icon={faHeart} className="text-gray-600" />
+        </button>
       </div>
       <div className="p-4">
         <h3 className="text-xl font-semibold text-gray-800 mb-2">
-          {donation.title}
+          {title}
         </h3>
         <div className="flex items-center text-gray-600 mb-2">
           <FontAwesomeIcon icon={faTag} className="mr-2 text-blue-500" />
-          <span>{donation.category}</span>
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag, index) => (
+              <span
+                key={index}
+                className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded-full"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
         <div className="flex items-center text-gray-600 mb-4">
           <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2 text-red-500" />
           <span>
-            {donation.location} ({donation.distance})
+            {location} ({distance})
           </span>
         </div>
         <div className="flex justify-between">

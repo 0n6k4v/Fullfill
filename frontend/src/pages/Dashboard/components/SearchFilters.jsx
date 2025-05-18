@@ -2,7 +2,14 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faChevronDown, faSlidersH, faFilter } from '@fortawesome/free-solid-svg-icons';
 
-const SearchFilters = ({ searchQuery, setSearchQuery, filterOptions, activeFilter, setActiveFilter, filters = [] }) => {
+const SearchFilters = ({ 
+  searchQuery = '', 
+  setSearchQuery = () => {}, 
+  filterOptions = [], 
+  activeFilter = 'all', 
+  setActiveFilter = () => {}, 
+  filters = [] 
+}) => {
   if (!filters || filters.length === 0) {
     return (
       <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -26,21 +33,23 @@ const SearchFilters = ({ searchQuery, setSearchQuery, filterOptions, activeFilte
         />
       </div>
       <div className="flex space-x-2">
-        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-          {filterOptions.map((filter) => (
-            <button
-              key={filter}
-              className={`px-3 py-1 rounded-md text-sm font-medium whitespace-nowrap !rounded-button cursor-pointer ${
-                activeFilter === filter
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-900"
-              }`}
-              onClick={() => setActiveFilter(filter)}
-            >
-              {filter}
-            </button>
-          ))}
-        </div>
+        {filterOptions && filterOptions.length > 0 && (
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+            {filterOptions.map((filter) => (
+              <button
+                key={filter}
+                className={`px-3 py-1 rounded-md text-sm font-medium whitespace-nowrap !rounded-button cursor-pointer ${
+                  activeFilter === filter
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+                onClick={() => setActiveFilter(filter)}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="relative">
           <button className="flex items-center justify-between w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-sm cursor-pointer !rounded-button whitespace-nowrap">
             <span>Location: 10 miles</span>
