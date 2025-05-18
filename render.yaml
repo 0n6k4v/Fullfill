@@ -4,7 +4,7 @@ services:
     env: docker
     dockerfilePath: ./Fullfill_Docker/frontend/Dockerfile
     dockerContext: .
-    plan: starter
+    plan: free
     envVars:
       - key: NODE_ENV
         value: production
@@ -18,7 +18,7 @@ services:
     env: docker
     dockerfilePath: ./Fullfill_Docker/backend/Dockerfile
     dockerContext: .
-    plan: starter
+    plan: free
     envVars:
       - key: DATABASE_URI
         fromDatabase:
@@ -33,4 +33,4 @@ databases:
   - name: fullfill-db
     databaseName: fullfill
     user: fullfill_user
-    plan: starter
+    plan: free
