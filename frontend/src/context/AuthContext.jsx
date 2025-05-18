@@ -1,14 +1,14 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '@/services/api';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     checkAuth();
@@ -18,15 +18,23 @@ export function AuthProvider({ children }) {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        const response = await api.get('/auth/me');
-        setUser(response.data);
-        setIsAuthenticated(true);
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        } else {
+          localStorage.removeItem('token');
+          setUser(null);
+        }
       }
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('token');
       setUser(null);
-      setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
@@ -34,47 +42,62 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
-      setUser(user);
-      setIsAuthenticated(true);
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!response.ok) {
+        throw new Error('เข้าสู่ระบบไม่สำเร็จ');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      router.push('/dashboard');
       return { success: true };
     } catch (error) {
       console.error('Login failed:', error);
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ'
-      };
+      return { success: false, error: error.message };
     }
   };
 
   const register = async (userData) => {
     try {
-      const response = await api.post('/auth/register', userData);
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
-      setUser(user);
-      setIsAuthenticated(true);
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      });
+
+      if (!response.ok) {
+        throw new Error('ลงทะเบียนไม่สำเร็จ');
+      }
+
+      const data = await response.json();
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      router.push('/dashboard');
       return { success: true };
     } catch (error) {
       console.error('Registration failed:', error);
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'เกิดข้อผิดพลาดในการลงทะเบียน'
-      };
+      return { success: false, error: error.message };
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
-    setIsAuthenticated(false);
+    router.push('/');
   };
 
   const value = {
     user,
-    isAuthenticated,
     loading,
     login,
     register,
@@ -84,7 +107,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 }
