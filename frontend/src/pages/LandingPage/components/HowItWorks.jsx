@@ -1,66 +1,67 @@
-import React from "react";
-import { config } from '@fortawesome/fontawesome-svg-core';
-import '@fortawesome/fontawesome-svg-core/styles.css';
-config.autoAddCss = false;
+'use client';
+
+import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHandshake, faCamera, faMagic } from '@fortawesome/free-solid-svg-icons';
+import { faHandHoldingHeart, faSearch, faMapMarkerAlt, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
 const HowItWorks = () => {
+  const steps = [
+    {
+      icon: faHandHoldingHeart,
+      title: 'โพสต์สิ่งของ',
+      description: 'แจ้งรายละเอียดสิ่งของที่ต้องการบริจาค พร้อมรูปภาพและสภาพของสิ่งของ'
+    },
+    {
+      icon: faSearch,
+      title: 'ค้นหาผู้รับ',
+      description: 'ระบบจะช่วยจับคู่สิ่งของของคุณกับผู้ที่กำลังมองหาสิ่งของนั้นๆ'
+    },
+    {
+      icon: faMapMarkerAlt,
+      title: 'เลือกสถานที่',
+      description: 'กำหนดสถานที่สำหรับการส่งมอบสิ่งของที่สะดวกสำหรับทั้งสองฝ่าย'
+    },
+    {
+      icon: faCheckCircle,
+      title: 'ส่งมอบสิ่งของ',
+      description: 'พบปะและส่งมอบสิ่งของให้กับผู้รับที่คุณเลือก'
+    }
+  ];
+
   return (
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
-            How Fulfill Works
+    <div className="bg-white py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            วิธีการใช้งาน
           </h2>
-          <p className="text-xl text-center text-gray-600 mb-12 max-w-3xl mx-auto">
-            Our platform makes donating and requesting items simple and
-            efficient
+          <p className="mt-4 text-lg text-gray-500">
+            เพียงไม่กี่ขั้นตอน คุณก็สามารถแบ่งปันสิ่งของที่ไม่ใช้แล้วให้กับผู้ที่ต้องการได้
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-100/50">
-                <FontAwesomeIcon icon={faCamera} className="text-3xl text-blue-600" />
+        </div>
+
+        <div className="mt-12">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((step, index) => (
+              <div key={index} className="relative">
+                <div className="flex flex-col items-center text-center">
+                  <div className="flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100 text-indigo-600">
+                    <FontAwesomeIcon icon={step.icon} className="h-8 w-8" aria-hidden="true" />
+                  </div>
+                  <h3 className="mt-6 text-lg font-medium text-gray-900">{step.title}</h3>
+                  <p className="mt-2 text-base text-gray-500">{step.description}</p>
+                </div>
+                {index < steps.length - 1 && (
+                  <div className="hidden lg:block absolute top-1/2 right-0 transform translate-x-1/2 -translate-y-1/2">
+                    <div className="h-0.5 w-16 bg-gray-200"></div>
+                  </div>
+                )}
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                1. Post Your Item
-              </h3>
-              <p className="text-gray-600">
-                Take a photo of your item, our AI will help describe it, or
-                request something you need
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-gradient-to-br from-green-100 to-green-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-100/50">
-                <FontAwesomeIcon icon={faMagic} className="text-3xl text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                2. Get Matched
-              </h3>
-              <p className="text-gray-600">
-                Our smart matching system connects donations with requests based
-                on needs
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-yellow-100/50">
-                <FontAwesomeIcon icon={faHandshake} className="text-3xl text-yellow-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                3. Complete the Exchange
-              </h3>
-              <p className="text-gray-600">
-                Coordinate the pickup or delivery and make a difference in your
-                community
-              </p>
-            </div>
-          </div>
-          <div className="mt-12 text-center">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors shadow-md !rounded-button whitespace-nowrap cursor-pointer">
-              Learn More
-            </button>
+            ))}
           </div>
         </div>
-      </section>
+      </div>
+    </div>
   );
 };
 

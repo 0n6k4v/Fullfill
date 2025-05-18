@@ -10,178 +10,222 @@ import {
   faBook, faUtensils, faMapMarkerAlt, faSearch, faFilter, faChevronUp, faChevronDown
 } from '@fortawesome/free-solid-svg-icons';
 
-const SearchAndFilter = ({ onViewModeChange }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
-  const [selectedLocation, setSelectedLocation] = useState("All Locations");
-  const [viewMode, setViewMode] = useState("grid");
-  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
-  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
+const SearchAndFilter = ({
+  searchQuery = '',
+  setSearchQuery = () => {},
+  categoryFilter = 'all',
+  setCategoryFilter = () => {},
+  conditionFilter = 'all',
+  setConditionFilter = () => {},
+  locationFilter = '',
+  setLocationFilter = () => {},
+  typeFilter = 'all',
+  setTypeFilter = () => {},
+  clearFilters = () => {},
+  onSearch = () => {}
+}) => {
+  const [showFilters, setShowFilters] = useState(false);
 
-  // Categories with icons
   const categories = [
-    { name: "All Categories", icon: faThLarge },
-    { name: "Furniture", icon: faCouch },
-    { name: "Clothing", icon: faTshirt },
-    { name: "Electronics", icon: faLaptop },
-    { name: "Appliances", icon: faBlender },
-    { name: "Kids & Toys", icon: faBaby },
-    { name: "Books", icon: faBook },
-    { name: "Kitchen", icon: faUtensils },
+    { id: 'all', name: 'ทุกหมวดหมู่' },
+    { id: 'furniture', name: 'เฟอร์นิเจอร์' },
+    { id: 'clothing', name: 'เสื้อผ้า' },
+    { id: 'electronics', name: 'อิเล็กทรอนิกส์' },
+    { id: 'appliances', name: 'เครื่องใช้ไฟฟ้า' },
+    { id: 'kids_toys', name: 'ของเล่นเด็ก' },
+    { id: 'books', name: 'หนังสือ' },
+    { id: 'kitchen', name: 'ของใช้ในครัว' },
+    { id: 'other', name: 'อื่นๆ' }
   ];
 
-  // Locations
+  const conditions = [
+    { id: 'all', name: 'ทุกสภาพ' },
+    { id: 'new', name: 'ใหม่' },
+    { id: 'like_new', name: 'เหมือนใหม่' },
+    { id: 'good', name: 'ดี' },
+    { id: 'fair', name: 'พอใช้' },
+    { id: 'poor', name: 'แย่' }
+  ];
+
+  const types = [
+    { id: 'all', name: 'ทั้งหมด' },
+    { id: 'Offer', name: 'การบริจาค' },
+    { id: 'Request', name: 'คำขอรับบริจาค' }
+  ];
+
   const locations = [
-    "All Locations",
-    "Downtown, Seattle",
-    "Capitol Hill, Seattle",
-    "Ballard, Seattle",
-    "Fremont, Seattle",
-    "Queen Anne, Seattle",
-    "University District, Seattle",
+    "ทุกพื้นที่",
+    "กรุงเทพฯ",
+    "ปทุมธานี",
+    "นนทบุรี",
+    "สมุทรปราการ",
+    "อยุธยา"
   ];
 
-  const handleViewModeChange = (mode) => {
-    setViewMode(mode);
-    if (onViewModeChange) {
-      onViewModeChange(mode);
-    }
+  const toggleFilters = () => {
+    setShowFilters(prev => !prev);
   };
 
-  const getCategoryIcon = (categoryName) => {
-    const category = categories.find(c => c.name === categoryName);
-    return category ? category.icon : faThLarge;
+  const handleSearch = (e) => {
+    if (!e) return;
+    e.preventDefault();
+    onSearch();
+  };
+
+  const handleSearchChange = (e) => {
+    if (!e || !e.target) return;
+    setSearchQuery(e.target.value);
+  };
+
+  const handleTypeChange = (e) => {
+    if (!e || !e.target) return;
+    setTypeFilter(e.target.value);
+  };
+
+  const handleCategoryChange = (e) => {
+    if (!e || !e.target) return;
+    setCategoryFilter(e.target.value);
+  };
+
+  const handleConditionChange = (e) => {
+    if (!e || !e.target) return;
+    setConditionFilter(e.target.value);
+  };
+
+  const handleLocationChange = (e) => {
+    if (!e || !e.target) return;
+    setLocationFilter(e.target.value);
   };
 
   return (
-      <section className="bg-white py-8 shadow-md">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between mb-6">
-            <div className="w-full md:w-2/3 relative mb-4 md:mb-0">
-              <input
-                type="text"
-                placeholder="Search for donations or requests..."
-                className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <FontAwesomeIcon icon={faSearch} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+    <div className="bg-white shadow rounded-lg mb-6 overflow-hidden">
+      <div className="p-4">
+        <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-3">
+          <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FontAwesomeIcon icon={faSearch} className="text-gray-400" />
             </div>
-            <div className="flex space-x-2">
-              <button
-                className={`px-4 py-2 rounded-lg transition-colors !rounded-button whitespace-nowrap cursor-pointer ${viewMode === "grid" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-                onClick={() => setViewMode("grid")}
-              >
-                <FontAwesomeIcon icon={faThLarge} className="mr-2" />
-                Grid View
-              </button>
-              <button
-                className={`px-4 py-2 rounded-lg transition-colors !rounded-button whitespace-nowrap cursor-pointer ${viewMode === "map" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-                onClick={() => setViewMode("map")}
-              >
-                <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
-                Map View
-              </button>
-            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="ค้นหารายการ..."
+              value={searchQuery || ''}
+              onChange={handleSearchChange}
+            />
           </div>
-          <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-            <div className="relative w-full md:w-1/3">
-              <button
-                className="w-full flex items-center justify-between bg-white border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 !rounded-button whitespace-nowrap cursor-pointer"
-                onClick={() =>
-                  setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
-                }
+          <button
+            type="button"
+            onClick={toggleFilters}
+            className="flex justify-center items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-indigo-600"
+            aria-label="แสดงตัวกรอง"
+          >
+            <FontAwesomeIcon icon={faFilter} className="mr-2" />
+            ตัวกรอง
+            <FontAwesomeIcon icon={showFilters ? faChevronUp : faChevronDown} className="ml-2" />
+          </button>
+          <button
+            type="submit"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md"
+            aria-label="ค้นหา"
+          >
+            ค้นหา
+          </button>
+        </form>
+      </div>
+
+      {showFilters && (
+        <div className="px-4 pb-4 pt-1 bg-gray-50 border-t border-gray-200">
+          <div className="flex justify-between mb-3">
+            <h3 className="font-medium text-gray-900">กรองผลลัพธ์</h3>
+            <button
+              onClick={clearFilters}
+              className="text-sm text-indigo-600 hover:text-indigo-800"
+              aria-label="ล้างตัวกรองทั้งหมด"
+            >
+              ล้างตัวกรองทั้งหมด
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Type Filter */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-indigo-600 flex items-center">
+                <FontAwesomeIcon icon={faThLarge} className="mr-2" /> ประเภทรายการ
+              </label>
+              <select
+                value={typeFilter || 'all'}
+                onChange={handleTypeChange}
+                className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                aria-label="เลือกประเภทรายการ"
               >
-                <span className="flex items-center">
-                  <FontAwesomeIcon 
-                    icon={getCategoryIcon(selectedCategory)} 
-                    className="mr-2 text-blue-500" 
-                  />
-                  {selectedCategory}
-                </span>
-                <FontAwesomeIcon 
-                  icon={isCategoryDropdownOpen ? faChevronUp : faChevronDown} 
-                  className="text-gray-400" 
-                />
-              </button>
-              {isCategoryDropdownOpen && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
-                  {categories.map((category) => (
-                    <div
-                      key={category.name}
-                      className="px-4 py-2 hover:bg-blue-50 cursor-pointer flex items-center"
-                      onClick={() => {
-                        setSelectedCategory(category.name);
-                        setIsCategoryDropdownOpen(false);
-                      }}
-                    >
-                      <FontAwesomeIcon 
-                        icon={category.icon} 
-                        className="mr-2 text-blue-500 w-5" 
-                      />
-                      {category.name}
-                    </div>
-                  ))}
-                </div>
-              )}
+                {types.map(type => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="relative w-full md:w-1/3">
-              <button
-                className="w-full flex items-center justify-between bg-white border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 !rounded-button whitespace-nowrap cursor-pointer"
-                onClick={() =>
-                  setIsLocationDropdownOpen(!isLocationDropdownOpen)
-                }
+            
+            {/* Category Filter */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-indigo-600 flex items-center">
+                <FontAwesomeIcon icon={faThLarge} className="mr-2" /> หมวดหมู่
+              </label>
+              <select
+                value={categoryFilter || 'all'}
+                onChange={handleCategoryChange}
+                className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                aria-label="เลือกหมวดหมู่"
               >
-                <span className="flex items-center">
-                  <FontAwesomeIcon 
-                    icon={faMapMarkerAlt} 
-                    className="mr-2 text-red-500" 
-                  />
-                  {selectedLocation}
-                </span>
-                <FontAwesomeIcon 
-                  icon={isLocationDropdownOpen ? faChevronUp : faChevronDown} 
-                  className="text-gray-400" 
-                />
-              </button>
-              {isLocationDropdownOpen && (
-                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
-                  {locations.map((location) => (
-                    <div
-                      key={location}
-                      className="px-4 py-2 hover:bg-blue-50 cursor-pointer"
-                      onClick={() => {
-                        setSelectedLocation(location);
-                        setIsLocationDropdownOpen(false);
-                      }}
-                    >
-                      {location}
-                    </div>
-                  ))}
-                </div>
-              )}
+                {categories.map(category => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="w-full md:w-1/3">
-              <div className="flex space-x-2">
-                <button className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 !rounded-button whitespace-nowrap cursor-pointer">
-                  <FontAwesomeIcon 
-                    icon={faFilter} 
-                    className="mr-2 text-gray-500" 
-                  />
-                  More Filters
-                </button>
-                <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 !rounded-button whitespace-nowrap cursor-pointer">
-                  <FontAwesomeIcon 
-                    icon={faSearch} 
-                    className="mr-2" 
-                  />
-                  Search
-                </button>
-              </div>
+
+            {/* Condition Filter */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-indigo-600 flex items-center">
+                <FontAwesomeIcon icon={faFilter} className="mr-2" /> สภาพ
+              </label>
+              <select
+                value={conditionFilter || 'all'}
+                onChange={handleConditionChange}
+                className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                aria-label="เลือกสภาพ"
+              >
+                {conditions.map(condition => (
+                  <option key={condition.id} value={condition.id}>
+                    {condition.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Location Filter */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-indigo-600 flex items-center">
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" /> สถานที่
+              </label>
+              <select
+                value={locationFilter || ''}
+                onChange={handleLocationChange}
+                className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                aria-label="เลือกสถานที่"
+              >
+                {locations.map(location => (
+                  <option key={location} value={location === "ทุกพื้นที่" ? "" : location}>
+                    {location}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         </div>
-      </section>
+      )}
+    </div>
   );
 };
 

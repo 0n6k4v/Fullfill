@@ -1,44 +1,69 @@
-import React from "react";
+'use client';
+
+import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHandHoldingHeart, faUsers, faMapMarkerAlt, faRecycle } from '@fortawesome/free-solid-svg-icons';
 
 const Statistics = () => {
+  const stats = [
+    {
+      icon: faHandHoldingHeart,
+      value: '1,000+',
+      label: 'การบริจาคสำเร็จ',
+      description: 'จำนวนการบริจาคที่ประสบความสำเร็จ'
+    },
+    {
+      icon: faUsers,
+      value: '500+',
+      label: 'ผู้ใช้งาน',
+      description: 'จำนวนผู้ใช้งานที่ลงทะเบียนในระบบ'
+    },
+    {
+      icon: faMapMarkerAlt,
+      value: '10+',
+      label: 'จังหวัด',
+      description: 'พื้นที่ที่ให้บริการ'
+    },
+    {
+      icon: faRecycle,
+      value: '2,000+',
+      label: 'สิ่งของ',
+      description: 'จำนวนสิ่งของที่ถูกบริจาค'
+    }
+  ];
+
   return (
-      <section className="bg-gradient-to-b from-blue-50 to-violet-50 py-16 relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-pattern opacity-30"></div>
-        <div className="max-w-7xl mx-auto px-4 relative">
-          <h2 className="text-3xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600 mb-12">
-            Making a Difference Together
+    <div className="bg-indigo-50 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            ผลงานของเรา
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6 text-center border border-white/20 hover:bg-white/90 transition-all">
-              <div className="text-blue-600 text-5xl font-bold mb-4">3,582</div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Successful Matches
-              </h3>
-              <p className="text-gray-600">
-                Items successfully donated to those in need
-              </p>
-            </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6 text-center border border-white/20 hover:bg-white/90 transition-all">
-              <div className="text-green-500 text-5xl font-bold mb-4">247</div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Partner Organizations
-              </h3>
-              <p className="text-gray-600">
-                Working together to distribute donations
-              </p>
-            </div>
-            <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg p-6 text-center border border-white/20 hover:bg-white/90 transition-all">
-              <div className="text-yellow-500 text-5xl font-bold mb-4">92%</div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Match Rate
-              </h3>
-              <p className="text-gray-600">
-                Of donations find their perfect match
-              </p>
-            </div>
+          <p className="mt-4 text-lg text-gray-500">
+            ตัวเลขที่แสดงถึงความสำเร็จในการช่วยเหลือสังคม
+          </p>
+        </div>
+
+        <div className="mt-12">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {stats.map((stat, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-lg p-6 text-center">
+                <div className="flex justify-center">
+                  <div className="flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100 text-indigo-600">
+                    <FontAwesomeIcon icon={stat.icon} className="h-8 w-8" aria-hidden="true" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <p className="text-3xl font-extrabold text-gray-900">{stat.value}</p>
+                  <p className="mt-2 text-lg font-medium text-gray-900">{stat.label}</p>
+                  <p className="mt-1 text-sm text-gray-500">{stat.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </section>
+      </div>
+    </div>
   );
 };
 

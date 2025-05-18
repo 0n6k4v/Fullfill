@@ -1,68 +1,62 @@
-import React from "react";
-import { config } from '@fortawesome/fontawesome-svg-core';
-import '@fortawesome/fontawesome-svg-core/styles.css';
-config.autoAddCss = false;
+'use client';
+
+import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQuoteLeft } from '@fortawesome/free-solid-svg-icons';
 
 const Testimonials = () => {
+  const testimonials = [
+    {
+      content: 'แพลตฟอร์มนี้ช่วยให้ผมสามารถบริจาคสิ่งของที่ไม่ใช้แล้วให้กับผู้ที่ต้องการได้อย่างง่ายดาย',
+      author: 'คุณสมชาย',
+      role: 'ผู้บริจาค'
+    },
+    {
+      content: 'ได้รับความช่วยเหลือมากมายจากผู้ใจดีผ่านแพลตฟอร์มนี้ ทำให้ชีวิตของครอบครัวเราดีขึ้น',
+      author: 'คุณสมหญิง',
+      role: 'ผู้รับบริจาค'
+    },
+    {
+      content: 'ระบบใช้งานง่าย สะดวก และปลอดภัย ทำให้การบริจาคเป็นเรื่องที่สนุกและมีความหมาย',
+      author: 'คุณสมศักดิ์',
+      role: 'ผู้บริจาค'
+    }
+  ];
+
   return (
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
-            Success Stories
+    <div className="bg-white py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            เสียงจากผู้ใช้งาน
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-start mb-4">
-                <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mr-4 flex-shrink-0">
-                  <FontAwesomeIcon icon={faQuoteLeft} className="text-blue-600" />
+          <p className="mt-4 text-lg text-gray-500">
+            ความประทับใจจากผู้ใช้งานแพลตฟอร์มของเรา
+          </p>
+        </div>
+
+        <div className="mt-12">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {testimonials.map((testimonial, index) => (
+              <div key={index} className="bg-indigo-50 rounded-lg p-6 relative">
+                <div className="absolute top-4 left-4 text-indigo-200">
+                  <FontAwesomeIcon icon={faQuoteLeft} className="h-8 w-8" aria-hidden="true" />
                 </div>
-                <div>
-                  <p className="text-gray-600 mb-4">
-                    "Thanks to Fulfill, we were able to furnish our entire
-                    shelter with donated items. The platform made it incredibly
-                    easy to list our needs and connect with generous donors."
+                <div className="relative">
+                  <p className="text-gray-600 italic mb-4">
+                    "{testimonial.content}"
                   </p>
-                  <div className="flex items-center">
-                    <div>
-                      <h4 className="font-semibold text-gray-800">
-                        Sarah Johnson
-                      </h4>
-                      <p className="text-sm text-gray-500">
-                        Hope Shelter Director
-                      </p>
-                    </div>
+                  <div className="mt-4">
+                    <p className="text-base font-medium text-gray-900">{testimonial.author}</p>
+                    <p className="text-sm text-gray-500">{testimonial.role}</p>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-start mb-4">
-                <div className="bg-green-100 rounded-full w-12 h-12 flex items-center justify-center mr-4 flex-shrink-0">
-                  <FontAwesomeIcon icon={faQuoteLeft} className="text-green-600" />
-                </div>
-                <div>
-                  <p className="text-gray-600 mb-4">
-                    "I had a garage full of items I no longer needed but were
-                    still in great condition. Fulfill helped me connect with
-                    people who could actually use these things instead of
-                    throwing them away."
-                  </p>
-                  <div className="flex items-center">
-                    <div>
-                      <h4 className="font-semibold text-gray-800">
-                        Michael Torres
-                      </h4>
-                      <p className="text-sm text-gray-500">Regular Donor</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
-      </section>
+      </div>
+    </div>
   );
 };
 
