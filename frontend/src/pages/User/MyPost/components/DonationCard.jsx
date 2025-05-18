@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -12,16 +14,32 @@ import {
   faTimes,
   faEllipsisV,
   faCircle,
-  faExclamationCircle
+  faExclamationCircle,
+  faTag
 } from '@fortawesome/free-solid-svg-icons';
 import api from '@/services/api';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => {
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const menuRef = useRef(null);
+  const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   // Ensure donation is an object
   const safeDonation = typeof donation === 'object' && donation !== null ? donation : {};
+
+  // ใช้ try-catch เพื่อป้องกันกรณีที่ AuthProvider ไม่มีอยู่
+  let user = null;
+  try {
+    const { useAuth } = require('../../../context/AuthContext');
+    const auth = useAuth();
+    user = auth.user;
+  } catch (error) {
+    console.log('AuthProvider not available');
+  }
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -86,7 +104,7 @@ const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => 
               แก้ไข
             </button>
             <button 
-              onClick={() => onDelete(safeDonation.id)} 
+              onClick={() => setShowConfirmDelete(true)} 
               className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 cursor-pointer !rounded-button whitespace-nowrap"
             >
               <FontAwesomeIcon icon={faTrash} className="mr-1.5" />
@@ -128,12 +146,67 @@ const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => 
     }
   };
 
+  const handleEdit = () => {
+    router.push(`/edit-donation/${safeDonation.id}`);
+  };
+
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await api.delete(`/items/${safeDonation.id}`);
+      router.refresh();
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      alert('เกิดข้อผิดพลาดในการลบรายการ');
+    } finally {
+      setIsDeleting(false);
+      setShowConfirmDelete(false);
+    }
+  };
+
+  const handleMarkAsComplete = async () => {
+    try {
+      await api.patch(`/items/${safeDonation.id}`, { status: 'completed' });
+      router.refresh();
+    } catch (error) {
+      console.error('Error marking item as complete:', error);
+      alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'active':
+        return 'กำลังดำเนินการ';
+      case 'completed':
+        return 'เสร็จสิ้น';
+      case 'cancelled':
+        return 'ยกเลิก';
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="relative h-48 bg-gray-200">
-        <img 
-          src={safeDonation.image || '/placeholder-image.jpg'} 
-          alt={safeDonation.title || 'Donation item'} 
+        <Image
+          src={safeDonation.image || '/placeholder-image.jpg'}
+          alt={safeDonation.title || 'Donation item'}
+          fill
           className="w-full h-full object-cover object-center"
         />
         <div className="absolute top-2 left-2">
@@ -234,6 +307,31 @@ const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => 
           {getActionButtons()}
         </div>
       </div>
+
+      {/* Modal ยืนยันการลบ */}
+      {showConfirmDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">ยืนยันการลบ</h3>
+            <p className="text-gray-600 mb-6">คุณแน่ใจหรือไม่ที่จะลบรายการนี้? การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowConfirmDelete(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+              >
+                ยกเลิก
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'กำลังลบ...' : 'ลบ'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

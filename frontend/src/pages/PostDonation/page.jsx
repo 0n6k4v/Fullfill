@@ -5,8 +5,10 @@ import Header from "./components/Header";
 import Footer from "../../components/Footer";
 import DonationForm from "./components/DonationForm";
 import DonationPreview from "./components/DonationPreview";
+import { useRouter } from 'next/navigation';
 
 const PostDonationPage = () => {  
+  const router = useRouter();
   // Form state ปรับโครงสร้างให้ตรงกับ API
   const [formData, setFormData] = useState({
     title: "",               // เทียบกับ name ใน API
@@ -22,6 +24,23 @@ const PostDonationPage = () => {
 
   // UI state
   const [previewImages, setPreviewImages] = useState([]);
+
+  // ใช้ try-catch เพื่อป้องกันกรณีที่ AuthProvider ไม่มีอยู่
+  let isAuthenticated = false;
+  try {
+    const { useAuth } = require('../../context/AuthContext');
+    const auth = useAuth();
+    isAuthenticated = auth.isAuthenticated;
+  } catch (error) {
+    console.log('AuthProvider not available');
+  }
+
+  // ถ้าไม่ได้ login ให้ redirect ไปหน้า login
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/Auth');
+    }
+  }, [isAuthenticated, router]);
 
   // Categories แก้ให้ตรงกับค่าใน API (lowercase และตัดรายการที่ไม่มีใน API)
   const categories = [
