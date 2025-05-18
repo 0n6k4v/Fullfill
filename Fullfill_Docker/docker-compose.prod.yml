@@ -21,7 +21,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URI=postgresql://postgres:${DB_PASSWORD}@db:5432/fullfill
+      - DATABASE_URI=postgresql://fullfill_user:${DB_PASSWORD}@db:5432/fullfill
       - DEBUG=False
     restart: always
     depends_on:
@@ -33,14 +33,14 @@ services:
       context: ..
       dockerfile: Fullfill_Docker/database/Dockerfile
     environment:
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=fullfill_user
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=fullfill
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U fullfill_user"]
       interval: 5s
       timeout: 5s
       retries: 5

@@ -32,5 +32,5 @@ services:
 databases:
   - name: fullfill-db
     databaseName: fullfill
-    user: postgres
+    user: fullfill_user
     plan: starter
