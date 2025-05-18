@@ -20,26 +20,15 @@ import {
 import api from '@/services/api';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useAuth } from '@/context/AuthContext';
 
-const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => {
+const DonationCard = ({ item }) => {
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const menuRef = useRef(null);
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-
-  // Ensure donation is an object
-  const safeDonation = typeof donation === 'object' && donation !== null ? donation : {};
-
-  // ใช้ try-catch เพื่อป้องกันกรณีที่ AuthProvider ไม่มีอยู่
-  let user = null;
-  try {
-    const { useAuth } = require('../../../context/AuthContext');
-    const auth = useAuth();
-    user = auth.user;
-  } catch (error) {
-    console.log('AuthProvider not available');
-  }
+  const { user } = useAuth();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -57,14 +46,14 @@ const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => 
   const handleStatusChange = async (newStatus) => {
     try {
       if (newStatus === 'fulfilled') {
-        onMarkAsComplete(safeDonation.id);
+        await handleMarkAsComplete();
       } else {
-        const response = await api.patch(`/users/me/posts/${safeDonation.id}/status`, { 
+        const response = await api.patch(`/items/${item.id}/status`, { 
           status: newStatus 
         });
         
         if (response.status === 200 || response.status === 204) {
-          window.location.reload();
+          router.refresh();
         } else {
           console.error('Failed to update item status');
           alert('ไม่สามารถอัพเดทสถานะได้');
@@ -79,7 +68,7 @@ const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => 
   };
 
   const getStatusBadge = () => {
-    switch(safeDonation.status) {
+    switch(item.status) {
       case 'available':
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">มีอยู่</span>;
       case 'matched':
@@ -91,69 +80,14 @@ const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => 
     }
   };
 
-  const getActionButtons = () => {
-    switch(safeDonation.status) {
-      case 'available':
-        return (
-          <>
-            <button 
-              onClick={() => onEdit(safeDonation.id)} 
-              className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 cursor-pointer !rounded-button whitespace-nowrap"
-            >
-              <FontAwesomeIcon icon={faEdit} className="mr-1.5" />
-              แก้ไข
-            </button>
-            <button 
-              onClick={() => setShowConfirmDelete(true)} 
-              className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 cursor-pointer !rounded-button whitespace-nowrap"
-            >
-              <FontAwesomeIcon icon={faTrash} className="mr-1.5" />
-              ลบ
-            </button>
-          </>
-        );
-      case 'matched':
-        return (
-          <>
-            <button 
-              onClick={() => onMarkAsComplete(safeDonation.id)} 
-              className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 cursor-pointer !rounded-button whitespace-nowrap"
-            >
-              <FontAwesomeIcon icon={faCheck} className="mr-1.5" />
-              ทำเครื่องหมายว่าเสร็จสมบูรณ์
-            </button>
-            <button 
-              onClick={() => onEdit(safeDonation.id)} 
-              className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 cursor-pointer !rounded-button whitespace-nowrap"
-            >
-              <FontAwesomeIcon icon={faHandshake} className="mr-1.5" />
-              ดูคำขอ
-            </button>
-          </>
-        );
-      case 'fulfilled':
-        return (
-          <button 
-            onClick={() => onEdit(safeDonation.id)} 
-            className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 cursor-pointer !rounded-button whitespace-nowrap"
-          >
-            <FontAwesomeIcon icon={faEdit} className="mr-1.5" />
-            เพิ่มรายการที่คล้ายกัน
-          </button>
-        );
-      default:
-        return null;
-    }
-  };
-
   const handleEdit = () => {
-    router.push(`/edit-donation/${safeDonation.id}`);
+    router.push(`/edit-donation/${item.id}`);
   };
 
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      await api.delete(`/items/${safeDonation.id}`);
+      await api.delete(`/items/${item.id}`);
       router.refresh();
     } catch (error) {
       console.error('Error deleting item:', error);
@@ -166,7 +100,7 @@ const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => 
 
   const handleMarkAsComplete = async () => {
     try {
-      await api.patch(`/items/${safeDonation.id}`, { status: 'completed' });
+      await api.patch(`/items/${item.id}`, { status: 'completed' });
       router.refresh();
     } catch (error) {
       console.error('Error marking item as complete:', error);
@@ -174,38 +108,12 @@ const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => 
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'active':
-        return 'กำลังดำเนินการ';
-      case 'completed':
-        return 'เสร็จสิ้น';
-      case 'cancelled':
-        return 'ยกเลิก';
-      default:
-        return status;
-    }
-  };
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="relative h-48 bg-gray-200">
         <Image
-          src={safeDonation.image || '/placeholder-image.jpg'}
-          alt={safeDonation.title || 'Donation item'}
+          src={item.image || '/placeholder-image.jpg'}
+          alt={item.title || 'Donation item'}
           fill
           className="w-full h-full object-cover object-center"
         />
@@ -214,7 +122,7 @@ const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => 
         </div>
         <div className="absolute top-2 right-2" ref={menuRef}>
           <button 
-            className="p-1.5 bg-white rounded-full shadow-sm hover:bg-gray-50 cursor-pointer !rounded-button whitespace-nowrap"
+            className="p-1.5 bg-white rounded-full shadow-sm hover:bg-gray-50"
             onClick={() => setShowStatusMenu(!showStatusMenu)}
           >
             <FontAwesomeIcon icon={faEllipsisV} className="text-gray-600" />
@@ -229,36 +137,36 @@ const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => 
                 
                 <button
                   onClick={() => handleStatusChange('available')}
-                  className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center ${safeDonation.status === 'available' ? 'bg-green-50' : ''}`}
-                  disabled={safeDonation.status === 'available'}
+                  className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center ${item.status === 'available' ? 'bg-green-50' : ''}`}
+                  disabled={item.status === 'available'}
                 >
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                   มีอยู่
-                  {safeDonation.status === 'available' && (
+                  {item.status === 'available' && (
                     <FontAwesomeIcon icon={faCheck} className="ml-auto text-green-500" />
                   )}
                 </button>
                 
                 <button
                   onClick={() => handleStatusChange('matched')}
-                  className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center ${safeDonation.status === 'matched' ? 'bg-yellow-50' : ''}`}
-                  disabled={safeDonation.status === 'matched'}
+                  className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center ${item.status === 'matched' ? 'bg-yellow-50' : ''}`}
+                  disabled={item.status === 'matched'}
                 >
                   <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
                   จับคู่แล้ว
-                  {safeDonation.status === 'matched' && (
+                  {item.status === 'matched' && (
                     <FontAwesomeIcon icon={faCheck} className="ml-auto text-yellow-500" />
                   )}
                 </button>
                 
                 <button
                   onClick={() => handleStatusChange('fulfilled')}
-                  className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center ${safeDonation.status === 'fulfilled' ? 'bg-blue-50' : ''}`}
-                  disabled={safeDonation.status === 'fulfilled'}
+                  className={`block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left flex items-center ${item.status === 'fulfilled' ? 'bg-blue-50' : ''}`}
+                  disabled={item.status === 'fulfilled'}
                 >
                   <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
                   เสร็จสมบูรณ์
-                  {safeDonation.status === 'fulfilled' && (
+                  {item.status === 'fulfilled' && (
                     <FontAwesomeIcon icon={faCheck} className="ml-auto text-blue-500" />
                   )}
                 </button>
@@ -269,42 +177,77 @@ const DonationCard = ({ donation = {}, onEdit, onDelete, onMarkAsComplete }) => 
       </div>
       
       <div className="p-4">
-        <h3 className="text-lg font-medium text-gray-900">{safeDonation.title || 'ไม่มีชื่อรายการ'}</h3>
+        <h3 className="text-lg font-medium text-gray-900">{item.title || 'ไม่มีชื่อรายการ'}</h3>
         
         <div className="mt-2 flex items-center text-sm text-gray-500">
           <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1.5 text-gray-400" />
-          {safeDonation.location || 'ไม่ระบุสถานที่'}
+          {item.location || 'ไม่ระบุสถานที่'}
         </div>
         
         <div className="mt-2 flex items-center text-sm text-gray-500">
           <FontAwesomeIcon icon={faCalendarAlt} className="mr-1.5 text-gray-400" />
-          โพสต์เมื่อ {safeDonation.date || 'ไม่ระบุวันที่'}
+          โพสต์เมื่อ {new Date(item.createdAt).toLocaleDateString('th-TH')}
         </div>
         
         <div className="mt-2">
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            {safeDonation.category || 'ไม่ระบุหมวดหมู่'}
+            {item.category || 'ไม่ระบุหมวดหมู่'}
           </span>
           <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            จำนวน: {safeDonation.quantity || 0}
+            จำนวน: {item.quantity || 0}
           </span>
         </div>
         
-        <p className="mt-2 text-sm text-gray-600 line-clamp-2">{safeDonation.description || 'ไม่มีคำอธิบาย'}</p>
+        <p className="mt-2 text-sm text-gray-600 line-clamp-2">{item.description || 'ไม่มีคำอธิบาย'}</p>
         
         <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-500">
           <span className="flex items-center">
             <FontAwesomeIcon icon={faEye} className="mr-1" />
-            {safeDonation.views || 0} ครั้งที่ดู
+            {item.views || 0} ครั้งที่ดู
           </span>
           <span className="flex items-center">
             <FontAwesomeIcon icon={faCommentAlt} className="mr-1" />
-            {safeDonation.requests || 0} คำขอ
+            {item.requests || 0} คำขอ
           </span>
         </div>
         
         <div className="mt-4 flex flex-wrap gap-2">
-          {getActionButtons()}
+          {item.status === 'available' && (
+            <>
+              <button
+                onClick={handleEdit}
+                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <FontAwesomeIcon icon={faEdit} className="mr-1.5" />
+                แก้ไข
+              </button>
+              <button
+                onClick={() => setShowConfirmDelete(true)}
+                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+              >
+                <FontAwesomeIcon icon={faTrash} className="mr-1.5" />
+                ลบ
+              </button>
+            </>
+          )}
+          {item.status === 'matched' && (
+            <>
+              <button
+                onClick={handleMarkAsComplete}
+                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+              >
+                <FontAwesomeIcon icon={faCheck} className="mr-1.5" />
+                ทำเครื่องหมายว่าเสร็จสมบูรณ์
+              </button>
+              <button
+                onClick={handleEdit}
+                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <FontAwesomeIcon icon={faHandshake} className="mr-1.5" />
+                ดูคำขอ
+              </button>
+            </>
+          )}
         </div>
       </div>
 

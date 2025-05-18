@@ -4,21 +4,13 @@ import React, { useState, useEffect } from 'react';
 import DonationCard from './DonationCard';
 import EmptyDonationState from './EmptyDonationState';
 import api from '@/services/api';
+import { useAuth } from '@/context/AuthContext';
 
 const DonationList = ({ tab = 'all' }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // ใช้ try-catch เพื่อป้องกันกรณีที่ AuthProvider ไม่มีอยู่
-  let user = null;
-  try {
-    const { useAuth } = require('../../../context/AuthContext');
-    const auth = useAuth();
-    user = auth.user;
-  } catch (error) {
-    console.log('AuthProvider not available');
-  }
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchItems = async () => {

@@ -1,117 +1,98 @@
 "use client";
 
-import { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '@/services/api';
-import { useRouter } from 'next/navigation';
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const router = useRouter();
 
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          try {
-            const response = await api.get(`/users/me`, {
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
-            });
-            
-            setUser(response.data);
-          } catch (error) {
-            console.log("Invalid or expired token");
-            localStorage.removeItem('token');
-            setUser(null);
-          }
-        }
-      } catch (error) {
-        console.error("Auth initialization error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initAuth();
+    checkAuth();
   }, []);
 
-  const login = async (email, password) => {
-    setError(null);
+  const checkAuth = async () => {
     try {
-      const formData = new FormData();
-      formData.append('username', email);
-      formData.append('password', password);
-      
-      const response = await api.post(
-        `/auth/login`, 
-        formData,
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      );
-      
-      if (response.data.access_token) {
-        localStorage.setItem('token', response.data.access_token);
-        if (response.data.refresh_token) {
-          localStorage.setItem('refresh_token', response.data.refresh_token);
-        }
-        
-        const userResponse = await api.get(`/users/me`, {
-          headers: {
-            'Authorization': `Bearer ${response.data.access_token}`
-          }
-        });
-        
-        setUser(userResponse.data);
-        return true;
+      const token = localStorage.getItem('token');
+      if (token) {
+        const response = await api.get('/auth/me');
+        setUser(response.data);
+        setIsAuthenticated(true);
       }
-      return false;
     } catch (error) {
-      console.error("Login error:", error);
-      if (error.response && error.response.data) {
-        setError(error.response.data.detail || "Login failed");
-      } else {
-        setError("Network error. Please check your connection.");
-      }
-      return false;
+      console.error('Auth check failed:', error);
+      localStorage.removeItem('token');
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (email, password) => {
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      const { token, user } = response.data;
+      localStorage.setItem('token', token);
+      setUser(user);
+      setIsAuthenticated(true);
+      return { success: true };
+    } catch (error) {
+      console.error('Login failed:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ'
+      };
+    }
+  };
+
+  const register = async (userData) => {
+    try {
+      const response = await api.post('/auth/register', userData);
+      const { token, user } = response.data;
+      localStorage.setItem('token', token);
+      setUser(user);
+      setIsAuthenticated(true);
+      return { success: true };
+    } catch (error) {
+      console.error('Registration failed:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'เกิดข้อผิดพลาดในการลงทะเบียน'
+      };
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('refresh_token');
     setUser(null);
-    router.push('/');
-  };
-
-  const isAuthenticated = () => {
-    return !!user;
+    setIsAuthenticated(false);
   };
 
   const value = {
     user,
+    isAuthenticated,
     loading,
-    error,
     login,
+    register,
     logout,
-    isAuthenticated
+    checkAuth
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === null) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
+}
