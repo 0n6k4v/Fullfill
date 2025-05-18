@@ -5,11 +5,11 @@ import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThLarge, faList, faSort, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { faThLarge, faList, faSort, faChevronDown, faChevronUp, faGift, faHandHoldingHeart } from '@fortawesome/free-solid-svg-icons';
 
 const TabsBar = ({ 
-  activeTab, 
-  setActiveTab, 
+  activeTab = 'all', 
+  setActiveTab = () => {}, 
   viewMode, 
   setViewMode,
   sortOptions,
@@ -18,7 +18,11 @@ const TabsBar = ({
 }) => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  const tabs = ["All Posts", "Donation Posts", "Request Posts"];
+  const tabs = [
+    { id: 'all', name: 'ทั้งหมด', icon: null },
+    { id: 'Offer', name: 'การบริจาค', icon: faGift },
+    { id: 'Request', name: 'คำขอรับบริจาค', icon: faHandHoldingHeart }
+  ];
 
   const toggleSortDropdown = () => {
     setShowSortDropdown(!showSortDropdown);
@@ -30,24 +34,37 @@ const TabsBar = ({
   };
 
   return (
-    <div className="mb-6">
-      <div className="border-b border-gray-200 flex justify-between items-center">
-        <div className="flex">
+    <div className="bg-white shadow-sm mb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex space-x-8">
           {tabs.map((tab) => (
             <button
-              key={tab}
-              className={`py-3 px-4 text-sm font-medium border-b-2 ${
-                activeTab === tab
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`
+                py-4 px-1 border-b-2 font-medium text-sm
+                ${activeTab === tab.id
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-              onClick={() => setActiveTab(tab)}
+                }
+              `}
+              aria-label={`แสดง${tab.name}`}
             >
-              {tab}
+              <div className="flex items-center">
+                {tab.icon && (
+                  <FontAwesomeIcon 
+                    icon={tab.icon} 
+                    className={`mr-2 ${activeTab === tab.id ? 'text-indigo-500' : 'text-gray-400'}`} 
+                  />
+                )}
+                {tab.name}
+              </div>
             </button>
           ))}
         </div>
+      </div>
 
+      <div className="border-b border-gray-200 flex justify-between items-center">
         <div className="flex items-center space-x-3">
           {/* Sort Dropdown */}
           <div className="relative">

@@ -112,6 +112,7 @@ const SearchFilters = ({
             type="button"
             onClick={toggleFilters}
             className="flex justify-center items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-indigo-600"
+            aria-label="แสดงตัวกรอง"
           >
             <FontAwesomeIcon icon={faFilter} className="mr-2" />
             ตัวกรอง
@@ -120,6 +121,7 @@ const SearchFilters = ({
           <button
             type="submit"
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md"
+            aria-label="ค้นหา"
           >
             ค้นหา
           </button>
@@ -133,6 +135,7 @@ const SearchFilters = ({
             <button
               onClick={clearFilters}
               className="text-sm text-indigo-600 hover:text-indigo-800"
+              aria-label="ล้างตัวกรองทั้งหมด"
             >
               ล้างตัวกรองทั้งหมด
             </button>
@@ -148,6 +151,7 @@ const SearchFilters = ({
                 value={typeFilter || 'all'}
                 onChange={handleTypeChange}
                 className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                aria-label="เลือกประเภทรายการ"
               >
                 {types.map(type => (
                   <option key={type.id} value={type.id}>
@@ -166,6 +170,7 @@ const SearchFilters = ({
                 value={categoryFilter || 'all'}
                 onChange={handleCategoryChange}
                 className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                aria-label="เลือกหมวดหมู่"
               >
                 {categories.map(category => (
                   <option key={category.id} value={category.id}>
@@ -184,6 +189,7 @@ const SearchFilters = ({
                 value={conditionFilter || 'all'}
                 onChange={handleConditionChange}
                 className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                aria-label="เลือกสภาพ"
               >
                 {conditions.map(condition => (
                   <option key={condition.id} value={condition.id}>
@@ -202,6 +208,7 @@ const SearchFilters = ({
                 value={locationFilter || ''}
                 onChange={handleLocationChange}
                 className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                aria-label="เลือกสถานที่"
               >
                 {locations.map(location => (
                   <option key={location} value={location === "ทุกพื้นที่" ? "" : location}>

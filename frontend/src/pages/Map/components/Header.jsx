@@ -57,25 +57,29 @@ const Header = () => {
         </div>
         <div className="flex items-center space-x-4">
           <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-            Home
+            หน้าแรก
           </Link>
           <Link href="/Post" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-            Post
+            โพสต์
           </Link>
           <Link href="/Map" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-            Maps
+            แผนที่
           </Link>
           <Link href="/Dashboard" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-            Dashboard
+            แดชบอร์ด
           </Link>
           <div className="flex items-center space-x-2">
-            <button className="p-1 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
+            <button 
+              className="p-1 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer focus:outline-none"
+              aria-label="การแจ้งเตือน"
+            >
               <FontAwesomeIcon icon={faBell} />
             </button>
             <div className="relative" ref={profileRef}>
               <button 
                 className="p-1 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer focus:outline-none"
                 onClick={toggleProfileMenu}
+                aria-label="เมนูโปรไฟล์"
               >
                 <FontAwesomeIcon icon={faUserCircle} className="text-xl" />
               </button>
@@ -86,29 +90,29 @@ const Header = () => {
                   style={{ top: "100%" }}
                 >
                   <Link
-                    href="/User/MyProfile" // Assuming /profile is the correct path
+                    href="/User/MyProfile"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <FontAwesomeIcon icon={faUser} className="mr-2" /> My Profile
+                    <FontAwesomeIcon icon={faUser} className="mr-2" /> โปรไฟล์ของฉัน
                   </Link>
                   <Link
-                    href="/donations" // Assuming /donations is the correct path
+                    href="/donations"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <FontAwesomeIcon icon={faGift} className="mr-2" /> My Donations
+                    <FontAwesomeIcon icon={faGift} className="mr-2" /> การบริจาคของฉัน
                   </Link>
                   <Link
-                    href="/requests" // Assuming /requests is the correct path
+                    href="/requests"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" /> My Requests
+                    <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" /> คำขอของฉัน
                   </Link>
                   <div className="border-t border-gray-100"></div>
                   <Link
-                    href="/logout" // Assuming /logout is the correct path or handles logout
+                    href="/logout"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" /> Logout
+                    <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" /> ออกจากระบบ
                   </Link>
                 </div>
               )}

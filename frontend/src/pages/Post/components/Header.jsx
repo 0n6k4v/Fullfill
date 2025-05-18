@@ -1,46 +1,42 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { config } from '@fortawesome/fontawesome-svg-core';
-import '@fortawesome/fontawesome-svg-core/styles.css';
-config.autoAddCss = false;
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faUserCircle } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 const Header = () => {
   return (
-    <header className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-        <div className="flex items-center">
-          <Link href="/" className="flex items-center">
-            <h1 className="text-2xl font-bold text-blue-600">
-              <span className="text-indigo-500">Ful</span>fill
-            </h1>
-          </Link>
-        </div>
-        <div className="flex items-center space-x-4">
-          <Link href="/" className="text-gray-600 hover:text-gray-900">
-            Home
-          </Link>
-          <Link href="/Post" className="text-gray-600 hover:text-gray-900">
-            Post
-          </Link>
-          <Link href="Map" className="text-gray-600 hover:text-gray-900">
-            Maps
-          </Link>
-          <Link href="/Dashboard" className="text-gray-600 hover:text-gray-900">
-            Dashboard
-          </Link>
-          <div className="flex items-center space-x-2">
-            <button className="p-1 rounded-full text-gray-500 hover:text-gray-900 focus:outline-none">
-              <FontAwesomeIcon icon={faBell} />
-            </button>
-            <button className="p-1 rounded-full text-gray-500 hover:text-gray-900 focus:outline-none">
-              <FontAwesomeIcon icon={faUserCircle} className="text-xl" />
-            </button>
+    <div className="bg-white shadow">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">รายการทั้งหมด</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              ค้นหาและกรองรายการบริจาคและคำขอรับบริจาค
+            </p>
+          </div>
+          <div className="flex space-x-3">
+            <Link
+              href="/PostDonation"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              aria-label="โพสต์การบริจาค"
+            >
+              <FontAwesomeIcon icon={faPlus} className="mr-2" />
+              โพสต์การบริจาค
+            </Link>
+            <Link
+              href="/RequestItem"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              aria-label="ขอรับบริจาค"
+            >
+              <FontAwesomeIcon icon={faPlus} className="mr-2" />
+              ขอรับบริจาค
+            </Link>
           </div>
         </div>
       </div>
-    </header>
+    </div>
   );
 };
 

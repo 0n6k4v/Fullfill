@@ -1,9 +1,26 @@
 import React from 'react';
 
-const TabsNavigation = ({ tabs, activeTab, setActiveTab }) => {
+const TabsNavigation = ({ 
+  tabs = ['ทั้งหมด', 'บริจาค', 'ขอรับ'], 
+  activeTab = 'ทั้งหมด', 
+  setActiveTab = () => {} 
+}) => {
+  // Ensure tabs is an array
+  const safeTabs = Array.isArray(tabs) ? tabs : ['ทั้งหมด', 'บริจาค', 'ขอรับ'];
+  
+  // Map tab names to Thai
+  const tabNames = {
+    'all': 'ทั้งหมด',
+    'donate': 'บริจาค',
+    'request': 'ขอรับ',
+    'ทั้งหมด': 'ทั้งหมด',
+    'บริจาค': 'บริจาค',
+    'ขอรับ': 'ขอรับ'
+  };
+
   return (
     <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
-      {tabs.map((tab) => (
+      {safeTabs.map((tab) => (
         <button
           key={tab}
           className={`px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap !rounded-button cursor-pointer ${
@@ -13,7 +30,7 @@ const TabsNavigation = ({ tabs, activeTab, setActiveTab }) => {
           }`}
           onClick={() => setActiveTab(tab)}
         >
-          {tab}
+          {tabNames[tab] || tab}
         </button>
       ))}
     </div>

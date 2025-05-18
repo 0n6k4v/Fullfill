@@ -12,7 +12,11 @@ import {
   faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 
-const MapView = ({ items, loading, error }) => {
+const MapView = ({ 
+  items = [], 
+  loading = false, 
+  error = null 
+}) => {
   const mapRef = useRef(null);
   const sidebarRef = useRef(null);
   const [map, setMap] = useState(null);
@@ -97,7 +101,7 @@ const MapView = ({ items, loading, error }) => {
           });
         },
         (error) => {
-          console.error("Error getting user location:", error);
+          console.error("เกิดข้อผิดพลาดในการขอตำแหน่งผู้ใช้:", error);
         }
       );
     }
@@ -108,13 +112,13 @@ const MapView = ({ items, loading, error }) => {
     if (!userLocation || !items) return;
 
     // กรองรายการที่มีพิกัด
-    const itemsWithCoordinates = items.filter(item => item.lat && item.lon);
+    const itemsWithCoordinates = items.filter(item => item?.lat && item?.lon);
     
     // ฟังก์ชัน async สำหรับคำนวณระยะทางทั้งหมด
     const calculateAllDistances = async () => {
       const apiKey = process.env.NEXT_PUBLIC_LONGDO_MAP_API_KEY;
       if (!apiKey) {
-        console.error("Longdo Map API key not found in environment variables");
+        console.error("ไม่พบ API key ของ Longdo Map ในตัวแปรสภาพแวดล้อม");
         return;
       }
 
@@ -131,7 +135,7 @@ const MapView = ({ items, loading, error }) => {
           const data = JSON.parse(text);
           
           // ตรวจสอบว่ามีข้อมูลระยะทางหรือไม่
-          if (data && data.data && Array.isArray(data.data) && data.data.length > 0 && data.data[0].distance) {
+          if (data?.data?.length > 0 && data.data[0]?.distance) {
             // แปลงระยะทางจากเมตรเป็นกิโลเมตร
             const distanceKm = (data.data[0].distance / 1000).toFixed(1);
             
@@ -158,7 +162,7 @@ const MapView = ({ items, loading, error }) => {
             });
           }
         } catch (error) {
-          console.error(`Error calculating distance for item ${item.id}:`, error);
+          console.error(`เกิดข้อผิดพลาดในการคำนวณระยะทางสำหรับรายการ ${item?.id}:`, error);
           
           // กรณีเกิด error ใช้การคำนวณแบบเส้นตรง (Haversine) เป็น fallback
           const haversineDistance = calculateHaversineDistance(
@@ -212,7 +216,7 @@ const MapView = ({ items, loading, error }) => {
         ? [userLocation.lat, userLocation.lon] 
         : [13.736717, 100.523186]; // กรุงเทพฯ หรือตำแหน่งผู้ใช้
 
-      console.log("Creating map with initial position:", initialPosition);
+      console.log("กำลังสร้างแผนที่ด้วยตำแหน่งเริ่มต้น:", initialPosition);
       
       // รอให้ DOM พร้อมด้วย setTimeout เล็กน้อย
       setTimeout(() => {
@@ -242,381 +246,141 @@ const MapView = ({ items, loading, error }) => {
           // Cleanup เมื่อ unmount
           return () => {
             if (leafletMap) {
-              console.log("Removing map");
+              console.log("กำลังลบแผนที่");
               leafletMap.remove();
             }
           };
         } catch (err) {
-          console.error("Error creating map:", err);
+          console.error("เกิดข้อผิดพลาดในการสร้างแผนที่:", err);
         }
-      }, 50);
-    } catch (error) {
-      console.error("Error in map creation useEffect:", error);
+      }, 100);
+    } catch (err) {
+      console.error("เกิดข้อผิดพลาดในการเตรียมแผนที่:", err);
     }
-  }, [leaflet, mapRef.current, userLocation, mapZoom, userIcon]);
+  }, [leaflet, mapRef.current, map, userLocation, userIcon]);
 
-  // ฟังก์ชันสำหรับคลิกที่รายการใน sidebar
+  // อัพเดท markers เมื่อ items หรือ map เปลี่ยน
+  useEffect(() => {
+    if (!map || !leaflet || !donationIcon || !requestIcon) return;
+
+    // ลบ markers เก่าทั้งหมด
+    markers.forEach(marker => marker.remove());
+    setMarkers([]);
+
+    // สร้าง markers ใหม่
+    const newMarkers = itemsWithDistance.map(item => {
+      if (!item?.lat || !item?.lon) return null;
+
+      const marker = leaflet.marker(
+        [item.lat, item.lon],
+        { icon: item.type === 'Offer' ? donationIcon : requestIcon }
+      ).addTo(map);
+
+      // เพิ่ม popup
+      marker.bindPopup(`
+        <div>
+          <h3 class="font-bold">${item.title || 'ไม่มีชื่อ'}</h3>
+          <p>${item.description || 'ไม่มีคำอธิบาย'}</p>
+          <p>ระยะทาง: ${item.formattedDistance || 'ไม่สามารถคำนวณได้'}</p>
+        </div>
+      `);
+
+      // เพิ่ม event listener
+      marker.on('click', () => handleItemClick(item));
+
+      return marker;
+    }).filter(Boolean);
+
+    setMarkers(newMarkers);
+  }, [map, leaflet, itemsWithDistance, donationIcon, requestIcon]);
+
   const handleItemClick = (item) => {
-    if (!isMapReady || !map) return;
-    
-    // ตั้งค่า selected marker
-    setSelectedMarker(item.id);
-    
-    // เคลื่อนแผนที่ไปที่ตำแหน่งของรายการ
-    if (item.lat && item.lon) {
-      map.setView([item.lat, item.lon], 15);
-      
-      // หา marker ที่ตรงกับไอเทมที่เลือกเพื่อทำ visual effect
-      const selectedItemMarker = markers.find(marker => {
-        const position = marker.getLatLng();
-        return Math.abs(position.lat - item.lat) < 0.0001 && 
-               Math.abs(position.lng - item.lon) < 0.0001;
-      });
-      
-      if (selectedItemMarker) {
-        // อาจจะเพิ่ม visual effect ให้ marker ที่เลือก เช่น เพิ่ม animation หรือ highlight
-        // ตัวอย่าง: ทำให้ marker เด้งขึ้นลงเล็กน้อย
-        try {
-          selectedItemMarker._icon.classList.add('marker-selected');
-          setTimeout(() => {
-            if (selectedItemMarker._icon) {
-              selectedItemMarker._icon.classList.remove('marker-selected');
-            }
-          }, 1500);
-        } catch (error) {
-          console.error("Error highlighting marker:", error);
-        }
-      }
-    }
+    if (!item) return;
+    setSelectedMarker(item);
   };
 
-  // เพิ่มมาร์กเกอร์เมื่อมีข้อมูลและแผนที่พร้อม
-  useEffect(() => {
-    if (!isMapReady || !map || !leaflet || !donationIcon || !requestIcon || 
-        !itemsWithDistance || itemsWithDistance.length === 0) {
-      console.log("Not ready to add markers yet");
-      return;
-    }
-
-    // ต้องรอให้แผนที่พร้อมจริงๆ ก่อนเพิ่ม marker
-    // ใช้ timeout เล็กน้อยเพื่อให้ DOM render เสร็จสมบูรณ์
-    const addMarkersTimeout = setTimeout(() => {
-      try {
-        // ลบมาร์กเกอร์เก่า
-        console.log("Clearing old markers:", markers.length);
-        markers.forEach(marker => {
-          if (marker && marker.remove) {
-            marker.remove();
-          }
-        });
-        setMarkers([]);
-
-        // สร้างมาร์กเกอร์ใหม่
-        console.log("Adding new markers:", itemsWithDistance.length);
-        const newMarkers = [];
-
-        for (const item of itemsWithDistance) {
-          // ข้ามถ้าไม่มีพิกัด
-          if (!item.lat || !item.lon) continue;
-
-          try {
-            // เลือกไอคอนตามประเภท
-            const icon = item.type === 'Offer' ? donationIcon : requestIcon;
-
-            // สร้างมาร์กเกอร์ - ไม่ใช้ bindPopup แล้ว
-            const marker = leaflet.marker([item.lat, item.lon], { icon })
-              .addTo(map)
-              .on('click', () => {
-                // เลือกรายการนี้
-                setSelectedMarker(item.id);
-                
-                // เลื่อน sidebar ไปที่รายการนี้และเน้นรายการ
-                const sidebarItem = document.getElementById(`sidebar-item-${item.id}`);
-                if (sidebarItem && sidebarRef.current) {
-                  // ลบ highlight เดิม
-                  const prevHighlighted = document.querySelectorAll('.highlight-item');
-                  prevHighlighted.forEach(el => el.classList.remove('highlight-item', 'bg-indigo-100'));
-                  
-                  // เพิ่ม highlight อันใหม่
-                  sidebarItem.classList.add('highlight-item', 'bg-indigo-100');
-                  
-                  // เลื่อนไปที่รายการ
-                  sidebarRef.current.scrollTop = sidebarItem.offsetTop - sidebarRef.current.offsetTop - 10;
-                }
-              });
-
-            newMarkers.push(marker);
-          } catch (error) {
-            console.error("Error adding marker:", error);
-          }
-        }
-
-        setMarkers(newMarkers);
-
-        // ปรับ view ให้เห็นทุกมาร์กเกอร์ ถ้ามีมากกว่า 1 อัน
-        if (newMarkers.length > 1) {
-          try {
-            const group = new leaflet.featureGroup(newMarkers);
-            
-            // เพิ่ม user marker เข้าไปใน group ถ้ามี
-            if (userMarker) {
-              group.addLayer(userMarker);
-            }
-            
-            map.fitBounds(group.getBounds().pad(0.1));
-          } catch (error) {
-            console.error("Error fitting bounds:", error);
-          }
-        } else if (newMarkers.length === 1 && itemsWithDistance[0]) {
-          map.setView([itemsWithDistance[0].lat, itemsWithDistance[0].lon], 13);
-        } else if (userLocation) {
-          // ถ้าไม่มี marker แต่มีตำแหน่งผู้ใช้
-          map.setView([userLocation.lat, userLocation.lon], 13);
-        }
-      } catch (error) {
-        console.error("Error in marker useEffect:", error);
-      }
-    }, 100); // รอ 100ms เพื่อให้ DOM พร้อม
-
-    return () => clearTimeout(addMarkersTimeout);
-  }, [isMapReady, map, leaflet, donationIcon, requestIcon, itemsWithDistance, userMarker]);
-
-  // อัพเดท zoom level เมื่อมีการเปลี่ยนแปลง
-  useEffect(() => {
-    if (map && isMapReady) {
-      map.setZoom(mapZoom);
-    }
-  }, [mapZoom, map, isMapReady]);
-
-  // ย้ายไปที่ตำแหน่งผู้ใช้
   const goToUserLocation = () => {
-    if (map && userLocation && isMapReady) {
-      map.setView([userLocation.lat, userLocation.lon], 15);
-      
-      // เปิด popup ของตำแหน่งผู้ใช้ถ้ามี
-      if (userMarker) {
-        userMarker.openPopup();
-      }
-    }
+    if (!map || !userLocation) return;
+    map.setView([userLocation.lat, userLocation.lon], mapZoom);
   };
-
-  if (loading) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 h-96 flex justify-center items-center">
-        <FontAwesomeIcon icon={faSpinner} className="text-indigo-500 text-4xl animate-spin" />
-        <span className="ml-3 text-lg text-gray-600">กำลังโหลดแผนที่...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6 h-96 flex justify-center items-center flex-col">
-        <div className="text-red-500 text-xl mb-4">มีข้อผิดพลาดในการโหลดแผนที่</div>
-        <div className="text-gray-600">{error}</div>
-      </div>
-    );
-  }
 
   return (
-    <>
-      {/* CSS Styles (คงเดิม) */
-      /* <style jsx global>{`
-        // ... (CSS animations and styles) ...
-      `}</style> */}
-      
-      <div className="flex h-[calc(100vh-240px)] min-h-[600px] bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-        {/* Map (คงเดิม) */}
-        <div className="w-2/3 h-full relative">
-          <div ref={mapRef} className="w-full h-full"></div>
-          {!isMapReady && (
-            <div className="absolute inset-0 flex justify-center items-center bg-gray-100 bg-opacity-50">
-              <FontAwesomeIcon icon={faSpinner} className="text-indigo-500 text-4xl animate-spin" />
-              <span className="ml-3">กำลังโหลดแผนที่...</span>
-            </div>
-          )}
-        </div>
-        
-        {/* Sidebar */}
-        <div ref={sidebarRef} className="w-1/3 h-full overflow-y-auto border-l border-gray-200">
-          <div className="p-4 border-b border-gray-200 bg-gray-50 sticky top-0 z-10">
-            <h2 className="text-lg font-medium text-gray-900">
-              {itemsWithDistance.length} รายการใกล้คุณ
-            </h2>
-            <p className="text-sm text-gray-500">
-              {selectedMarker ? "รายละเอียดรายการที่เลือก" : "คลิกที่รายการหรือหมุดเพื่อดูรายละเอียด"}
-            </p>
-          </div>
-          
-          <div className="divide-y divide-gray-200">
-            {itemsWithDistance.map((item) => (
-              <div
-                id={`sidebar-item-${item.id}`}
-                key={item.id}
-                className={`p-4 cursor-pointer transition-all duration-300 ease-in-out 
-                  ${selectedMarker === item.id ? "bg-indigo-50 border-l-4 border-indigo-500 shadow-lg" : "hover:bg-gray-50"}`}
-                onClick={() => handleItemClick(item)}
+    <div className="relative h-full">
+      {/* แผนที่ */}
+      <div ref={mapRef} className="h-full w-full" />
+
+      {/* ปุ่มควบคุม */}
+      <div className="absolute bottom-4 right-4 flex flex-col space-y-2">
+        <button
+          onClick={() => map?.zoomIn()}
+          className="bg-white p-2 rounded-full shadow-lg hover:bg-gray-100"
+          aria-label="ซูมเข้า"
+        >
+          <FontAwesomeIcon icon={faPlus} />
+        </button>
+        <button
+          onClick={() => map?.zoomOut()}
+          className="bg-white p-2 rounded-full shadow-lg hover:bg-gray-100"
+          aria-label="ซูมออก"
+        >
+          <FontAwesomeIcon icon={faMinus} />
+        </button>
+        <button
+          onClick={goToUserLocation}
+          className="bg-white p-2 rounded-full shadow-lg hover:bg-gray-100"
+          aria-label="ไปที่ตำแหน่งของฉัน"
+        >
+          <FontAwesomeIcon icon={faLocationArrow} />
+        </button>
+      </div>
+
+      {/* Sidebar */}
+      <div
+        ref={sidebarRef}
+        className={`absolute top-0 right-0 h-full w-80 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+          selectedMarker ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        {selectedMarker && (
+          <div className="p-4">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-xl font-bold">{selectedMarker.title || 'ไม่มีชื่อ'}</h2>
+              <button
+                onClick={() => setSelectedMarker(null)}
+                className="text-gray-500 hover:text-gray-700"
+                aria-label="ปิด"
               >
-                {/* Summary View (แสดงเสมอ) */}
-                <div className="flex">
-                  <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded-md">
-                    <img
-                      src={item.image || '/placeholder-image.png'} // เพิ่ม placeholder
-                      alt={item.name || 'รายการ'}
-                      className="w-full h-full object-cover object-top"
-                      onError={(e) => { e.target.onerror = null; e.target.src='/placeholder-image.png'; }} // Fallback image
-                    />
-                  </div>
-                  <div className="ml-4 flex-1">
-                    <div className="flex justify-between items-start">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium break-words ${
-                          item.type === "Offer"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
-                      >
-                        {item.type === "Offer" ? "บริจาค" : "ขอรับบริจาค"}
-                      </span>
-                      <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
-                        {item.isHaversine ? (
-                          <span title="คำนวณด้วยระยะทางเส้นตรง" className="flex items-center">
-                            <span>{item.formattedDistance}</span>
-                            <svg className="ml-1 h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </span>
-                        ) : (
-                          <span title="คำนวณด้วยระยะทางจริงตามถนน">{item.formattedDistance}</span>
-                        )}
-                      </span>
-                    </div>
-                    <h3 className="text-sm font-medium text-gray-900 mt-1 break-words">
-                      {item.name}
-                    </h3>
-                    {/* แสดง description สั้นๆ ถ้าไม่ได้ถูกเลือก หรือถ้าถูกเลือกแต่ไม่มีรายละเอียดอื่น */}
-                    {selectedMarker !== item.id && (
-                       <p className="text-xs text-gray-500 mt-1 line-clamp-2 break-words">
-                         {item.description}
-                       </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Detailed View (แสดงเมื่อ item นี้ถูกเลือก) */}
-                {selectedMarker === item.id && (
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <h4 className="text-md font-semibold text-gray-800 mb-2">รายละเอียดเพิ่มเติม:</h4>
-                    
-                    <p className="text-sm text-gray-700 mb-3 break-words whitespace-pre-wrap">
-                      {item.description}
-                    </p>
-
-                    {item.lat && item.lon && (
-                      <div className="text-xs text-gray-500 mb-3">
-                        <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-red-500" />
-                        <span>{item.location || `${item.lat.toFixed(4)}, ${item.lon.toFixed(4)}`}</span>
-                        {item.isHaversine && (
-                          <span className="ml-1 text-amber-600" title="ระยะทางคำนวณแบบเส้นตรง">(เส้นตรง)</span>
-                        )}
-                      </div>
-                    )}
-                    
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {item.category && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-indigo-100 text-indigo-800">
-                          หมวดหมู่: {item.category}
-                        </span>
-                      )}
-                      {item.condition && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
-                          สภาพ: {item.condition}
-                        </span>
-                      )}
-                    </div>
-                    
-                    <div className="text-xs text-gray-500 mb-4">
-                      <FontAwesomeIcon icon={faUserCircle} className="mr-1" />
-                      <span>โดย: {item.uploaded_by ? `User #${item.uploaded_by}` : "Anonymous User"}</span>
-                      <span className="mx-1">•</span>
-                      <span>เมื่อ: {new Date(item.created_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                    </div>
-
-                    <button
-                      className={`w-full px-4 py-2 rounded-md text-white font-medium transition-colors ${
-                        item.type === "Offer"
-                          ? "bg-amber-500 hover:bg-amber-600"
-                          : "bg-green-500 hover:bg-green-600"
-                      }`}
-                      // onClick={() => {/* เพิ่ม action ที่ต้องการ เช่น เปิดหน้าใหม่ หรือ form */} }
-                    >
-                      {item.type === "Offer" ? "สนใจรับบริจาค" : "ต้องการช่วยเหลือ"}
-                    </button>
-                  </div>
-                )}
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <p>{selectedMarker.description || 'ไม่มีคำอธิบาย'}</p>
+              <div className="flex items-center text-gray-600">
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
+                <span>{selectedMarker.location || 'ไม่ระบุตำแหน่ง'}</span>
               </div>
-            ))}
-            
-            {itemsWithDistance.length === 0 && !loading && (
-              <div className="p-8 text-center text-gray-500">
-                {userLocation ? (
-                  <>ไม่พบรายการใกล้คุณในขณะนี้</>
-                ) : (
-                  <>กำลังรอข้อมูลตำแหน่งของคุณ...</>
-                )}
+              <div className="text-gray-600">
+                <span>ระยะทาง: {selectedMarker.formattedDistance || 'ไม่สามารถคำนวณได้'}</span>
               </div>
-            )}
-            {loading && itemsWithDistance.length === 0 && (
-                 <div className="p-8 text-center text-gray-500">
-                    <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" /> กำลังโหลดรายการ...
-                 </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
-      
-      {/* Map Controls (คงเดิม) */}
-      <div className="flex justify-between mt-4 px-1">
-        <div className="flex space-x-4">
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            <span className="text-xs text-gray-600">การบริจาค</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-            <span className="text-xs text-gray-600">คำขอรับบริจาค</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <span className="text-xs text-gray-600">ตำแหน่งของคุณ</span>
-          </div>
+
+      {/* Loading indicator */}
+      {loading && (
+        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
+          <FontAwesomeIcon icon={faSpinner} className="text-4xl text-blue-500 animate-spin" />
         </div>
-        <div className="flex space-x-2">
-          <button
-            className="bg-white border border-gray-300 rounded-md p-2 hover:bg-gray-50 cursor-pointer"
-            onClick={() => setMapZoom((prev) => Math.min(prev + 1, 18))}
-            disabled={!isMapReady}
-          >
-            <FontAwesomeIcon icon={faPlus} className="text-gray-600" />
-          </button>
-          <button
-            className="bg-white border border-gray-300 rounded-md p-2 hover:bg-gray-50 cursor-pointer"
-            onClick={() => setMapZoom((prev) => Math.max(prev - 1, 8))}
-            disabled={!isMapReady}
-          >
-            <FontAwesomeIcon icon={faMinus} className="text-gray-600" />
-          </button>
-          <button 
-            className="bg-white border border-gray-300 rounded-md p-2 hover:bg-gray-50 cursor-pointer"
-            onClick={goToUserLocation}
-            disabled={!isMapReady || !userLocation}
-            title="ไปยังตำแหน่งของคุณ"
-          >
-            <FontAwesomeIcon icon={faLocationArrow} className="text-gray-600" />
-          </button>
+      )}
+
+      {/* Error message */}
+      {error && (
+        <div className="absolute top-4 left-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p>เกิดข้อผิดพลาด: {error}</p>
         </div>
-      </div>
-    </>
+      )}
+    </div>
   );
 };
 
