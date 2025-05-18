@@ -3,14 +3,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faFilter, faSortAmountDown } from '@fortawesome/free-solid-svg-icons';
 
 const DonationFilters = ({ 
-  searchQuery, 
+  searchQuery = '', 
   setSearchQuery, 
-  selectedCategory, 
+  selectedCategory = '', 
   setSelectedCategory,
-  selectedSort,
+  selectedSort = 'newest',
   setSelectedSort,
-  categories
+  categories = []
 }) => {
+  // Ensure categories is an array
+  const safeCategories = Array.isArray(categories) ? categories : [];
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
@@ -21,7 +24,7 @@ const DonationFilters = ({
           <input
             type="text"
             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            placeholder="Search donations..."
+            placeholder="ค้นหาการบริจาค..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -35,8 +38,8 @@ const DonationFilters = ({
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
             >
-              <option value="">All Categories</option>
-              {categories.map((category, index) => (
+              <option value="">ทุกหมวดหมู่</option>
+              {safeCategories.map((category, index) => (
                 <option key={index} value={category.value}>
                   {category.label}
                 </option>
@@ -51,10 +54,10 @@ const DonationFilters = ({
               onChange={(e) => setSelectedSort(e.target.value)}
               className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
             >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="mostRequested">Most Requested</option>
-              <option value="leastRequested">Least Requested</option>
+              <option value="newest">ใหม่ล่าสุด</option>
+              <option value="oldest">เก่าสุด</option>
+              <option value="mostRequested">คำขอมากที่สุด</option>
+              <option value="leastRequested">คำขอน้อยที่สุด</option>
             </select>
           </div>
         </div>

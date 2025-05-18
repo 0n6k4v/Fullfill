@@ -1,17 +1,20 @@
 import React from 'react';
 
-const DonationTabs = ({ activeTab, setActiveTab, donationCounts }) => {
+const DonationTabs = ({ activeTab = 'all', setActiveTab, donationCounts = {} }) => {
+  // Ensure donationCounts is an object
+  const safeCounts = typeof donationCounts === 'object' && donationCounts !== null ? donationCounts : {};
+
   const tabs = [
-    { id: 'all', label: 'All', count: donationCounts.all },
-    { id: 'available', label: 'Available', count: donationCounts.available },
-    { id: 'matched', label: 'Matched', count: donationCounts.matched },
-    { id: 'fulfilled', label: 'Fulfilled', count: donationCounts.fulfilled }
+    { id: 'all', label: 'ทั้งหมด', count: safeCounts.all || 0 },
+    { id: 'available', label: 'มีอยู่', count: safeCounts.available || 0 },
+    { id: 'matched', label: 'จับคู่แล้ว', count: safeCounts.matched || 0 },
+    { id: 'fulfilled', label: 'เสร็จสมบูรณ์', count: safeCounts.fulfilled || 0 }
   ];
 
   return (
     <div className="bg-white shadow-sm rounded-lg mb-6">
       <div className="sm:hidden">
-        <label htmlFor="tabs" className="sr-only">Select a tab</label>
+        <label htmlFor="tabs" className="sr-only">เลือกแท็บ</label>
         <select
           id="tabs"
           name="tabs"

@@ -2,32 +2,35 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGift, faHandshake, faCheckCircle, faUsers } from '@fortawesome/free-solid-svg-icons';
 
-const DonationStats = ({ stats }) => {
+const DonationStats = ({ stats = {} }) => {
+  // Ensure stats is an object
+  const safeStats = typeof stats === 'object' && stats !== null ? stats : {};
+
   const statItems = [
     { 
-      title: 'Total Donations', 
-      value: stats.total, 
+      title: 'การบริจาคทั้งหมด', 
+      value: safeStats.total || 0, 
       icon: faGift, 
       iconBg: 'bg-blue-100', 
       iconColor: 'text-blue-600' 
     },
     { 
-      title: 'Available', 
-      value: stats.available, 
+      title: 'ที่มีอยู่', 
+      value: safeStats.available || 0, 
       icon: faGift, 
       iconBg: 'bg-green-100', 
       iconColor: 'text-green-600' 
     },
     { 
-      title: 'Matched', 
-      value: stats.matched, 
+      title: 'ที่จับคู่แล้ว', 
+      value: safeStats.matched || 0, 
       icon: faHandshake, 
       iconBg: 'bg-yellow-100', 
       iconColor: 'text-yellow-600' 
     },
     { 
-      title: 'Fulfilled', 
-      value: stats.fulfilled, 
+      title: 'ที่เสร็จสมบูรณ์', 
+      value: safeStats.fulfilled || 0, 
       icon: faCheckCircle, 
       iconBg: 'bg-purple-100', 
       iconColor: 'text-purple-600' 
