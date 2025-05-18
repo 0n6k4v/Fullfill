@@ -1,11 +1,9 @@
 import axios from 'axios';
 
-// ตรวจสอบว่า environment variable มีค่าหรือไม่
-if (!process.env.NEXT_PUBLIC_API_URL) {
-  console.error('NEXT_PUBLIC_API_URL is not defined in environment variables');
-}
+// กำหนด URL ตาม environment
+const API_URL = 'https://fullfill-backend.onrender.com';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+console.log('Current API URL:', API_URL); 
 
 // สร้าง instance ของ axios สำหรับเรียกใช้ API
 const api = axios.create({

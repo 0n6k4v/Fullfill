@@ -146,7 +146,7 @@ const CatalogPage = () => {
       }
       
       // เรียก API
-      const response = await api.get('/items/', { params });
+      const response = await api.get('api/v1/items/', { params });
       
       // ตรวจสอบว่ามีข้อมูลและแปลงข้อมูลให้ตรงกับรูปแบบที่ต้องการ
       if (response.data) {
