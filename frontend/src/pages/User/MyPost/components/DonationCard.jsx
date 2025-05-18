@@ -45,19 +45,15 @@ const DonationCard = ({ item }) => {
 
   const handleStatusChange = async (newStatus) => {
     try {
-      if (newStatus === 'fulfilled') {
-        await handleMarkAsComplete();
+      const response = await api.patch(`/items/${item.id}/status`, { 
+        status: newStatus 
+      });
+      
+      if (response.status === 200 || response.status === 204) {
+        router.refresh();
       } else {
-        const response = await api.patch(`/items/${item.id}/status`, { 
-          status: newStatus 
-        });
-        
-        if (response.status === 200 || response.status === 204) {
-          router.refresh();
-        } else {
-          console.error('Failed to update item status');
-          alert('ไม่สามารถอัพเดทสถานะได้');
-        }
+        console.error('Failed to update item status');
+        alert('ไม่สามารถอัพเดทสถานะได้');
       }
       
       setShowStatusMenu(false);
@@ -108,15 +104,23 @@ const DonationCard = ({ item }) => {
     }
   };
 
+  if (!item) return null;
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       <div className="relative h-48 bg-gray-200">
-        <Image
-          src={item.image || '/placeholder-image.jpg'}
-          alt={item.title || 'Donation item'}
-          fill
-          className="w-full h-full object-cover object-center"
-        />
+        {item.image ? (
+          <Image
+            src={item.image}
+            alt={item.title || 'Donation item'}
+            fill
+            className="w-full h-full object-cover object-center"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-gray-500">ไม่มีรูปภาพ</span>
+          </div>
+        )}
         <div className="absolute top-2 left-2">
           {getStatusBadge()}
         </div>
