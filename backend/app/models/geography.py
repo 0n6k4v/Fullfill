@@ -43,3 +43,4 @@ class Subdistrict(Base):
     
     # Relationships
     district = relationship("District", back_populates="subdistricts")
+    items = relationship("Item", back_populates="subdistrict")

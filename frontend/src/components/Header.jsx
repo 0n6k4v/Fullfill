@@ -17,7 +17,8 @@ import {
   faCog, 
   faSignOutAlt,
   faBars,
-  faTimes
+  faTimes,
+  faListAlt
 } from '@fortawesome/free-solid-svg-icons';
 
 const GlobalHeader = () => {
@@ -25,14 +26,12 @@ const GlobalHeader = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileRef = useRef(null);
-  const pathname = usePathname(); // ใช้ usePathname แทน useRouter
+  const pathname = usePathname();
   
   useEffect(() => {
-    // ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือไม่
     const token = localStorage.getItem('token');
     setIsAuthenticated(!!token);
     
-    // จัดการการคลิกนอกเมนู dropdown เพื่อปิดเมนู
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setIsProfileMenuOpen(false);
@@ -46,12 +45,10 @@ const GlobalHeader = () => {
     };
   }, []);
 
-  // สลับสถานะเมนู dropdown
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
   };
   
-  // สลับสถานะเมนูบนมือถือ
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -60,14 +57,11 @@ const GlobalHeader = () => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
     setIsProfileMenuOpen(false);
-    // แทนที่ router.push('/') ด้วยการใช้ window.location
     window.location.href = '/';
   };
 
-  // ตรวจสอบว่าเราอยู่ในสภาพแวดล้อมของเบราว์เซอร์หรือไม่
   const isBrowser = typeof window !== 'undefined';
 
-  // ป้องกันการใช้ localStorage ในฝั่ง server
   useEffect(() => {
     if (isBrowser) {
       const token = localStorage.getItem('token');
@@ -78,17 +72,15 @@ const GlobalHeader = () => {
   return (
     <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-        {/* Logo */}
         <div className="flex items-center">
           <Link href="/" className="text-2xl sm:text-3xl font-bold text-blue-600">
             <span className="text-indigo-500">Ful</span>fill
           </Link>
         </div>
 
-        {/* Mobile menu button */}
         <div className="md:hidden flex items-center">
           {isAuthenticated && (
-            <button className="p-1 mr-3 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
+            <button className="p-1 mr-3 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer">
               <FontAwesomeIcon icon={faBell} />
             </button>
           )}
@@ -100,22 +92,19 @@ const GlobalHeader = () => {
           </button>
         </div>
 
-        {/* Desktop navigation */}
         <div className="hidden md:flex items-center space-x-4">
-          {/* คงเนื้อหาที่เหลือเหมือนเดิม */}
           {isAuthenticated ? (
-            // Logged in menu
             <>
               <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
                 Home
               </Link>
-              <Link href="/posts" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+              <Link href="/Post" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
                 Post
               </Link>
-              <Link href="/maps" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+              <Link href="/Map" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
                 Maps
               </Link>
-              <Link href="/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+              <Link href="/Dashboard" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
                 Dashboard
               </Link>
               <div className="flex items-center space-x-2">
@@ -136,22 +125,16 @@ const GlobalHeader = () => {
                       style={{ top: "100%" }}
                     >
                       <Link
-                        href="/user/my-profile"
+                        href="/User/MyProfile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
                         <FontAwesomeIcon icon={faUser} className="mr-2" /> My Profile
                       </Link>
                       <Link
-                        href="/user/my-donations"
+                        href="/User/MyPost"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        <FontAwesomeIcon icon={faGift} className="mr-2" /> My Donations
-                      </Link>
-                      <Link
-                        href="/user/my-requests"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" /> My Requests
+                        <FontAwesomeIcon icon={faListAlt} className="mr-2" /> My Post
                       </Link>
                       <div className="border-t border-gray-100"></div>
                       <button
@@ -166,7 +149,6 @@ const GlobalHeader = () => {
               </div>
             </>
           ) : (
-            // Not logged in menu
             <>
               <Link
                 href="/how-it-works"
@@ -200,13 +182,10 @@ const GlobalHeader = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 py-2">
           <div className="px-4 space-y-3 pb-3">
-            {/* คงเนื้อหาที่เหลือเหมือนเดิม */}
             {isAuthenticated ? (
-              // Logged in mobile menu
               <>
                 <Link 
                   href="/"
@@ -215,10 +194,8 @@ const GlobalHeader = () => {
                 >
                   Home
                 </Link>
-                {/* เมนูอื่นๆ ที่เหลือ */}
               </>
             ) : (
-              // Not logged in mobile menu
               <>
                 <Link 
                   href="/how-it-works"
@@ -227,7 +204,6 @@ const GlobalHeader = () => {
                 >
                   How It Works
                 </Link>
-                {/* เมนูอื่นๆ ที่เหลือ */}
               </>
             )}
           </div>

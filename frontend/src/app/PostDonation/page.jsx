@@ -1,5 +1,12 @@
+"use client";
+
 import PostDonationComponent from "@/pages/PostDonation/page";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function PostDonationPage() {
-  return <PostDonationComponent />;
+  return (
+    <ProtectedRoute>
+      <PostDonationComponent />
+    </ProtectedRoute>
+  );
 }

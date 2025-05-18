@@ -38,6 +38,28 @@ from app.schemas.geography import (
     Subdistrict
 )
 
+# Item schemas
+from app.schemas.item import (
+    ItemType,
+    ItemCategory,
+    ItemCondition,
+    ItemStatus,
+    ImageData,
+    ItemBase,
+    ItemCreate,
+    ItemUpdate,
+    Item
+)
+
+# Dashboard schemas
+from app.schemas.dashboard import ( # Import dashboard schemas
+    DashboardSummary,
+    TrendDataPoint,
+    CategoryDistributionPoint,
+    DashboardCharts,
+    NeededItem
+)
+
 __all__ = [
     # User schemas
     "UserBase",
@@ -63,5 +85,23 @@ __all__ = [
     "DistrictBase",
     "District",
     "SubdistrictBase",
-    "Subdistrict"
+    "Subdistrict",
+    
+    # Item schemas
+    "ItemType",
+    "ItemCategory",
+    "ItemCondition",
+    "ItemStatus",
+    "ImageData",
+    "ItemBase",
+    "ItemCreate",
+    "ItemUpdate",
+    "Item",
+
+    # Dashboard schemas
+    "DashboardSummary",
+    "TrendDataPoint",
+    "CategoryDistributionPoint",
+    "DashboardCharts",
+    "NeededItem",
 ]

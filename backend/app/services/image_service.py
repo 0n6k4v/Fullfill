@@ -35,9 +35,30 @@ def delete_image(public_id: str) -> Dict[str, Any]:
     except Exception as e:
         raise Exception(f"การลบรูปภาพล้มเหลว: {str(e)}")
 
-def upload_multiple_images(files: List[UploadFile], folder: str = "uploads") -> List[Dict[str, Any]]:
-    results = []
-    for file in files:
-        result = upload_image(file, folder)
-        results.append(result)
-    return results
+def upload_multiple_images(images: List[UploadFile], folder: str = "items") -> List[Dict]:
+    """
+    อัพโหลดรูปภาพหลายรูปและส่งคืนข้อมูลรูปภาพที่อัพโหลดสำเร็จ
+    """
+    if not images:
+        return []  # คืนค่า list ว่างแทน None
+        
+    uploaded_images = []
+    for image in images:
+        try:
+            result = cloudinary.uploader.upload(
+                image.file,
+                folder=folder,
+                resource_type="auto"
+            )
+            uploaded_images.append({
+                "url": result["secure_url"],
+                "public_id": result["public_id"],
+                "width": result.get("width"),
+                "height": result.get("height"),
+                "format": result.get("format"),
+                "resource_type": result.get("resource_type")
+            })
+        except Exception as e:
+            print(f"Error uploading image: {e}")
+            
+    return uploaded_images  # คืนค่าเฉพาะรูปที่อัพโหลดสำเร็จ

@@ -8,6 +8,8 @@ from app.api.endpoints.image import router as image_router
 from app.api.endpoints.provinces import router as provinces_router
 from app.api.endpoints.districts import router as districts_router
 from app.api.endpoints.subdistricts import router as subdistricts_router
+from app.api.endpoints.items import router as items_router
+from app.api.endpoints.dashboard import router as dashboard_router
 
 __all__ = [
     "auth_router", 
@@ -15,5 +17,7 @@ __all__ = [
     "image_router",
     "provinces_router",
     "districts_router",
-    "subdistricts_router"
+    "subdistricts_router",
+    "items_router",
+    "dashboard_router"
 ]

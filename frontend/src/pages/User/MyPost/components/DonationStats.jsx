@@ -1,6 +1,6 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGift, faClock, faCheckCircle, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { faGift, faHandshake, faCheckCircle, faUsers } from '@fortawesome/free-solid-svg-icons';
 
 const DonationStats = ({ stats }) => {
   const statItems = [
@@ -12,23 +12,23 @@ const DonationStats = ({ stats }) => {
       iconColor: 'text-blue-600' 
     },
     { 
-      title: 'Pending Donations', 
-      value: stats.pending, 
-      icon: faClock, 
-      iconBg: 'bg-yellow-100', 
-      iconColor: 'text-yellow-600' 
-    },
-    { 
-      title: 'Completed', 
-      value: stats.completed, 
-      icon: faCheckCircle, 
+      title: 'Available', 
+      value: stats.available, 
+      icon: faGift, 
       iconBg: 'bg-green-100', 
       iconColor: 'text-green-600' 
     },
     { 
-      title: 'Unique Recipients', 
-      value: stats.recipients, 
-      icon: faUsers, 
+      title: 'Matched', 
+      value: stats.matched, 
+      icon: faHandshake, 
+      iconBg: 'bg-yellow-100', 
+      iconColor: 'text-yellow-600' 
+    },
+    { 
+      title: 'Fulfilled', 
+      value: stats.fulfilled, 
+      icon: faCheckCircle, 
       iconBg: 'bg-purple-100', 
       iconColor: 'text-purple-600' 
     },

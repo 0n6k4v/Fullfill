@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Dict, Any
 
-from fastapi import HTTPException, status
-from jose import jwt
+from fastapi import Depends, HTTPException, status
+from jose import JWTError, jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
@@ -11,10 +11,16 @@ from app.core.security import (
     create_access_token,
     create_refresh_token,
     verify_password,
+    oauth2_scheme,
 )
+from app.db.session import get_db
 from app.models.user import User
 from app.schemas.token import TokenPayload
-from app.services.user_service import get_user_by_id, get_user_by_username, get_user_by_email
+from app.services.user_service import (
+    get_user_by_id,
+    get_user_by_username,
+    get_user_by_email,
+)
 
 def authenticate_user(db: Session, username: str, password: str) -> Dict[str, str]:
     # ค้นหาผู้ใช้โดยใช้ email
@@ -113,3 +119,36 @@ def refresh_user_token(db: Session, refresh_token: str) -> Dict[str, str]:
         "refresh_token": refresh_token_new,
         "token_type": "bearer",
     }
+
+async def get_current_user(
+    db: Session = Depends(get_db), 
+    token: str = Depends(oauth2_scheme)
+) -> User:
+    """
+    Validates the access token and returns the current user.
+    If the token is invalid, it raises an HTTP 401 Unauthorized exception.
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    
+    try:
+        # ใช้ "HS256" โดยตรงแทนที่จะใช้ settings.ALGORITHM ที่ไม่มี
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=["HS256"]
+        )
+        user_id: int = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+        token_data = TokenPayload(sub=user_id)
+    except JWTError:
+        raise credentials_exception
+    
+    # Get user from database
+    user = get_user_by_id(db, token_data.sub)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user

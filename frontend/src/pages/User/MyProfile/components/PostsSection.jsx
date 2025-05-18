@@ -4,8 +4,39 @@ import { faFilter, faPlus, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 import PostCard from './PostCard';
 import EmptyState from './EmptyState';
 
-const PostsSection = ({ posts }) => {
+const PostsSection = ({ posts, isLoading = false }) => {
   const [activeTab, setActiveTab] = useState('active');
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          <span className="ml-3 text-gray-600">Loading posts...</span>
+        </div>
+      );
+    }
+
+    if (!posts[activeTab] || posts[activeTab].length === 0) {
+      return (
+        <EmptyState 
+          icon={faBoxOpen}
+          title={`No ${activeTab} posts`}
+          description="Get started by creating a new post."
+          buttonText="Create New Post"
+          buttonIcon={faPlus}
+        />
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {posts[activeTab].map((post) => (
+          <PostCard key={post.id} post={post} activeTab={activeTab} />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="bg-white shadow rounded-lg mb-8 overflow-hidden">
@@ -39,28 +70,14 @@ const PostsSection = ({ posts }) => {
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
               <span className="ml-2 py-0.5 px-2 rounded-full text-xs bg-gray-100">
-                {posts[tab].length}
+                {posts[tab]?.length || 0}
               </span>
             </button>
           ))}
         </nav>
       </div>
       <div className="p-6">
-        {posts[activeTab].length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {posts[activeTab].map((post) => (
-              <PostCard key={post.id} post={post} activeTab={activeTab} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState 
-            icon={faBoxOpen}
-            title={`No ${activeTab} posts`}
-            description="Get started by creating a new post."
-            buttonText="Create New Post"
-            buttonIcon={faPlus}
-          />
-        )}
+        {renderContent()}
       </div>
     </div>
   );

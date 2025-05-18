@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
@@ -11,17 +11,56 @@ import {
   faUserCircle,
   faShareAlt,
   faHandshake,
-  faHandHoldingHeart
+  faHandHoldingHeart,
+  faThLarge, faCouch, faTshirt, faLaptop, faBlender, faBaby,
+  faBook, faUtensils
 } from '@fortawesome/free-solid-svg-icons';
 import RequestFormModal from './RequestFormModal';
 
 const PostCard = ({ post, viewMode }) => {
   // State เพื่อควบคุมการแสดง Modal
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [distance, setDistance] = useState("กำลังคำนวณ...");
+
+  // Helper function for category icons - similar to CatalogPage
+  const getCategoryIcon = (categoryId) => {
+    const categoryMap = {
+      'furniture': faCouch,
+      'clothing': faTshirt,
+      'electronics': faLaptop,
+      'appliances': faBlender,
+      'kids_toys': faBaby,
+      'books': faBook,
+      'kitchen': faUtensils,
+      'other': faThLarge
+    };
+    
+    return categoryMap[categoryId?.toLowerCase()] || faThLarge;
+  };
+
+  // Helper function for condition colors - similar to CatalogPage
+  const getConditionColors = (conditionId) => {
+    const conditionId_lower = conditionId?.toLowerCase();
+    switch (conditionId_lower) {
+      case 'new':
+        return { bg: 'bg-emerald-100', text: 'text-emerald-800' };
+      case 'like_new':
+        return { bg: 'bg-green-100', text: 'text-green-800' };
+      case 'good':
+        return { bg: 'bg-blue-100', text: 'text-blue-800' };
+      case 'fair':
+        return { bg: 'bg-yellow-100', text: 'text-yellow-800' };
+      case 'poor':
+        return { bg: 'bg-orange-100', text: 'text-orange-800' };
+      default:
+        return { bg: 'bg-gray-100', text: 'text-gray-800' };
+    }
+  };
 
   // กำหนดไอคอนและสีตามประเภทโพสต์
-  const buttonIcon = post.type === "Donation" ? faHandshake : faHandHoldingHeart;
-  const buttonColor = post.type === "Donation" 
+  const buttonIcon = post.type === "Offer" ? faHandshake : faHandHoldingHeart;
+  const buttonColor = post.type === "Offer" 
     ? 'bg-amber-500 hover:bg-amber-600' 
     : 'bg-green-500 hover:bg-green-600';
 
@@ -37,13 +76,64 @@ const PostCard = ({ post, viewMode }) => {
 
   // ฟังก์ชันที่ทำงานเมื่อส่งฟอร์ม
   const handleFormSubmit = (formData) => {
-    // ทำงานกับข้อมูลที่ส่งจากฟอร์ม
     console.log("Form submitted with data:", formData);
-    // ปิด Modal
     setShowRequestForm(false);
-    // แสดงข้อความยืนยัน หรือทำงานอื่นๆ เช่น redirect
     alert("คำขอของคุณถูกส่งเรียบร้อยแล้ว!");
   };
+
+  // Get user location and calculate distance
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error("Error getting user location:", error);
+        }
+      );
+    }
+  }, []);
+
+  // Calculate distance when user location is available
+  useEffect(() => {
+    const calculateDistance = async () => {
+      if (!userLocation || !post.lat || !post.lon) {
+        setDistance("ไม่ทราบระยะทาง");
+        return;
+      }
+      
+      try {
+        const apiKey = process.env.NEXT_PUBLIC_LONGDO_MAP_API_KEY;
+        const url = `https://api.longdo.com/RouteService/json/route/guide?flat=${userLocation.lat}&flon=${userLocation.lon}&tlat=${post.lat}&tlon=${post.lon}&mode=t&type=25&locale=th&key=${apiKey}`;
+        
+        const response = await fetch(url);
+        const text = await response.text();
+      
+        try {
+          const data = JSON.parse(text);
+          
+          if (data && data.data && Array.isArray(data.data) && data.data.length > 0 && data.data[0].distance) {
+            const distanceKm = (data.data[0].distance / 1000).toFixed(1);
+            setDistance(`${distanceKm} กม.`);
+          } else {
+            setDistance("ไม่พบเส้นทาง");
+          }
+        } catch (jsonError) {
+          console.error("Error parsing JSON:", jsonError);
+          setDistance("ไม่สามารถคำนวณได้");
+        }
+      } catch (error) {
+        console.error("Error calculating distance:", error);
+        setDistance("ไม่สามารถคำนวณได้");
+      }
+    };
+    
+    calculateDistance();
+  }, [userLocation, post.lat, post.lon]);
 
   return (
     <>
@@ -63,12 +153,12 @@ const PostCard = ({ post, viewMode }) => {
           <div className="absolute top-2 left-2">
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                post.type === "Donation"
+                post.type === "Offer"
                   ? "bg-green-100 text-green-800"
                   : "bg-blue-100 text-blue-800"
               }`}
             >
-              {post.type}
+              {post.type === "Offer" ? "Donation" : "Request"}
             </span>
           </div>
         </div>
@@ -82,7 +172,7 @@ const PostCard = ({ post, viewMode }) => {
               <div className="flex items-center text-sm text-gray-500 mb-2">
                 <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-red-500" />
                 <span>
-                  {post.location} • {post.distance}
+                  {post.location} • {distance}
                 </span>
               </div>
             </div>
@@ -96,14 +186,15 @@ const PostCard = ({ post, viewMode }) => {
           </p>
 
           <div className="flex flex-wrap gap-2 mb-3">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            {/* Category Tag - Updated to match CatalogPage style */}
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-indigo-100 text-indigo-800">
+              <FontAwesomeIcon icon={getCategoryIcon(post.category)} className="mr-1" size="sm" />
               {post.category}
             </span>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-              Condition: {post.condition}
-            </span>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-              Qty: {post.quantity}
+            
+            {/* Condition Tag - Updated to match CatalogPage style */}
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${getConditionColors(post.condition).bg} ${getConditionColors(post.condition).text}`}>
+              {post.condition}
             </span>
           </div>
 
@@ -114,9 +205,10 @@ const PostCard = ({ post, viewMode }) => {
               </div>
               <div className="ml-2">
                 <p className="text-sm font-medium text-gray-900">
-                  {post.user}
+                  {/* Mock user name for now */}
+                  {post.uploaded_by ? `User #${post.uploaded_by}` : "Anonymous User"}
                 </p>
-                <p className="text-xs text-gray-500">{post.time}</p>
+                <p className="text-xs text-gray-500">{new Date(post.created_at).toLocaleDateString()}</p>
               </div>
             </div>
 
@@ -125,7 +217,7 @@ const PostCard = ({ post, viewMode }) => {
               className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white ${buttonColor} focus:outline-none !rounded-button whitespace-nowrap`}
             >
               <FontAwesomeIcon icon={buttonIcon} className="mr-1" />
-              {post.type === "Donation" ? "Request Item" : "Offer Help"}
+              {post.type === "Offer" ? "Request Item" : "Offer Help"}
             </button>
           </div>
 

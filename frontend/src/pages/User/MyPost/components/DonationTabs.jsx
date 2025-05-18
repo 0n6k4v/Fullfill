@@ -3,9 +3,9 @@ import React from 'react';
 const DonationTabs = ({ activeTab, setActiveTab, donationCounts }) => {
   const tabs = [
     { id: 'all', label: 'All', count: donationCounts.all },
-    { id: 'active', label: 'Active', count: donationCounts.active },
-    { id: 'pending', label: 'Pending', count: donationCounts.pending },
-    { id: 'completed', label: 'Completed', count: donationCounts.completed }
+    { id: 'available', label: 'Available', count: donationCounts.available },
+    { id: 'matched', label: 'Matched', count: donationCounts.matched },
+    { id: 'fulfilled', label: 'Fulfilled', count: donationCounts.fulfilled }
   ];
 
   return (

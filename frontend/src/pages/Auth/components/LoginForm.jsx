@@ -2,13 +2,18 @@ import React, { useState } from 'react';
 import { faGoogle, faFacebook } from '@fortawesome/free-brands-svg-icons';
 import PasswordInput from './PasswordInput';
 import SocialButton from './SocialButton';
-import axios from 'axios';
+import { useAuth } from '../../../context/AuthContext';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const LoginForm = ({ 
   showPassword, 
   setShowPassword, 
   setActiveTab 
 }) => {
+  const { login, error: authError } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   // สร้าง state สำหรับเก็บข้อมูลฟอร์ม
   const [formData, setFormData] = useState({
     email: '',
@@ -48,45 +53,19 @@ const LoginForm = ({
     setError('');
     
     try {
-      console.log("Attempting login with:", formData.email, formData.password);
+      // ใช้ฟังก์ชัน login จาก AuthContext
+      const success = await login(formData.email, formData.password);
       
-      // สร้าง FormData เพื่อส่งข้อมูล (OAuth2 ใช้ form-data)
-      const formDataObj = new FormData();
-      // สำคัญ: ต้องใช้ชื่อฟิลด์เป็น 'username' เสมอสำหรับ OAuth2
-      formDataObj.append('username', formData.email); // ส่ง email ในฟิลด์ username
-      formDataObj.append('password', formData.password);
-      
-      // ส่งข้อมูลไปยัง API
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/auth/login`, 
-        formDataObj,
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      );
-      
-      console.log("Login successful:", response.data);
-      
-      // บันทึก token ใน localStorage
-      if (response.data.access_token) {
-        localStorage.setItem('token', response.data.access_token);
-        localStorage.setItem('refresh_token', response.data.refresh_token);
-        
-        // เปลี่ยนเส้นทางไปยังหน้าหลัก
-        window.location.href = '/';
+      if (success) {
+        // เช็คว่ามี returnUrl หรือไม่
+        const returnUrl = searchParams.get('returnUrl') || '/';
+        router.push(returnUrl);
+      } else {
+        setError(authError || "Login failed. Please try again.");
       }
-      
     } catch (err) {
       console.error("Login error:", err);
-      
-      // จัดการกับข้อผิดพลาด
-      if (err.response && err.response.data) {
-        setError(err.response.data.detail || "Login failed. Please check your credentials.");
-      } else {
-        setError("Network error. Please check your connection.");
-      }
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -95,9 +74,9 @@ const LoginForm = ({
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       {/* แสดงข้อความ error ถ้ามี */}
-      {error && (
+      {(error || authError) && (
         <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-          {error}
+          {error || authError}
         </div>
       )}
       

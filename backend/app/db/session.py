@@ -1,12 +1,19 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 
 from app.core.config import settings
 
-engine = create_engine(settings.DATABASE_URI)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# ใช้ engine แบบ sync
+engine = create_engine(settings.DATABASE_URI, echo=False)
 
+# สร้าง session factory
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False, 
+    bind=engine
+)
+
+# ฟังก์ชันสำหรับเรียกใช้งาน dependency injection
 def get_db():
     db = SessionLocal()
     try:

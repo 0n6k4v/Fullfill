@@ -55,7 +55,7 @@ const UserProfileCard = ({ userProfile }) => {
             </div>
             <div className="ml-4">
               <h2 className="text-xl font-bold text-gray-900">
-                {userProfile.name}
+                {userProfile.username}
               </h2>
               <p className="text-sm text-gray-500">{userProfile.email}</p>
               <div className="mt-2 flex items-center">

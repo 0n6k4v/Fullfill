@@ -10,6 +10,8 @@ const DonationList = ({
   onMarkAsComplete,
   onAddNew
 }) => {
+  console.log(`DonationList rendering for tab: ${activeTab}, items: ${donations.length}`);
+  
   if (donations.length === 0) {
     return <EmptyDonationState activeTab={activeTab} onAddNew={onAddNew} />;
   }

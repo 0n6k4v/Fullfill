@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from 'next/link';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
@@ -48,25 +49,25 @@ const Header = () => {
     <header className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
         <div className="flex items-center">
-          <a href="/" className="flex items-center">
+          <Link href="/" className="flex items-center">
             <h1 className="text-2xl font-bold text-blue-600">
               <span className="text-indigo-500">Ful</span>fill
             </h1>
-          </a>
+          </Link>
         </div>
         <div className="flex items-center space-x-4">
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+          <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
             Home
-          </a>
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+          </Link>
+          <Link href="/Post" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
             Post
-          </a>
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+          </Link>
+          <Link href="/Map" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
             Maps
-          </a>
-          <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+          </Link>
+          <Link href="/Dashboard" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
             Dashboard
-          </a>
+          </Link>
           <div className="flex items-center space-x-2">
             <button className="p-1 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
               <FontAwesomeIcon icon={faBell} />
@@ -84,31 +85,31 @@ const Header = () => {
                   className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white z-50"
                   style={{ top: "100%" }}
                 >
-                  <a
-                    href="#"
+                  <Link
+                    href="/User/MyProfile" // Assuming /profile is the correct path
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FontAwesomeIcon icon={faUser} className="mr-2" /> My Profile
-                  </a>
-                  <a
-                    href="#"
+                  </Link>
+                  <Link
+                    href="/donations" // Assuming /donations is the correct path
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FontAwesomeIcon icon={faGift} className="mr-2" /> My Donations
-                  </a>
-                  <a
-                    href="#"
+                  </Link>
+                  <Link
+                    href="/requests" // Assuming /requests is the correct path
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" /> My Requests
-                  </a>
+                  </Link>
                   <div className="border-t border-gray-100"></div>
-                  <a
-                    href="#"
+                  <Link
+                    href="/logout" // Assuming /logout is the correct path or handles logout
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" /> Logout
-                  </a>
+                  </Link>
                 </div>
               )}
             </div>

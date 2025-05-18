@@ -2,29 +2,40 @@
 
 import React, { useState, useEffect } from 'react';
 import ProfileHeader from '@/components/Header';
-import Header from '@/components/Header';
+import Header from './components/Header';
 import DonationStats from './components/DonationStats';
 import DonationFilters from './components/DonationFilters';
 import DonationTabs from './components/DonationTabs';
 import DonationList from './components/DonationList';
 import Pagination from './components/Pagination';
+import api from '@/services/api';
+import { toast } from 'react-hot-toast';
 
 const MyDonation = () => {
-  // State for user
-  const [user, setUser] = useState({
-    name: 'John Doe',
-    avatar: 'https://readdy.ai/api/search-image?query=professional%20headshot%20of%20a%20person%20with%20neutral%20expression%2C%20high%20quality%20portrait%20photo%20with%20clean%20background%2C%20professional%20lighting%2C%20detailed%20facial%20features&width=40&height=40&seq=avatar1&orientation=squarish',
-  });
-
-  // States for filters and pagination
+  // States...
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSort, setSelectedSort] = useState('newest');
   const [activeTab, setActiveTab] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(5);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  // Categories for filter dropdown
+  // สร้าง state ใหม่สำหรับเก็บข้อมูลทั้งหมด
+  const [allDonations, setAllDonations] = useState([]);
+  const [filteredDonations, setFilteredDonations] = useState([]);
+  const [donationStats, setDonationStats] = useState({
+    total: 0,
+    available: 0,
+    matched: 0,
+    fulfilled: 0,
+    recipients: 0
+  });
+
+  // Categories...
   const categories = [
     { label: 'Furniture', value: 'furniture' },
     { label: 'Electronics', value: 'electronics' },
@@ -35,170 +46,259 @@ const MyDonation = () => {
     { label: 'Sports', value: 'sports' },
   ];
 
-  // Sample statistics data
-  const donationStats = {
-    total: 24,
-    pending: 5,
-    completed: 12,
-    recipients: 8,
-  };
-
-  // Sample donation counts for tabs
-  const donationCounts = {
-    all: 24,
-    active: 7,
-    pending: 5,
-    completed: 12,
-  };
-
-  // Sample donation data
-  const allDonations = [
-    {
-      id: 1,
-      title: 'Office Chair',
-      description: 'Black ergonomic office chair in good condition. Minor wear on armrests.',
-      category: 'Furniture',
-      quantity: 1,
-      location: 'Seattle, WA',
-      date: 'May 12, 2025',
-      status: 'active',
-      views: 24,
-      requests: 3,
-      image: 'https://readdy.ai/api/search-image?query=black%20ergonomic%20office%20chair%20with%20adjustable%20height%20and%20arms%2C%20professional%20product%20photography%20on%20white%20background%2C%20high%20quality&width=400&height=300&seq=chair1&orientation=landscape',
-    },
-    {
-      id: 2,
-      title: 'Laptop Stand',
-      description: 'Adjustable aluminum laptop stand, compatible with all laptop sizes.',
-      category: 'Electronics',
-      quantity: 1,
-      location: 'Seattle, WA',
-      date: 'May 10, 2025',
-      status: 'pending',
-      views: 18,
-      requests: 2,
-      image: 'https://readdy.ai/api/search-image?query=silver%20aluminum%20laptop%20stand%20with%20adjustable%20height%2C%20professional%20product%20photography%20on%20white%20background%2C%20high%20quality&width=400&height=300&seq=stand1&orientation=landscape',
-    },
-    {
-      id: 3,
-      title: "Children's Books Set",
-      description: "'Set of 10 children's books for ages 5-8, educational stories with colorful illustrations.'",
-      category: 'Books',
-      quantity: 10,
-      location: 'Seattle, WA',
-      date: 'May 5, 2025',
-      status: 'completed',
-      views: 32,
-      requests: 4,
-      image: 'https://readdy.ai/api/search-image?query=stack%20of%20colorful%20children%27s%20books%20with%20educational%20themes%2C%20professional%20product%20photography%20on%20white%20background%2C%20high%20quality&width=400&height=300&seq=books1&orientation=landscape',
-    },
-    {
-      id: 4,
-      title: 'Winter Jackets',
-      description: 'Two winter jackets, sizes M and L, in good condition.',
-      category: 'Clothing',
-      quantity: 2,
-      location: 'Seattle, WA',
-      date: 'April 28, 2025',
-      status: 'active',
-      views: 15,
-      requests: 1,
-      image: 'https://readdy.ai/api/search-image?query=two%20winter%20jackets%20in%20blue%20and%20black%20colors%2C%20professional%20product%20photography%20on%20white%20background%2C%20high%20quality&width=400&height=300&seq=jackets1&orientation=landscape',
-    },
-    {
-      id: 5,
-      title: 'Microwave Oven',
-      description: '700W microwave oven in working condition, clean and well-maintained.',
-      category: 'Kitchen',
-      quantity: 1,
-      location: 'Seattle, WA',
-      date: 'April 25, 2025',
-      status: 'completed',
-      views: 28,
-      requests: 5,
-      image: 'https://readdy.ai/api/search-image?query=modern%20microwave%20oven%20in%20stainless%20steel%20finish%2C%20professional%20product%20photography%20on%20white%20background%2C%20high%20quality&width=400&height=300&seq=microwave1&orientation=landscape',
-    },
-    {
-      id: 6,
-      title: 'Tennis Rackets',
-      description: 'Set of 2 tennis rackets with a bag, lightly used.',
-      category: 'Sports',
-      quantity: 2,
-      location: 'Seattle, WA',
-      date: 'April 20, 2025',
-      status: 'pending',
-      views: 12,
-      requests: 1,
-      image: 'https://readdy.ai/api/search-image?query=two%20tennis%20rackets%20with%20carrying%20bag%2C%20professional%20product%20photography%20on%20white%20background%2C%20high%20quality&width=400&height=300&seq=tennis1&orientation=landscape',
-    },
-  ];
-
-  // Filtered donations based on active tab, search and filters
-  const [filteredDonations, setFilteredDonations] = useState([]);
-
-  // Effect to filter donations when anything changes
+  // Fetch user profile...
   useEffect(() => {
-    let results = allDonations;
+    const fetchUserProfile = async () => {
+      try {
+        const response = await api.get('/users/me');
+        setUser(response.data);
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+        setError("Failed to load user profile");
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  // Fetch ALL posts data (ดึงข้อมูลทั้งหมดเพียงครั้งเดียว)
+  useEffect(() => {
+    const fetchAllPosts = async () => {
+      setLoading(true);
+      
+      try {
+        // เรียกข้อมูลทั้งหมดโดยไม่ใส่ status parameter
+        const response = await api.get('/users/me/posts');
+        console.log("All posts API response:", response.data);
+        
+        // เก็บข้อมูลทั้งหมด
+        const items = response.data.items || response.data || [];
+        setAllDonations(items);
+        
+        // คำนวณสถิติจากข้อมูลที่ได้
+        const total = items.length;
+        const available = items.filter(item => item.status === 'available').length;
+        const matched = items.filter(item => item.status === 'matched').length;
+        const fulfilled = items.filter(item => item.status === 'fulfilled').length;
+        
+        // อัพเดทสถิติ
+        setDonationStats({
+          total,
+          available,
+          matched,
+          fulfilled,
+          recipients: matched + fulfilled // ตัวอย่างการคำนวณ
+        });
+        
+        // กรองตาม activeTab เริ่มต้น
+        filterDonationsByTab(items, activeTab);
+        
+        setError(null);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching all posts:", err);
+        setError("Failed to load posts");
+        setLoading(false);
+      }
+    };
+
+    fetchAllPosts();
+  }, []); // เรียกเพียงครั้งเดียวตอนโหลดหน้า
+
+  // ฟังก์ชันกรองข้อมูลตาม tab
+  const filterDonationsByTab = (donations, tab) => {
+    console.log(`Filtering donations by tab: ${tab}`);
     
-    // Filter by tab
-    if (activeTab !== 'all') {
-      results = results.filter(donation => donation.status === activeTab);
+    if (!donations.length) return;
+    
+    let filtered = donations;
+    
+    // กรองตามแท็บ
+    if (tab !== 'all') {
+      filtered = donations.filter(donation => donation.status === tab);
     }
     
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      results = results.filter(donation => 
-        donation.title.toLowerCase().includes(query) || 
-        donation.description.toLowerCase().includes(query)
-      );
-    }
-    
-    // Filter by category
+    // กรองเพิ่มเติมตาม category ถ้ามีการเลือก
     if (selectedCategory) {
-      results = results.filter(donation => 
-        donation.category.toLowerCase() === selectedCategory.toLowerCase()
-      );
+      filtered = filtered.filter(donation => donation.category === selectedCategory);
     }
     
-    // Sort results
-    switch (selectedSort) {
-      case 'oldest':
-        results = [...results].sort((a, b) => new Date(a.date) - new Date(b.date));
-        break;
-      case 'mostRequested':
-        results = [...results].sort((a, b) => b.requests - a.requests);
-        break;
-      case 'leastRequested':
-        results = [...results].sort((a, b) => a.requests - b.requests);
-        break;
-      default: // 'newest'
-        results = [...results].sort((a, b) => new Date(b.date) - new Date(a.date));
-    }
+    // เรียงลำดับข้อมูล
+    sortDonations(filtered);
     
-    setFilteredDonations(results);
+    // อัพเดทข้อมูลที่แสดง
+    setFilteredDonations(filtered);
+    
+    // คำนวณจำนวนหน้า
+    setTotalPages(Math.ceil(filtered.length / pageSize));
+    // กลับไปหน้าแรกเมื่อเปลี่ยนแท็บ
     setCurrentPage(1);
-  }, [activeTab, searchQuery, selectedCategory, selectedSort]);
+  };
 
-  // Handlers for card actions
+  // ฟังก์ชันเรียงลำดับข้อมูล
+  const sortDonations = (items) => {
+    if (selectedSort === 'newest') {
+      items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else if (selectedSort === 'oldest') {
+      items.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
+    // เพิ่มเงื่อนไขการเรียงลำดับอื่นๆ ตามต้องการ
+  };
+
+  // ตัวจัดการการเปลี่ยนแท็บ
+  const handleTabChange = (newTab) => {
+    console.log("Tab changed to:", newTab);
+    
+    // ล้างการค้นหา
+    setSearchQuery('');
+    
+    // เปลี่ยนแท็บที่ active
+    setActiveTab(newTab);
+    
+    // กรองข้อมูลใหม่ตามแท็บที่เลือก
+    filterDonationsByTab(allDonations, newTab);
+    
+    // แสดงสถานะ loading ระหว่างกรองข้อมูล
+    setLoading(true);
+    
+    // จำลองเวลาโหลด
+    setTimeout(() => {
+      setLoading(false);
+    }, 300);
+  };
+
+  // จัดการการเปลี่ยนแปลง category
+  useEffect(() => {
+    filterDonationsByTab(allDonations, activeTab);
+  }, [selectedCategory]);
+
+  // จัดการการเปลี่ยนแปลงการเรียงลำดับ
+  useEffect(() => {
+    const sorted = [...filteredDonations];
+    sortDonations(sorted);
+    setFilteredDonations(sorted);
+  }, [selectedSort]);
+
+  // จัดการการค้นหา
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      // ถ้าไม่มีคำค้นหา ให้กรองตามแท็บปัจจุบัน
+      filterDonationsByTab(allDonations, activeTab);
+      return;
+    }
+    
+    // กรองตามคำค้นหา
+    const query = searchQuery.toLowerCase();
+    const filtered = allDonations.filter(donation => {
+      // กรองตามแท็บก่อน
+      const matchesTab = activeTab === 'all' || donation.status === activeTab;
+      // แล้วกรองตามคำค้นหา
+      const matchesSearch = donation.title?.toLowerCase().includes(query) || 
+                           donation.description?.toLowerCase().includes(query);
+      
+      return matchesTab && matchesSearch;
+    });
+    
+    setFilteredDonations(filtered);
+    setCurrentPage(1);
+  }, [searchQuery, allDonations, activeTab]);
+
+  // จัดการการเปลี่ยนหน้า
+  const getPaginatedDonations = () => {
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = startIdx + pageSize;
+    return filteredDonations.slice(startIdx, endIdx);
+  };
+
+  // Handler for adding new donation...
   const handleAddNew = () => {
-    alert('Opening form to add a new donation');
-    // Here you would normally open a form modal or navigate to create page
+    window.location.href = '/item/create';
   };
 
+  // Handler for editing a donation...
   const handleEdit = (id) => {
-    alert(`Editing donation ${id}`);
-    // Here you would normally open an edit form
+    window.location.href = `/item/edit/${id}`;
   };
 
-  const handleDelete = (id) => {
-    alert(`Deleting donation ${id}`);
-    // Here you would show a confirmation dialog
+  // Handler for deleting a donation
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure you want to delete this item?')) {
+      return;
+    }
+    
+    try {
+      await api.delete(`/items/${id}`);
+      
+      // อัพเดทข้อมูลทั้งหมด
+      const updatedAll = allDonations.filter(donation => donation.id !== id);
+      setAllDonations(updatedAll);
+      
+      // อัพเดทข้อมูลที่กรองแล้ว
+      const updatedFiltered = filteredDonations.filter(donation => donation.id !== id);
+      setFilteredDonations(updatedFiltered);
+      
+      // อัพเดทสถิติ
+      const total = updatedAll.length;
+      const available = updatedAll.filter(item => item.status === 'available').length;
+      const matched = updatedAll.filter(item => item.status === 'matched').length;
+      const fulfilled = updatedAll.filter(item => item.status === 'fulfilled').length;
+      
+      setDonationStats({
+        total,
+        available,
+        matched,
+        fulfilled,
+        recipients: matched + fulfilled
+      });
+      
+      toast.success('Item deleted successfully');
+    } catch (err) {
+      console.error("Error deleting item:", err);
+      toast.error('Failed to delete item');
+    }
   };
 
-  const handleMarkAsComplete = (id) => {
-    alert(`Marking donation ${id} as complete`);
-    // Here you would update the status
+  // Handler for marking a donation as complete
+  const handleMarkAsComplete = async (id) => {
+    if (!confirm('Are you sure you want to mark this item as fulfilled?')) {
+      return;
+    }
+    
+    try {
+      await api.patch(`/users/me/posts/${id}/status`, { status: 'fulfilled' });
+      
+      // อัพเดทข้อมูลทั้งหมด
+      const updatedAll = allDonations.map(donation => {
+        if (donation.id === id) {
+          return { ...donation, status: 'fulfilled' };
+        }
+        return donation;
+      });
+      
+      setAllDonations(updatedAll);
+      
+      // กรองข้อมูลใหม่
+      filterDonationsByTab(updatedAll, activeTab);
+      
+      // อัพเดทสถิติ
+      const total = updatedAll.length;
+      const available = updatedAll.filter(item => item.status === 'available').length;
+      const matched = updatedAll.filter(item => item.status === 'matched').length;
+      const fulfilled = updatedAll.filter(item => item.status === 'fulfilled').length;
+      
+      setDonationStats({
+        total,
+        available,
+        matched,
+        fulfilled,
+        recipients: matched + fulfilled
+      });
+      
+      toast.success('Item marked as fulfilled');
+    } catch (err) {
+      console.error("Error updating item status:", err);
+      toast.error('Failed to update item status');
+    }
   };
 
   return (
@@ -207,6 +307,10 @@ const MyDonation = () => {
       <ProfileHeader user={user} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Header/>
+        {/* Stats */}
+        <DonationStats stats={donationStats} />
+        
         {/* Filters */}
         <DonationFilters 
           searchQuery={searchQuery}
@@ -221,26 +325,59 @@ const MyDonation = () => {
         {/* Tabs */}
         <DonationTabs 
           activeTab={activeTab} 
-          setActiveTab={setActiveTab} 
-          donationCounts={donationCounts}
+          setActiveTab={handleTabChange} 
+          donationCounts={{
+            all: donationStats.total,
+            available: donationStats.available,
+            matched: donationStats.matched,
+            fulfilled: donationStats.fulfilled
+          }}
         />
         
-        {/* Donation List */}
-        <DonationList 
-          donations={filteredDonations}
-          activeTab={activeTab}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onMarkAsComplete={handleMarkAsComplete}
-          onAddNew={handleAddNew}
-        />
-        
-        {/* Pagination */}
-        <Pagination 
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
+        {/* Loading state */}
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <span className="ml-3 text-lg text-gray-600">Loading items...</span>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="mx-auto h-12 w-12 text-red-500">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="mt-2 text-lg font-medium text-gray-900">Error loading your posts</h3>
+            <p className="mt-1 text-gray-500">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Donation List - แสดงเฉพาะข้อมูลในหน้าปัจจุบัน */}
+            <DonationList 
+              donations={getPaginatedDonations()}
+              activeTab={activeTab}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onMarkAsComplete={handleMarkAsComplete}
+              onAddNew={handleAddNew}
+            />
+            
+            {/* Pagination */}
+            {filteredDonations.length > 0 && (
+              <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
+          </>
+        )}
       </main>
     </div>
   );

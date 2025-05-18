@@ -1,4 +1,8 @@
+'use client'
+
 import React from "react";
+import Link from "next/link";
+import { useAuth } from "../../../context/AuthContext";
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
@@ -6,6 +10,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGift, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 
 const CTASection = () => {
+  const { isAuthenticated } = useAuth();
+
+  const getDonationUrl = () => {
+    return isAuthenticated() ? '/PostDonation' : '/Auth';
+  };
+
   return (
       <section className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 py-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20"></div>
@@ -18,14 +28,25 @@ const CTASection = () => {
             more sustainable and compassionate world.
           </p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <button className="bg-white hover:bg-gray-100 text-blue-600 px-8 py-3 rounded-lg text-lg font-medium transition-colors shadow-md !rounded-button whitespace-nowrap cursor-pointer">
-              <FontAwesomeIcon icon={faUserPlus} className="mr-2" />
-              Sign Up Now
-            </button>
-            <button className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors shadow-md !rounded-button whitespace-nowrap cursor-pointer">
-              <FontAwesomeIcon icon={faGift} className="mr-2" />
-              Start Donating
-            </button>
+            {/* ปุ่ม Sign Up Now - ใช้ Link ครอบ */}
+            <Link href="/Auth">
+              <button 
+                className="bg-white hover:bg-gray-100 text-blue-600 px-8 py-3 rounded-lg text-lg font-medium transition-colors shadow-md !rounded-button whitespace-nowrap cursor-pointer w-full"
+              >
+                <FontAwesomeIcon icon={faUserPlus} className="mr-2" />
+                Sign Up Now
+              </button>
+            </Link>
+            
+            {/* ปุ่ม Start Donating - ใช้ Link ครอบ พร้อมกับตรวจสอบสถานะล็อกอิน */}
+            <Link href={getDonationUrl()}>
+              <button 
+                className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-lg text-lg font-medium transition-colors shadow-md !rounded-button whitespace-nowrap cursor-pointer w-full"
+              >
+                <FontAwesomeIcon icon={faGift} className="mr-2" />
+                Start Donating
+              </button>
+            </Link>
           </div>
         </div>
       </section>

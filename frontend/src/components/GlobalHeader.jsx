@@ -1,212 +1,145 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation"; // เปลี่ยนจาก useRouter เป็น usePathname
-import { config } from '@fortawesome/fontawesome-svg-core';
-import '@fortawesome/fontawesome-svg-core/styles.css';
-config.autoAddCss = false;
+import { useRef, useState } from 'react';
+import Link from 'next/link';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faBell, 
-  faUserCircle, 
-  faUser, 
-  faGift, 
-  faHandHoldingHeart, 
-  faEnvelope, 
-  faCog, 
-  faSignOutAlt,
-  faBars,
-  faTimes
-} from '@fortawesome/free-solid-svg-icons';
+import { useAuth } from '../context/AuthContext';
 
 const GlobalHeader = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileRef = useRef(null);
-  const pathname = usePathname(); // ใช้ usePathname แทน useRouter
   
-  useEffect(() => {
-    // ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือไม่
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
-    
-    // จัดการการคลิกนอกเมนู dropdown เพื่อปิดเมนู
-    const handleClickOutside = (event) => {
-      if (profileRef.current && !profileRef.current.contains(event.target)) {
-        setIsProfileMenuOpen(false);
-      }
-    };
-    
-    document.addEventListener("mousedown", handleClickOutside);
-    
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  // สลับสถานะเมนู dropdown
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
   };
   
-  // สลับสถานะเมนูบนมือถือ
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
   
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-    setIsProfileMenuOpen(false);
-    // แทนที่ router.push('/') ด้วยการใช้ window.location
-    window.location.href = '/';
+    logout();
   };
-
-  // ตรวจสอบว่าเราอยู่ในสภาพแวดล้อมของเบราว์เซอร์หรือไม่
-  const isBrowser = typeof window !== 'undefined';
-
-  // ป้องกันการใช้ localStorage ในฝั่ง server
-  useEffect(() => {
-    if (isBrowser) {
-      const token = localStorage.getItem('token');
-      setIsAuthenticated(!!token);
-    }
-  }, [isBrowser]);
 
   return (
     <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
-      {/* ส่วนที่เหลือเหมือนเดิม */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-        {/* Logo */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+        {/* Logo และเมนูหลัก */}
         <div className="flex items-center">
-          <Link href="/" className="text-2xl sm:text-3xl font-bold text-blue-600">
-            <span className="text-indigo-500">Ful</span>fill
+          <Link href="/" className="flex items-center mr-8">
+            <h1 className="text-2xl font-bold text-blue-600">
+              <span className="text-indigo-500">Ful</span>fill
+            </h1>
           </Link>
+          
+          <div className="hidden md:flex items-center space-x-4">
+            {/* แสดงเมนูตามสถานะการล็อกอิน */}
+            {isAuthenticated() ? (
+              <>
+                <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+                  Home
+                </Link>
+                <Link href="/Post" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+                  Post
+                </Link>
+                <Link href="/maps" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+                  Maps
+                </Link>
+                <Link href="/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+                  Dashboard
+                </Link>
+              </>
+            ) : (
+              // Not logged in menu
+              <>
+                <Link href="/how-it-works" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+                  How It Works
+                </Link>
+                <Link href="/about" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
+                  About Us
+                </Link>
+              </>
+            )}
+          </div>
         </div>
-
-        {/* Mobile menu button */}
-        <div className="md:hidden flex items-center">
-          {isAuthenticated && (
-            <button className="p-1 mr-3 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
-              <FontAwesomeIcon icon={faBell} />
-            </button>
+        
+        {/* ปุ่มและเมนูด้านขวา */}
+        <div className="flex items-center space-x-4">
+          {isAuthenticated() ? (
+            // Logged in controls
+            <div className="flex items-center space-x-4">
+              <button className="p-1 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
+                <FontAwesomeIcon icon={faBell} />
+              </button>
+              
+              {/* Profile dropdown */}
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={toggleProfileMenu}
+                  className="flex items-center space-x-2 focus:outline-none"
+                >
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    {user && user.username ? user.username.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                </button>
+                
+                {isProfileMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10">
+                    <Link href="/profile" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                      Your Profile
+                    </Link>
+                    <Link href="/dashboard" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                      Dashboard
+                    </Link>
+                    <Link href="/settings" className="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                      Settings
+                    </Link>
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            // Not logged in controls
+            <div className="flex items-center space-x-3">
+              <Link
+                href="/auth"
+                className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer hidden sm:inline-block"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/auth?tab=register"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors !rounded-button whitespace-nowrap cursor-pointer"
+              >
+                Sign Up
+              </Link>
+            </div>
           )}
-          <button 
+          
+          {/* Mobile menu button */}
+          <button
+            className="md:hidden p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 focus:outline-none"
             onClick={toggleMobileMenu}
-            className="p-1 text-gray-500 hover:text-blue-600 focus:outline-none"
           >
-            <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} className="text-xl" />
+            <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} />
           </button>
         </div>
-
-        {/* Desktop navigation */}
-        <div className="hidden md:flex items-center space-x-4">
-          {/* คงเนื้อหาที่เหลือเหมือนเดิม */}
-          {isAuthenticated ? (
-            // Logged in menu
-            <>
-              <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-                Home
-              </Link>
-              <Link href="/posts" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-                Post
-              </Link>
-              <Link href="/maps" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-                Maps
-              </Link>
-              <Link href="/dashboard" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-                Dashboard
-              </Link>
-              <div className="flex items-center space-x-2">
-                <button className="p-1 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
-                  <FontAwesomeIcon icon={faBell} />
-                </button>
-                <div className="relative" ref={profileRef}>
-                  <button 
-                    className="p-1 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer focus:outline-none"
-                    onClick={toggleProfileMenu}
-                  >
-                    <FontAwesomeIcon icon={faUserCircle} className="text-xl" />
-                  </button>
-                  
-                  {isProfileMenuOpen && (
-                    <div
-                      className="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white z-50"
-                      style={{ top: "100%" }}
-                    >
-                      <Link
-                        href="/user/my-profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <FontAwesomeIcon icon={faUser} className="mr-2" /> My Profile
-                      </Link>
-                      <Link
-                        href="/user/my-donations"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <FontAwesomeIcon icon={faGift} className="mr-2" /> My Donations
-                      </Link>
-                      <Link
-                        href="/user/my-requests"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" /> My Requests
-                      </Link>
-                      <div className="border-t border-gray-100"></div>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" /> Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          ) : (
-            // Not logged in menu
-            <>
-              <Link
-                href="/how-it-works"
-                className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
-              >
-                How It Works
-              </Link>
-              <Link
-                href="/organizations"
-                className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
-              >
-                Organizations
-              </Link>
-              <Link
-                href="/success-stories"
-                className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
-              >
-                Success Stories
-              </Link>
-              <Link
-                href="/about"
-                className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
-              >
-                About Us
-              </Link>
-              <Link href="/auth" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors !rounded-button whitespace-nowrap cursor-pointer">
-                Sign In
-              </Link>
-            </>
-          )}
-        </div>
       </div>
-
+      
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200 py-2">
-          <div className="px-4 space-y-3 pb-3">
-            {/* คงเนื้อหาที่เหลือเหมือนเดิม */}
-            {isAuthenticated ? (
+        <div className="md:hidden bg-white border-t">
+          <div className="px-4 pt-2 pb-4 space-y-2">
+            {/* แสดงเมนูตามสถานะการล็อกอิน */}
+            {isAuthenticated() ? (
               // Logged in mobile menu
               <>
                 <Link 
@@ -216,7 +149,43 @@ const GlobalHeader = () => {
                 >
                   Home
                 </Link>
-                {/* เมนูอื่นๆ ที่เหลือ */}
+                <Link 
+                  href="/Post"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Post
+                </Link>
+                <Link 
+                  href="/maps"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Maps
+                </Link>
+                <Link 
+                  href="/dashboard"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  href="/profile"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Profile
+                </Link>
+                <button 
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="block w-full text-left text-gray-600 hover:text-blue-600 transition-colors py-2"
+                >
+                  Logout
+                </button>
               </>
             ) : (
               // Not logged in mobile menu
@@ -228,7 +197,27 @@ const GlobalHeader = () => {
                 >
                   How It Works
                 </Link>
-                {/* เมนูอื่นๆ ที่เหลือ */}
+                <Link 
+                  href="/about"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  About Us
+                </Link>
+                <Link 
+                  href="/auth"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Log In
+                </Link>
+                <Link 
+                  href="/auth?tab=register"
+                  className="block text-blue-600 font-medium hover:text-blue-700 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
               </>
             )}
           </div>

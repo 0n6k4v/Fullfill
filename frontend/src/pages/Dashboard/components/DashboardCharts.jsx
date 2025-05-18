@@ -1,162 +1,137 @@
 import React, { useEffect } from 'react';
-import * as echarts from 'echarts';
+import { Line, Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
 
-const DashboardCharts = () => {
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+const DashboardCharts = ({ chartData, showOnlyTrends = false }) => {
   useEffect(() => {
-    // Category Analysis Chart
-    const categoryChart = echarts.init(
-      document.getElementById("categoryChart"),
-    );
-    const categoryOption = {
-      animation: false,
-      tooltip: {
-        trigger: "axis",
-        axisPointer: {
-          type: "shadow",
-        },
-      },
-      legend: {
-        data: ["Requests", "Donations"],
-      },
-      grid: {
-        left: "3%",
-        right: "4%",
-        bottom: "3%",
-        containLabel: true,
-      },
-      xAxis: {
-        type: "category",
-        data: [
-          "Clothing",
-          "Food",
-          "School",
-          "Medical",
-          "Furniture",
-          "Electronics",
-        ],
-      },
-      yAxis: {
-        type: "value",
-      },
-      series: [
-        {
-          name: "Requests",
-          type: "bar",
-          data: [320, 302, 301, 334, 390, 330],
-          itemStyle: {
-            color: "#3B82F6",
-          },
-        },
-        {
-          name: "Donations",
-          type: "bar",
-          data: [220, 182, 191, 234, 290, 330],
-          itemStyle: {
-            color: "#10B981",
-          },
-        },
-      ],
-    };
-    categoryChart.setOption(categoryOption);
-    
-    // Fulfillment Rate Chart
-    const fulfillmentChart = echarts.init(
-      document.getElementById("fulfillmentChart"),
-    );
-    const fulfillmentOption = {
-      animation: false,
-      tooltip: {
-        trigger: "axis",
-      },
-      legend: {
-        data: ["Fulfillment Rate"],
-      },
-      grid: {
-        left: "3%",
-        right: "4%",
-        bottom: "3%",
-        containLabel: true,
-      },
-      xAxis: {
-        type: "category",
-        boundaryGap: false,
-        data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      },
-      yAxis: {
-        type: "value",
-        axisLabel: {
-          formatter: "{value}%",
-        },
-      },
-      series: [
-        {
-          name: "Fulfillment Rate",
-          type: "line",
-          data: [65, 72, 68, 75, 82, 78, 85],
-          areaStyle: {
-            color: {
-              type: "linear",
-              x: 0,
-              y: 0,
-              x2: 0,
-              y2: 1,
-              colorStops: [
-                {
-                  offset: 0,
-                  color: "rgba(79, 70, 229, 0.2)",
-                },
-                {
-                  offset: 1,
-                  color: "rgba(79, 70, 229, 0.01)",
-                },
-              ],
-            },
-          },
-          lineStyle: {
-            color: "#4F46E5",
-          },
-          itemStyle: {
-            color: "#4F46E5",
-          },
-        },
-      ],
-    };
-    fulfillmentChart.setOption(fulfillmentOption);
-    
     // Cleanup
-    return () => {
-      categoryChart.dispose();
-      fulfillmentChart.dispose();
-    };
+    return () => { };
   }, []);
+
+  if (!chartData) {
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[...Array(showOnlyTrends ? 1 : 2)].map((_, i) => (
+                <div key={i} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 animate-pulse">
+                    <div className="h-8 bg-gray-200 rounded w-1/2 mb-4"></div>
+                    <div className="h-64 bg-gray-300 rounded"></div>
+                </div>
+            ))}
+        </div>
+    );
+  }
+
+  const trendOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+    },
+    scales: {
+        y: {
+            beginAtZero: true
+        }
+    }
+  };
+
+  const trendsChartData = {
+    labels: chartData.requestTrends?.map(d => new Date(d.date).toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })) || [],
+    datasets: [
+      {
+        label: 'Requests',
+        data: chartData.requestTrends?.map(d => d.count) || [],
+        borderColor: 'rgb(59, 130, 246)', // blue-500
+        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+        tension: 0.1
+      },
+      {
+        label: 'Donations',
+        data: chartData.donationTrends?.map(d => d.count) || [],
+        borderColor: 'rgb(34, 197, 94)', // green-500
+        backgroundColor: 'rgba(34, 197, 94, 0.5)',
+        tension: 0.1
+      },
+    ],
+  };
+
+  // ถ้าต้องการแสดงเฉพาะกราฟแนวโน้ม ให้แสดงเฉพาะ Line chart
+  if (showOnlyTrends) {
+    return (
+      <div style={{ width: '100%', height: '100%' }}>
+        <Line options={trendOptions} data={trendsChartData} />
+      </div>
+    );
+  }
+
+  // ถ้าไม่ได้ระบุ showOnlyTrends จะแสดงกราฟทั้งหมด
+  const categoryChartData = {
+    labels: chartData.categoryDistribution?.map(c => c.category) || [],
+    datasets: [
+      {
+        label: 'Requests',
+        data: chartData.categoryDistribution?.map(c => c.requests) || [],
+        backgroundColor: 'rgba(59, 130, 246, 0.7)', // blue-500
+      },
+      {
+        label: 'Donations',
+        data: chartData.categoryDistribution?.map(c => c.donations) || [],
+        backgroundColor: 'rgba(34, 197, 94, 0.7)', // green-500
+      },
+    ],
+  };
+  
+  const categoryOptions = {
+    indexAxis: 'y', // For horizontal bar chart
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+    },
+    scales: {
+      x: {
+        beginAtZero: true
+      }
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-medium text-gray-900">
-            Donation Categories Analysis
-          </h3>
-          <select className="text-sm border-gray-300 rounded-md">
-            <option>Last 7 days</option>
-            <option>Last 30 days</option>
-            <option>Last 3 months</option>
-          </select>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Request & Donation Trends</h3>
+        <div className="h-80">
+          <Line options={trendOptions} data={trendsChartData} />
         </div>
-        <div className="h-80" id="categoryChart"></div>
       </div>
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-medium text-gray-900">
-            Request Fulfillment Rate
-          </h3>
-          <select className="text-sm border-gray-300 rounded-md">
-            <option>Last 7 days</option>
-            <option>Last 30 days</option>
-            <option>Last 3 months</option>
-          </select>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Distribution by Category</h3>
+        <div className="h-80">
+          <Bar options={categoryOptions} data={categoryChartData} />
         </div>
-        <div className="h-80" id="fulfillmentChart"></div>
       </div>
     </div>
   );

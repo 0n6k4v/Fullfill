@@ -1,16 +1,23 @@
 from fastapi import APIRouter
 
-from app.api.endpoints.auth import router as auth_router
-from app.api.endpoints.user import router as user_router
-from app.api.endpoints.image import router as image_router
-from app.api.endpoints.provinces import router as provinces_router
-from app.api.endpoints.districts import router as districts_router
-from app.api.endpoints.subdistricts import router as subdistricts_router
+from app.api.endpoints import (
+    auth, 
+    user, 
+    items, 
+    image,
+    provinces, 
+    districts, 
+    subdistricts,
+    dashboard
+)
 
 api_router = APIRouter()
-api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
-api_router.include_router(user_router, prefix="/users", tags=["users"])
-api_router.include_router(image_router, prefix="/images", tags=["images"])
-api_router.include_router(provinces_router, prefix="/provinces", tags=["geography"])
-api_router.include_router(districts_router, prefix="/districts", tags=["geography"])
-api_router.include_router(subdistricts_router, prefix="/subdistricts", tags=["geography"])
+
+api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+api_router.include_router(user.router, prefix="/users", tags=["Users"])
+api_router.include_router(items.router, prefix="/items", tags=["Items"])
+api_router.include_router(image.router, prefix="/images", tags=["Images"])
+api_router.include_router(provinces.router, prefix="/provinces", tags=["Provinces"])
+api_router.include_router(districts.router, prefix="/districts", tags=["Districts"])
+api_router.include_router(subdistricts.router, prefix="/subdistricts", tags=["Subdistricts"])
+api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"]) # Add this line

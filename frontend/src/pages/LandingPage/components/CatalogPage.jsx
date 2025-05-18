@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { List } from 'lucide-react';
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
@@ -9,8 +9,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faThLarge, faCouch, faTshirt, faLaptop, faBlender, faBaby,
   faBook, faUtensils, faMapMarkerAlt, faSearch, faFilter, faChevronUp, faChevronDown,
-  faHandshake, faHandHoldingHeart  // เพิ่มไอคอนเหล่านี้
+  faHandshake, faHandHoldingHeart, faSpinner, faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons';
+import api from '@/services/api';
 
 const CatalogPage = () => {
   // State for mode toggle (Request/Donation)
@@ -23,10 +24,20 @@ const CatalogPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState('grid'); // 'grid', 'list', or 'map'
-  const [conditionFilter, setConditionFilter] = useState('all'); // Added condition filter
-  const [sortOption, setSortOption] = useState('newest'); // Added sort option state
+  const [conditionFilter, setConditionFilter] = useState('all');
+  const [sortOption, setSortOption] = useState('newest');
 
-  // Predefined locations
+  // New states for API data
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // 1. เพิ่ม state สำหรับเก็บพิกัดของผู้ใช้
+  const [userLocation, setUserLocation] = useState(null);
+  const [distances, setDistances] = useState({});
+  const [loadingDistances, setLoadingDistances] = useState(false);
+  
+  // Predefined locations - ในอนาคตอาจดึงจาก API
   const locations = [
     "All Locations",
     "Downtown, Seattle",
@@ -37,9 +48,33 @@ const CatalogPage = () => {
     "University District, Seattle",
   ];
 
+  // Categories based on ER diagram enum definitions
+  const categories = [
+    { id: 'all', name: 'All Items', icon: faThLarge },
+    { id: 'furniture', name: 'Furniture', icon: faCouch },
+    { id: 'clothing', name: 'Clothing', icon: faTshirt },
+    { id: 'electronics', name: 'Electronics', icon: faLaptop },
+    { id: 'appliances', name: 'Appliances', icon: faBlender },
+    { id: 'kids_toys', name: 'Kids & Toys', icon: faBaby },
+    { id: 'books', name: 'Books', icon: faBook },
+    { id: 'kitchen', name: 'Kitchen', icon: faUtensils },
+    { id: 'other', name: 'Other', icon: faThLarge }
+  ];
+
+  // Condition enum definitions
+  const conditions = [
+    { id: 'all', name: 'All Conditions' },
+    { id: 'new', name: 'New' },
+    { id: 'like_new', name: 'Like New' },
+    { id: 'good', name: 'Good' },
+    { id: 'fair', name: 'Fair' },
+    { id: 'poor', name: 'Poor' },
+    { id: 'any', name: 'Any' }
+  ];
+
   // Helper function to get the icon for a category
   const getCategoryIcon = (categoryId) => {
-    const category = categories.find(c => c.id === categoryId);
+    const category = categories.find(c => c.id === categoryId.toLowerCase());
     return category ? category.icon : faThLarge;
   };
 
@@ -64,485 +99,116 @@ const CatalogPage = () => {
     }
   };
 
-  // Categories based on ER diagram enum definitions
-  const categories = [
-    { id: 'all', name: 'All Items', icon: faThLarge },
-    { id: 'furniture', name: 'Furniture', icon: faCouch },
-    { id: 'clothing', name: 'Clothing', icon: faTshirt },
-    { id: 'electronics', name: 'Electronics', icon: faLaptop },
-    { id: 'appliances', name: 'Appliances', icon: faBlender },
-    { id: 'Kids & toys', name: 'Kids & Toys', icon: faBaby },
-    { id: 'Books', name: 'Books', icon: faBook },
-    { id: 'Kitchen', name: 'Kitchen', icon: faUtensils },
-    { id: 'Other', name: 'Other', icon: faThLarge }
-  ];
-
-  // Condition enum definitions
-  const conditions = [
-    { id: 'all', name: 'All Conditions' },
-	{ id: 'new', name: 'New' },
-    { id: 'like_new', name: 'Like New' },
-    { id: 'good', name: 'Good' },
-    { id: 'fair', name: 'Fair' },
-    { id: 'poor', name: 'Poor' },
-    { id: 'any', name: 'Any' }
-  ];
-
-  // Sample items for demonstration based on ER diagram Item_FulFill entity
-  const items = [
-    {
-      id: 1,
-      TYPE: 'donation', // 'donation' or 'request'
-      name: 'Winter Jacket (Size L)',
-      category: 'clothing',
-      Condition: 'good',
-      Description: 'Warm winter jacket in excellent condition. Size Large, dark blue color.',
-      Location: 'Downtown',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-01T10:30:00Z',
-      updated_at: '2025-05-01T10:30:00Z',
-      uploaded_by: 101,
-      Status: 1, // 1: available, 2: reserved, 3: completed
-      Expire: '2025-06-01T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 2,
-      TYPE: 'donation',
-      name: 'Coffee Table',
-      category: 'furniture',
-      Condition: 'fair',
-      Description: 'Wooden coffee table, minor scratches but sturdy and functional.',
-      Location: 'Westside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-04T14:15:00Z',
-      updated_at: '2025-05-04T14:15:00Z',
-      uploaded_by: 102,
-      Status: 1,
-      Expire: '2025-06-04T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 3,
-      TYPE: 'donation',
-      name: 'Laptop (2022 Model)',
-      category: 'electronics',
-      Condition: 'good',
-      Description: 'Laptop in working condition. 8GB RAM, 256GB SSD. No charger included.',
-      Location: 'Northside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-06T09:45:00Z',
-      updated_at: '2025-05-06T09:45:00Z',
-      uploaded_by: 103,
-      Status: 1,
-      Expire: '2025-06-06T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 4,
-      TYPE: 'donation',
-      name: 'Children\'s Books',
-      category: 'Books',
-      Condition: 'like_new',
-      Description: 'Collection of 15 children\'s books, suitable for ages 3-8.',
-      Location: 'Eastside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-03T16:20:00Z',
-      updated_at: '2025-05-03T16:20:00Z',
-      uploaded_by: 104,
-      Status: 1,
-      Expire: '2025-06-03T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 5,
-      TYPE: 'donation',
-      name: 'Board Games',
-      category: 'Kids & toys',
-      Condition: 'Good',
-      Description: 'Set of classic board games including Monopoly and Scrabble.',
-      Location: 'Downtown',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-07T11:10:00Z',
-      updated_at: '2025-05-07T11:10:00Z',
-      uploaded_by: 105,
-      Status: 1,
-      Expire: '2025-06-07T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 6,
-      TYPE: 'donation',
-      name: 'Microwave Oven',
-      category: 'appliances',
-      Condition: 'Good',
-      Description: '700W microwave, works perfectly. Clean and in good condition.',
-      Location: 'Southside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-02T13:25:00Z',
-      updated_at: '2025-05-02T13:25:00Z',
-      uploaded_by: 106,
-      Status: 1,
-      Expire: '2025-06-02T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 7,
-      TYPE: 'donation',
-      name: 'Kitchen Blender',
-      category: 'Kitchen',
-      Condition: 'like_new',
-      Description: 'Powerful 1000W blender, hardly used. Perfect for smoothies and food preparation.',
-      Location: 'Northside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-10T08:30:00Z',
-      updated_at: '2025-05-10T08:30:00Z',
-      uploaded_by: 107,
-      Status: 1,
-      Expire: '2025-06-10T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 8,
-      TYPE: 'donation',
-      name: 'Office Chair',
-      category: 'furniture',
-      Condition: 'Good',
-      Description: 'Ergonomic office chair with adjustable height and lumbar support. Black color.',
-      Location: 'Downtown',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-08T15:45:00Z',
-      updated_at: '2025-05-08T15:45:00Z',
-      uploaded_by: 108,
-      Status: 1,
-      Expire: '2025-06-08T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 9,
-      TYPE: 'donation',
-      name: 'Baby Stroller',
-      category: 'Kids & toys',
-      Condition: 'Fair',
-      Description: 'Lightweight baby stroller, foldable design. Some wear but still works great.',
-      Location: 'Eastside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-05T11:20:00Z',
-      updated_at: '2025-05-05T11:20:00Z',
-      uploaded_by: 109,
-      Status: 2, // Reserved
-      Expire: '2025-06-05T00:00:00Z',
-      matched_userid: 201
-    },
-    {
-      id: 10,
-      TYPE: 'donation',
-      name: 'Acoustic Guitar',
-      category: 'Other',
-      Condition: 'Good',
-      Description: 'Yamaha acoustic guitar with case. Great for beginners. Needs new strings.',
-      Location: 'Westside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-09T16:15:00Z',
-      updated_at: '2025-05-09T16:15:00Z',
-      uploaded_by: 110,
-      Status: 1,
-      Expire: '2025-06-09T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 11,
-      TYPE: 'request',
-      name: 'Child\'s Bicycle',
-      category: 'Kids & toys',
-      Condition: 'Good',
-      Description: 'Looking for a bicycle suitable for a 6-year-old. Preferably with training wheels.',
-      Location: 'Northside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-12T09:30:00Z',
-      updated_at: '2025-05-12T09:30:00Z',
-      uploaded_by: 111,
-      Status: 1,
-      Expire: '2025-06-12T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 12,
-      TYPE: 'request',
-      name: 'Winter Boots (Size 8)',
-      category: 'clothing',
-      Condition: 'Fair',
-      Description: 'Need warm winter boots for the upcoming season. Women\'s size 8.',
-      Location: 'Downtown',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-11T14:00:00Z',
-      updated_at: '2025-05-11T14:00:00Z',
-      uploaded_by: 112,
-      Status: 1,
-      Expire: '2025-06-11T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 13,
-      TYPE: 'request',
-      name: 'School Textbooks',
-      category: 'Books',
-      Condition: 'any',
-      Description: 'Looking for high school math and science textbooks for the new school year.',
-      Location: 'Southside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-13T10:45:00Z',
-      updated_at: '2025-05-13T10:45:00Z',
-      uploaded_by: 113,
-      Status: 1,
-      Expire: '2025-06-13T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 14,
-      TYPE: 'request',
-      name: 'Desk Lamp',
-      category: 'Other',
-      Condition: 'any',
-      Description: 'Need a desk lamp for studying. Preferably LED with adjustable brightness.',
-      Location: 'Eastside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-14T08:15:00Z',
-      updated_at: '2025-05-14T08:15:00Z',
-      uploaded_by: 114,
-      Status: 2, // Reserved
-      Expire: '2025-06-14T00:00:00Z',
-      matched_userid: 202
-    },
-    {
-      id: 15,
-      TYPE: 'donation',
-      name: 'Dining Table with 4 Chairs',
-      category: 'furniture',
-      Condition: 'Good',
-      Description: 'Wooden dining set. Table dimensions: 120x80cm. Chairs are sturdy and comfortable.',
-      Location: 'Westside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-12T15:30:00Z',
-      updated_at: '2025-05-12T16:45:00Z',
-      uploaded_by: 115,
-      Status: 3, // Completed
-      Expire: '2025-06-12T00:00:00Z',
-      matched_userid: 203
-    },
-    {
-      id: 16,
-      TYPE: 'donation',
-      name: 'Rice Cooker',
-      category: 'Kitchen',
-      Condition: 'Like New',
-      Description: '5-cup automatic rice cooker with steamer basket. Used only a few times.',
-      Location: 'Downtown',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-13T13:10:00Z',
-      updated_at: '2025-05-13T13:10:00Z',
-      uploaded_by: 116,
-      Status: 1,
-      Expire: '2025-06-13T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 17,
-      TYPE: 'request',
-      name: 'Laptop Charger',
-      category: 'electronics',
-      Condition: 'Any',
-      Description: 'Need a charger for HP laptop model 15-dy1024wm. 65W adapter with USB-C connector.',
-      Location: 'Northside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-15T09:25:00Z',
-      updated_at: '2025-05-15T09:25:00Z',
-      uploaded_by: 117,
-      Status: 1,
-      Expire: '2025-06-15T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 18,
-      TYPE: 'request',
-      name: 'Small Microwave',
-      category: 'appliances',
-      Condition: 'Fair',
-      Description: 'Looking for a small microwave for a studio apartment. Any brand is fine.',
-      Location: 'Downtown',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-16T11:40:00Z',
-      updated_at: '2025-05-16T11:40:00Z',
-      uploaded_by: 118,
-      Status: 3, // Completed
-      Expire: '2025-06-16T00:00:00Z',
-      matched_userid: 204
-    },
-    {
-      id: 19,
-      TYPE: 'donation',
-      name: 'Men\'s Suits (Size 42)',
-      category: 'clothing',
-      Condition: 'Good',
-      Description: 'Two men\'s suits, navy and charcoal, size 42 regular. Dry cleaned and ready to wear.',
-      Location: 'Eastside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-17T14:20:00Z',
-      updated_at: '2025-05-17T14:20:00Z',
-      uploaded_by: 119,
-      Status: 2, // Reserved
-      Expire: '2025-06-17T00:00:00Z',
-      matched_userid: 205
-    },
-    {
-      id: 20,
-      TYPE: 'donation',
-      name: 'Gaming Console',
-      category: 'electronics',
-      Condition: 'Good',
-      Description: 'PlayStation 4 with one controller and 5 games. Works perfectly, just upgraded to newer model.',
-      Location: 'Westside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-18T16:10:00Z',
-      updated_at: '2025-05-18T16:10:00Z',
-      uploaded_by: 120,
-      Status: 3, // Completed
-      Expire: '2025-06-18T00:00:00Z',
-      matched_userid: 206
-    },
-    {
-      id: 21,
-      TYPE: 'request',
-      name: 'Bedside Table',
-      category: 'furniture',
-      Condition: 'Any',
-      Description: 'Looking for a small bedside table or nightstand for a new apartment.',
-      Location: 'Southside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-19T10:15:00Z',
-      updated_at: '2025-05-19T10:15:00Z',
-      uploaded_by: 121,
-      Status: 2, // Reserved
-      Expire: '2025-06-19T00:00:00Z',
-      matched_userid: 207
-    },
-    {
-      id: 22,
-      TYPE: 'donation',
-      name: 'Knife Set',
-      category: 'Kitchen',
-      Condition: 'Like New',
-      Description: '15-piece kitchen knife set with block. High-quality stainless steel, barely used.',
-      Location: 'Downtown',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-20T13:30:00Z',
-      updated_at: '2025-05-20T13:30:00Z',
-      uploaded_by: 122,
-      Status: 1,
-      Expire: '2025-06-20T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 23,
-      TYPE: 'request',
-      name: 'Baby Clothes',
-      category: 'Kids & toys',
-      Condition: 'Good',
-      Description: 'Looking for baby clothes for 6-12 month old. Any gender neutral colors preferred.',
-      Location: 'Northside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-21T09:45:00Z',
-      updated_at: '2025-05-21T09:45:00Z',
-      uploaded_by: 123,
-      Status: 1,
-      Expire: '2025-06-21T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 24,
-      TYPE: 'donation',
-      name: 'Fiction Book Collection',
-      category: 'Books',
-      Condition: 'Good',
-      Description: 'Collection of 20+ fiction books including mysteries, thrillers, and classics.',
-      Location: 'Eastside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-22T11:20:00Z',
-      updated_at: '2025-05-22T11:20:00Z',
-      uploaded_by: 124,
-      Status: 1,
-      Expire: '2025-06-22T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 25,
-      TYPE: 'request',
-      name: 'Toaster Oven',
-      category: 'appliances',
-      Condition: 'Fair',
-      Description: 'Looking for a small toaster oven for a dorm room. Doesn\'t need to be fancy.',
-      Location: 'Westside',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-23T14:50:00Z',
-      updated_at: '2025-05-23T14:50:00Z',
-      uploaded_by: 125,
-      Status: 1,
-      Expire: '2025-06-23T00:00:00Z',
-      matched_userid: null
-    },
-    {
-      id: 26,
-      TYPE: 'donation',
-      name: 'Yoga Mat and Blocks',
-      category: 'Other',
-      Condition: 'Good',
-      Description: 'Yoga mat with two foam blocks and a strap. Lightly used, clean and ready to use.',
-      Location: 'Downtown',
-      image: { url: '/api/placeholder/300/200' },
-      created_at: '2025-05-24T08:30:00Z',
-      updated_at: '2025-05-24T08:30:00Z',
-      uploaded_by: 126,
-      Status: 1,
-      Expire: '2025-06-24T00:00:00Z',
-      matched_userid: null
+  // Fetch items from API
+  const fetchItems = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // สร้าง query parameters สำหรับการกรองข้อมูล
+      const params = {
+        type: mode === 'donation' ? 'Offer' : 'Request'
+      };
+      
+      // เพิ่มพารามิเตอร์การกรองเฉพาะเมื่อมีการเลือก
+      if (categoryFilter !== 'all') {
+        params.category = categoryFilter;
+      }
+      
+      if (conditionFilter !== 'all') {
+        params.condition = conditionFilter;
+      }
+      
+      if (searchQuery) {
+        params.search = searchQuery;
+      }
+      
+      // ถ้าต้องการกรองตามวันที่
+      if (dateFilter !== 'any') {
+        const now = new Date();
+        let fromDate;
+        
+        if (dateFilter === 'today') {
+          fromDate = new Date(now.setHours(0, 0, 0, 0));
+        } else if (dateFilter === 'week') {
+          fromDate = new Date(now);
+          fromDate.setDate(fromDate.getDate() - 7);
+        } else if (dateFilter === 'month') {
+          fromDate = new Date(now);
+          fromDate.setMonth(fromDate.getMonth() - 1);
+        }
+        
+        if (fromDate) {
+          params.from_date = fromDate.toISOString();
+        }
+      }
+      
+      // เรียก API
+      const response = await api.get('/items/', { params });
+      
+      // ตรวจสอบว่ามีข้อมูลและแปลงข้อมูลให้ตรงกับรูปแบบที่ต้องการ
+      if (response.data) {
+        // อาจจำเป็นต้องแปลงข้อมูลจาก API ให้ตรงกับโครงสร้างที่ใช้ใน UI
+        const transformedItems = response.data.map(item => ({
+          id: item.id,
+          TYPE: item.type === 'Offer' ? 'donation' : 'request',
+          name: item.name,
+          category: item.category,
+          Condition: item.condition,
+          Description: item.description,
+          Location: item.location,
+          image: { url: item.image[0].url },
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+          uploaded_by: item.uploaded_by,
+          Status: item.status === 'available' ? 1 : item.status === 'reserved' ? 2 : 3,
+          Expire: item.expire || null,
+          matched_userid: item.matched_userid,
+          lat: item.lat,
+          lon: item.lon
+        }));
+        
+        setItems(transformedItems);
+      }
+    } catch (err) {
+      console.error("Error fetching items:", err);
+      setError("Failed to load items. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  // Filter items based on current filters
+  // ใช้ useEffect เพื่อเรียกข้อมูลเมื่อโหลดหน้าหรือเมื่อตัวกรองเปลี่ยน
+  useEffect(() => {
+    fetchItems();
+  }, [mode, categoryFilter, conditionFilter, dateFilter, searchQuery]);
+
+  // 2. เพิ่ม useEffect เพื่อรับตำแหน่งปัจจุบันของผู้ใช้
+  useEffect(() => {
+    // ขอตำแหน่งผู้ใช้ด้วย Geolocation API
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error("Error getting user location:", error);
+        }
+      );
+    }
+  }, []);
+
+  // Filter and sort items in the frontend
   const filteredItems = items.filter(item => {
-    // Filter by TYPE (mode)
-    if (item.TYPE !== mode) return false;
-
-    // Filter by category
-    if (categoryFilter !== 'all' && item.category !== categoryFilter) return false;
-
-    // Filter by condition
-    if (conditionFilter !== 'all' && item.Condition !== conditionFilter) return false;
-
-    // Filter by search query
-    if (searchQuery && !item.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !item.Description.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-
-    // Filter by location
-    if (locationFilter && !item.Location.toLowerCase().includes(locationFilter.toLowerCase())) return false;
-
-    // Filter by date
-    if (dateFilter === 'today') {
-      const today = new Date().toISOString().split('T')[0];
-      const itemDate = new Date(item.created_at).toISOString().split('T')[0];
-      if (itemDate !== today) return false;
-    }
-
-    if (dateFilter === 'week') {
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      if (new Date(item.created_at) < oneWeekAgo) return false;
-    }
-
-    if (dateFilter === 'month') {
-      const oneMonthAgo = new Date();
-      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-      if (new Date(item.created_at) < oneMonthAgo) return false;
+    // ถ้าใช้การกรองจาก API แล้ว ส่วนนี้อาจไม่จำเป็นต้องกรองอีก
+    // หรืออาจเหลือไว้เพื่อกรองเพิ่มเติมสำหรับบางเงื่อนไข
+    
+    // Filter by location (เนื่องจากอาจไม่มีการกรองด้านนี้ใน API)
+    if (locationFilter && !item.Location.toLowerCase().includes(locationFilter.toLowerCase())) {
+      return false;
     }
 
     return true;
@@ -578,26 +244,107 @@ const CatalogPage = () => {
     setSearchQuery('');
   };
 
-  // Helper function to get simulated distance from user to item
-  const getItemDistance = (itemLocation) => {
-    // In a real app, you would calculate this based on actual coordinates
-    // For now, we'll just simulate distances with predefined values
-    const distanceMap = {
-      'Downtown': '0.5 mi',
-      'Downtown, Seattle': '0.5 mi',
-      'Capitol Hill, Seattle': '1.2 mi',
-      'Ballard, Seattle': '3.7 mi',
-      'Fremont, Seattle': '2.5 mi',
-      'Queen Anne, Seattle': '1.8 mi',
-      'University District, Seattle': '4.3 mi',
-      'Westside': '2.1 mi',
-      'Eastside': '5.2 mi',
-      'Northside': '3.9 mi',
-      'Southside': '4.1 mi',
-    };
-
-    return distanceMap[itemLocation] || '~3.0 mi'; // Default if location not in our map
+  // 3. เพิ่มฟังก์ชันสำหรับคำนวณระยะทางโดยใช้ Longdo Map API
+  const calculateDistance = async (userLat, userLon, itemLat, itemLon, itemId) => {
+    if (!userLat || !userLon || !itemLat || !itemLon) {
+      return null;
+    }
+    
+    try {
+      const apiKey = process.env.NEXT_PUBLIC_LONGDO_MAP_API_KEY;
+      const url = `https://api.longdo.com/RouteService/json/route/guide?flat=${userLat}&flon=${userLon}&tlat=${itemLat}&tlon=${itemLon}&mode=t&type=25&locale=th&key=${apiKey}`;
+      
+      const response = await fetch(url);
+      const text = await response.text(); // รับข้อมูลเป็น text ก่อน
+    
+      try {
+        // ลองแปลงเป็น JSON
+        const data = JSON.parse(text);
+        
+        // ตรวจสอบว่ามีข้อมูลระยะทางหรือไม่ตามโครงสร้างใหม่
+        if (data && data.data && Array.isArray(data.data) && data.data.length > 0 && data.data[0].distance) {
+          // แปลงระยะทางจากเมตรเป็นกิโลเมตร
+          const distanceKm = (data.data[0].distance / 1000).toFixed(1);
+          
+          // เก็บระยะทางในสถานะ
+          setDistances(prev => ({
+            ...prev,
+            [itemId]: `${distanceKm} กม.`
+          }));
+          
+          return `${distanceKm} กม.`;
+        } else {
+          console.warn("No distance data found in response:", data);
+          return "ไม่พบเส้นทาง";
+        }
+      } catch (jsonError) {
+        console.error("Error parsing JSON:", jsonError);
+        console.log("Raw response:", text);
+        return "ไม่สามารถคำนวณได้";
+      }
+    } catch (error) {
+      console.error("Error calculating distance:", error);
+      return "ไม่สามารถคำนวณได้";
+    }
   };
+
+  // 4. ปรับปรุงฟังก์ชัน getItemDistance
+  const getItemDistance = (itemLocation, itemLat, itemLon, itemId) => {
+    // ถ้ามีระยะทางที่คำนวณไว้แล้ว ให้ใช้ค่านั้น
+    if (distances[itemId]) {
+      return distances[itemId];
+    }
+    
+    // ถ้ามีพิกัดของผู้ใช้และของสิ่งของ ให้คำนวณระยะทาง
+    if (userLocation && itemLat && itemLon) {
+      calculateDistance(
+        userLocation.lat, 
+        userLocation.lon, 
+        itemLat, 
+        itemLon, 
+        itemId
+      );
+      return "กำลังคำนวณ..."; // แสดงขณะกำลังคำนวณ
+    }
+    
+    // ถ้าไม่มีข้อมูลพิกัด ใช้ระยะทางจำลอง
+    const distanceMap = {
+      'กรุงเทพฯ': '5.2 กม.',
+      'ปทุมธานี': '15.7 กม.',
+      'นนทบุรี': '8.3 กม.',
+      // เพิ่มเมืองอื่นๆ ตามต้องการ
+    };
+    
+    return distanceMap[itemLocation] || "ไม่ทราบระยะทาง";
+  };
+
+  // 5. หลังจากโหลดข้อมูลจาก API สำเร็จ คำนวณระยะทางสำหรับทุกรายการ
+  useEffect(() => {
+    // ถ้ามีข้อมูลพิกัดของผู้ใช้และมีรายการสิ่งของ
+    if (userLocation && items.length > 0 && !loadingDistances) {
+      setLoadingDistances(true);
+      
+      // คำนวณระยะทางสำหรับทุกรายการที่มีพิกัด
+      const calculateAllDistances = async () => {
+        const distancePromises = items
+          .filter(item => item.lat && item.lon)
+          .map(item => 
+            calculateDistance(
+              userLocation.lat, 
+              userLocation.lon, 
+              item.lat, 
+              item.lon, 
+              item.id
+            )
+          );
+        
+        await Promise.all(distancePromises);
+        setLoadingDistances(false);
+      };
+      
+      calculateAllDistances();
+    }
+  }, [userLocation, items]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -665,7 +412,7 @@ const CatalogPage = () => {
             >
               <FontAwesomeIcon icon={faFilter} className="mr-2" />
               Filters
-              <FontAwesomeIcon icon={faChevronDown} className="ml-2" />
+              <FontAwesomeIcon icon={showFilters ? faChevronUp : faChevronDown} className="ml-2" />
             </button>
 
             {/* View Mode Toggle */}
@@ -703,7 +450,7 @@ const CatalogPage = () => {
                   onClick={clearFilters}
                   className="text-sm text-indigo-600 hover:text-blue-800 flex items-center"
                 >
-                  <FontAwesomeIcon icon={faChevronUp} className="mr-1" /> Clear all
+                  Clear all
                 </button>
               </div>
 
@@ -788,7 +535,9 @@ const CatalogPage = () => {
       <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Results info */}
         <div className="mb-4 flex justify-between items-center">
-          <p className="text-gray-600">{filteredItems.length} items found</p>
+          {!loading && !error && (
+            <p className="text-gray-600">{filteredItems.length} items found</p>
+          )}
           <select
             className="block pl-3 pr-10 py-2 text-sm border-gray-400 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md"
             value={sortOption}
@@ -801,8 +550,31 @@ const CatalogPage = () => {
           </select>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <FontAwesomeIcon icon={faSpinner} className="text-indigo-500 text-4xl animate-spin" />
+            <span className="ml-3 text-lg text-gray-600">Loading items...</span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center py-12">
+            <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-500 text-4xl mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading items</h3>
+            <p className="text-gray-600">{error}</p>
+            <button
+              onClick={fetchItems}
+              className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
         {/* Map View */}
-        {viewMode === 'map' && (
+        {viewMode === 'map' && !loading && !error && (
           <div className="bg-white rounded-lg overflow-hidden shadow-md p-4 mb-6">
             <div className="flex justify-center items-center h-96 bg-gray-100 rounded-lg">
               <div className="text-center">
@@ -815,18 +587,18 @@ const CatalogPage = () => {
         )}
 
         {/* Items Grid */}
-        {viewMode === 'grid' && (
+        {viewMode === 'grid' && !loading && !error && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredItems.map(item => (
               <div key={item.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                <img src={item.image.url} alt={item.name} className="w-full h-48 object-cover" />
+                <img src={item.image.url} alt={item.name} className="w-full h-48 object-contain" />
                 <div className="p-4">
                   <h3 className="text-lg font-medium text-gray-900 mb-1">{item.name}</h3>
                   <div className="flex items-center mb-2">
                     <FontAwesomeIcon icon={faMapMarkerAlt} className="text-gray-400 mr-1" />
                     <span className="text-sm text-gray-600">{item.Location}</span>
                     <span className="mx-2 text-gray-300">•</span>
-                    <span className="text-xs text-gray-500">{getItemDistance(item.Location)}</span>
+                    <span className="text-xs text-gray-500">{getItemDistance(item.Location, item.lat, item.lon, item.id)}</span>
                   </div>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">{item.Description}</p>
                   
@@ -838,7 +610,7 @@ const CatalogPage = () => {
                         {item.category}
                       </span>
                       <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${getConditionColors(item.Condition).bg} ${getConditionColors(item.Condition).text}`}>
-                        {conditions.find(c => c.id === item.Condition)?.name || item.Condition}
+                        {conditions.find(c => c.id === item.Condition?.toLowerCase())?.name || item.Condition}
                       </span>
                     </div>
                     <div className="flex justify-end">
@@ -861,8 +633,9 @@ const CatalogPage = () => {
             ))}
           </div>
         )}
+        
         {/* List View */}
-        {viewMode === 'list' && (
+        {viewMode === 'list' && !loading && !error && (
           <div className="space-y-4">
             {filteredItems.map(item => (
               <div key={item.id} className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
@@ -877,7 +650,7 @@ const CatalogPage = () => {
                           {item.category}
                         </span>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getConditionColors(item.Condition).bg} ${getConditionColors(item.Condition).text}`}>
-                          {conditions.find(c => c.id === item.Condition)?.name || item.Condition}
+                          {conditions.find(c => c.id === item.Condition?.toLowerCase())?.name || item.Condition}
                         </span>
                       </div>
                     </div>
@@ -885,7 +658,7 @@ const CatalogPage = () => {
                       <FontAwesomeIcon icon={faMapMarkerAlt} className="text-gray-400 mr-1" />
                       <span className="text-sm text-gray-600">{item.Location}</span>
                       <span className="mx-2 text-gray-300">•</span>
-                      <span className="text-xs text-gray-500">{getItemDistance(item.Location)}</span>
+                      <span className="text-xs text-gray-500">{getItemDistance(item.Location, item.lat, item.lon, item.id)}</span>
                       <span className="mx-2 text-gray-300">•</span>
                       <span className="text-sm text-gray-600">{new Date(item.created_at).toLocaleDateString()}</span>
                     </div>
@@ -896,16 +669,16 @@ const CatalogPage = () => {
                         {item.Expire && <span className="ml-2">• Expires: {new Date(item.Expire).toLocaleDateString()}</span>}
                       </div>
                       <button className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white ${
-  mode === 'donation' 
-    ? 'bg-amber-500 hover:bg-amber-600' 
-    : 'bg-green-500 hover:bg-green-600'
-} transition-colors !rounded-button whitespace-nowrap cursor-pointer`}>
-  <FontAwesomeIcon 
-    icon={mode === 'donation' ? faHandshake : faHandHoldingHeart} 
-    className="mr-2" 
-  />
-  {mode === 'donation' ? 'Request Item' : 'Offer Item'}
-</button>
+                        mode === 'donation' 
+                          ? 'bg-amber-500 hover:bg-amber-600' 
+                          : 'bg-green-500 hover:bg-green-600'
+                      } transition-colors !rounded-button whitespace-nowrap cursor-pointer`}>
+                        <FontAwesomeIcon 
+                          icon={mode === 'donation' ? faHandshake : faHandHoldingHeart} 
+                          className="mr-2" 
+                        />
+                        {mode === 'donation' ? 'Request Item' : 'Offer Item'}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -915,7 +688,7 @@ const CatalogPage = () => {
         )}
 
         {/* Empty State */}
-        {filteredItems.length === 0 && (
+        {!loading && !error && filteredItems.length === 0 && (
           <div className="text-center py-12">
             <div className="mx-auto h-12 w-12 text-gray-400">
               <FontAwesomeIcon icon={faSearch} size="3x" />
@@ -933,7 +706,6 @@ const CatalogPage = () => {
           </div>
         )}
       </main>
-
     </div>
   );
 };

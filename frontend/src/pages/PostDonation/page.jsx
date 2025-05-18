@@ -7,44 +7,45 @@ import DonationForm from "./components/DonationForm";
 import DonationPreview from "./components/DonationPreview";
 
 const PostDonationPage = () => {  
-  // Form state
+  // Form state ปรับโครงสร้างให้ตรงกับ API
   const [formData, setFormData] = useState({
-    title: "",
-    category: "",
-    condition: 0,
+    title: "",               // เทียบกับ name ใน API
+    category: "",            // เลือกจาก enum ใน API
+    condition: "",           // เปลี่ยนเป็นค่า string จาก enum แทนตัวเลข
     description: "",
     location: "",
     photos: [],
+    type: "Offer",           // เพิ่ม default เป็น "Offer"
+    lat: null,               // เพิ่มสำหรับพิกัด
+    lon: null,               // เพิ่มสำหรับพิกัด
   });
 
   // UI state
   const [previewImages, setPreviewImages] = useState([]);
 
-  // Get text representation of condition
-  const getConditionText = (rating) => {
-    switch (rating) {
-      case 1: return "poor";
-      case 2: return "fair";
-      case 3: return "good";
-      case 4: return "very good";
-      case 5: return "excellent";
-      default: return "unspecified";
-    }
-  };
-
-  // Categories with icons
+  // Categories แก้ให้ตรงกับค่าใน API (lowercase และตัดรายการที่ไม่มีใน API)
   const categories = [
-    { name: "Furniture", icon: "fa-couch" },
-    { name: "Clothing", icon: "fa-tshirt" },
-    { name: "Electronics", icon: "fa-laptop" },
-    { name: "Appliances", icon: "fa-blender" },
-    { name: "Kids & Toys", icon: "fa-baby" },
-    { name: "Books", icon: "fa-book" },
-    { name: "Kitchen", icon: "fa-utensils" },
-    { name: "Sports & Outdoors", icon: "fa-futbol" },
-    { name: "Home Decor", icon: "fa-home" },
-    { name: "Other", icon: "fa-box" },
+    { name: "furniture", icon: "fa-couch" },
+    { name: "clothing", icon: "fa-tshirt" },
+    { name: "electronics", icon: "fa-laptop" },
+    { name: "appliances", icon: "fa-blender" },
+    { name: "kids_toys", icon: "fa-baby" },
+    { name: "books", icon: "fa-book" },
+    { name: "kitchen", icon: "fa-utensils" },
+    { name: "other", icon: "fa-box" },
   ];
+
+  // แก้ไขฟังก์ชัน getConditionText ให้ตรงกับค่า enum ในฐานข้อมูล
+  const getConditionText = (conditionValue) => {
+    const conditionMap = {
+      "Poor": "Poor condition with noticeable wear",
+      "Fair": "Fair condition with some wear",
+      "Good": "Good condition with minimal wear",
+      "Like_New": "Like new condition, barely used",
+      "New": "New condition, unused"
+    };
+    return conditionMap[conditionValue] || "Select condition";
+  };
 
   // Clean up preview URLs when component unmounts
   useEffect(() => {

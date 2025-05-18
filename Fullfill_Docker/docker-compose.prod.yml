@@ -21,7 +21,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD}@db:5432/fullfill
+      - DATABASE_URI=postgresql://postgres:${DB_PASSWORD}@db:5432/fullfill
       - DEBUG=False
     restart: always
     depends_on:

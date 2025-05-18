@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Header from "./components/Header";
 import Footer from "../../components/Footer";
-import ProgressBar from "./components/ProgressBar";
 import RequestForm from "./components/RequestForm";
 
 const RequestItemPage = () => {
@@ -40,7 +39,6 @@ const RequestItemPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       <Header />
-      <ProgressBar formProgress={formProgress} />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           <RequestForm 
