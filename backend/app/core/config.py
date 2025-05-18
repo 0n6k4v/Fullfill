@@ -8,7 +8,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Fullfill Authentication API"
-    API_V1_STR: str = "/api/"
+    API_V1_STR: str = "/api"
     SECRET_KEY: str = os.getenv("SECRET_KEY")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
