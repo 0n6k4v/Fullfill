@@ -14,43 +14,65 @@ import {
   faTimes,
   faCheck,
   faAddressBook,
-  faRedo
+  faRedo,
+  faHeart
 } from '@fortawesome/free-solid-svg-icons';
 
-const PostCard = ({ post, activeTab }) => {
+const PostCard = ({ post = {} }) => {
+  const {
+    imageUrl = '/images/default-post.jpg',
+    title = 'No Title',
+    location = 'Unknown Location',
+    distance = '0 km',
+    tags = [],
+    category = 'Uncategorized',
+    postedDate = new Date().toISOString(),
+    matchedWith = null,
+    receivedBy = null
+  } = post;
+
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="h-40 bg-gray-200 overflow-hidden">
-        <img src={post.image} alt={post.title} className="w-full h-full object-cover object-top" />
+        <div className="relative">
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-full h-full object-cover object-top"
+          />
+          <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-sm hover:bg-gray-100">
+            <FontAwesomeIcon icon={faHeart} className="text-gray-600" />
+          </button>
+        </div>
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start">
           <div>
-            <h4 className="text-lg font-medium text-gray-900">{post.title}</h4>
+            <h4 className="text-lg font-medium text-gray-900">{title}</h4>
             <div className="mt-1 flex items-center text-sm text-gray-500">
               <FontAwesomeIcon icon={faTag} className="mr-1 text-gray-400" />
-              <span>{post.category}</span>
+              <span>{category}</span>
             </div>
             <div className="mt-1 flex items-center text-sm text-gray-500">
               <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-gray-400" />
-              <span>{post.location}</span>
+              <span>{location}</span>
             </div>
             <div className="mt-1 flex items-center text-sm text-gray-500">
               <FontAwesomeIcon icon={faClock} className="mr-1 text-gray-400" />
-              <span>Posted {post.postedDate}</span>
+              <span>Posted {new Date(postedDate).toLocaleDateString()}</span>
             </div>
             
-            {activeTab === 'matched' && (
+            {matchedWith && (
               <div className="mt-2 flex items-center text-sm text-blue-600">
                 <FontAwesomeIcon icon={faHandshake} className="mr-1" />
-                <span>Matched with {post.matchedWith}</span>
+                <span>Matched with {matchedWith}</span>
               </div>
             )}
             
-            {activeTab === 'completed' && (
+            {receivedBy && (
               <div className="mt-2 flex items-center text-sm text-green-600">
                 <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
-                <span>Received by {post.receivedBy}</span>
+                <span>Received by {receivedBy}</span>
               </div>
             )}
           </div>
@@ -62,18 +84,7 @@ const PostCard = ({ post, activeTab }) => {
         </div>
         
         <div className="mt-4 flex justify-between">
-          {activeTab === 'active' && (
-            <>
-              <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 cursor-pointer !rounded-button whitespace-nowrap">
-                <FontAwesomeIcon icon={faEdit} className="mr-1" /> Edit
-              </button>
-              <button className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 cursor-pointer !rounded-button whitespace-nowrap">
-                <FontAwesomeIcon icon={faTimes} className="mr-1" /> Cancel
-              </button>
-            </>
-          )}
-          
-          {activeTab === 'matched' && (
+          {matchedWith && (
             <>
               <button className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 cursor-pointer !rounded-button whitespace-nowrap">
                 <FontAwesomeIcon icon={faCheck} className="mr-1" /> Mark as Received
@@ -84,7 +95,7 @@ const PostCard = ({ post, activeTab }) => {
             </>
           )}
           
-          {activeTab === 'completed' && (
+          {receivedBy && (
             <button className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 cursor-pointer !rounded-button whitespace-nowrap">
               <FontAwesomeIcon icon={faRedo} className="mr-1" /> Post Similar
             </button>

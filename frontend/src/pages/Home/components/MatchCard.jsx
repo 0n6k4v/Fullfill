@@ -11,66 +11,54 @@ import {
   faCheckCircle,
   faInfoCircle,
   faMapMarkerAlt,
-  faHeart
+  faHeart,
+  faClock
 } from '@fortawesome/free-solid-svg-icons';
 
 const MatchCard = ({ match = {} }) => {
-  if (!match || Object.keys(match).length === 0) {
-    return (
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <p className="text-gray-500 p-4">No match data available</p>
-      </div>
-    );
-  }
-
   const {
-    userAvatar = '',
-    user = '',
-    type = '',
-    item = '',
-    status = '',
-    date = ''
+    userAvatar = '/images/default-avatar.jpg',
+    user = 'Unknown User',
+    type = 'unknown',
+    item = 'Unknown Item',
+    status = 'pending',
+    date = new Date().toISOString()
   } = match;
 
-  const getStatusColorClass = (status) => {
-    switch (status) {
-      case 'Pending': return 'bg-yellow-100 text-yellow-800';
-      case 'Accepted': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case 'accepted':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      case 'pending':
+      default:
+        return 'bg-yellow-100 text-yellow-800';
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
-      <div className="p-4">
-        <div className="flex items-center mb-4">
-          <img
-            className="h-10 w-10 rounded-full"
-            src={userAvatar || '/default-avatar.png'}
-            alt={`${user}'s avatar`}
-          />
-          <div className="ml-3">
-            <p className="text-sm font-medium text-gray-900">{user}</p>
-            <p className="text-xs text-gray-500">
-              {type === "incoming" ? "Offering: " : "Item: "}{item}
-            </p>
-          </div>
-          <div className="ml-auto">
-            <span
-              className={`px-2 py-1 text-xs rounded-full ${
-                status === "Pending"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : status === "Accepted"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-gray-100 text-gray-800"
-              }`}
-            >
+    <div className="bg-white rounded-lg shadow-sm p-4">
+      <div className="flex items-start space-x-4">
+        <img
+          src={userAvatar}
+          alt={user}
+          className="w-12 h-12 rounded-full object-cover"
+        />
+        <div className="flex-1">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">{user}</h3>
+              <p className="text-sm text-gray-600">{type === 'incoming' ? 'wants to receive' : 'wants to donate'} {item}</p>
+            </div>
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(status)}`}>
               {status}
             </span>
           </div>
-        </div>
-        <div className="text-xs text-gray-500">
-          {date}
+          <div className="mt-2 flex items-center text-sm text-gray-500">
+            <FontAwesomeIcon icon={faClock} className="mr-2" />
+            <span>{new Date(date).toLocaleDateString()}</span>
+          </div>
         </div>
       </div>
       
