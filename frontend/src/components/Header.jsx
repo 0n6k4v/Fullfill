@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
@@ -18,7 +18,8 @@ import {
   faSignOutAlt,
   faBars,
   faTimes,
-  faListAlt
+  faListAlt,
+  faSearch
 } from '@fortawesome/free-solid-svg-icons';
 
 const GlobalHeader = ({ user = null }) => {
@@ -27,6 +28,9 @@ const GlobalHeader = ({ user = null }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileRef = useRef(null);
   const pathname = usePathname();
+  const router = useRouter();
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -47,6 +51,37 @@ const GlobalHeader = ({ user = null }) => {
     };
   }, []);
 
+  useEffect(() => {
+    // จำลองการดึงข้อมูลการแจ้งเตือน
+    const fetchNotifications = async () => {
+      try {
+        // TODO: เรียก API จริง
+        const mockNotifications = [
+          {
+            id: 1,
+            message: 'มีผู้สนใจรับบริจาคสิ่งของของคุณ',
+            time: '5 นาทีที่แล้ว',
+            read: false
+          },
+          {
+            id: 2,
+            message: 'การบริจาคของคุณได้รับการยืนยันแล้ว',
+            time: '1 ชั่วโมงที่แล้ว',
+            read: true
+          }
+        ];
+        setNotifications(mockNotifications);
+        setUnreadCount(mockNotifications.filter(n => !n.read).length);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    if (user) {
+      fetchNotifications();
+    }
+  }, [user]);
+
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
   };
@@ -55,12 +90,15 @@ const GlobalHeader = ({ user = null }) => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
   
-  const handleLogout = () => {
-    if (typeof window !== 'undefined') {
+  const handleLogout = async () => {
+    try {
+      // TODO: เรียก API logout
       localStorage.removeItem('token');
       setIsAuthenticated(false);
       setIsProfileMenuOpen(false);
-      window.location.href = '/';
+      router.push('/auth/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
     }
   };
 

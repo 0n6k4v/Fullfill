@@ -1,106 +1,119 @@
 'use client';
 
 import React, { useState } from 'react';
-import { config } from '@fortawesome/fontawesome-svg-core';
-import '@fortawesome/fontawesome-svg-core/styles.css';
-config.autoAddCss = false;
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faSave, 
+import {
   faTimes,
-  faMapMarkedAlt,
-  faLocationArrow,
-  faTruck
+  faSpinner,
+  faExclamationTriangle,
+  faCheckCircle
 } from '@fortawesome/free-solid-svg-icons';
 
-const RequestFormModal = ({ post = {}, onSubmit = () => {}, onCancel = () => {} }) => {
-  // ข้อมูลตัวอย่างสำหรับ user (จริงๆ แล้วควรมาจาก context หรือ redux)
-  const mockUser = {
-    name: 'John Doe',
-    phone: '088-123-4567',
-    email: 'john.doe@example.com',
-    savedAddresses: [
-      { id: 1, label: 'บ้าน', address: '123 ถ.สุขุมวิท แขวงคลองตัน เขตคลองเตย กรุงเทพฯ 10110' },
-      { id: 2, label: 'ที่ทำงาน', address: '456 อาคารมหานคร ถ.สีลม แขวงสีลม เขตบางรัก กรุงเทพฯ 10500' }
-    ]
-  };
-
-  // State สำหรับฟอร์ม
+const RequestFormModal = ({ isOpen = false, onClose = () => {}, post = null, onSubmit = () => {} }) => {
   const [formData, setFormData] = useState({
-    name: mockUser.name || '',
-    phone: mockUser.phone || '',
-    email: mockUser.email || '',
-    addressType: 'saved',
-    selectedAddressId: mockUser.savedAddresses?.[0]?.id || '',
-    newAddress: '',
-    pickupMethod: 'self',
-    reason: '',
+    name: '',
+    phone: '',
+    email: '',
+    message: '',
+    preferredDate: '',
     preferredTime: ''
   });
 
-  // ฟังก์ชันจัดการการเปลี่ยนแปลงข้อมูลในฟอร์ม
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+
   const handleChange = (e) => {
     if (!e || !e.target) return;
-    
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  // ฟังก์ชันส่งฟอร์ม
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     if (!e) return;
     e.preventDefault();
-    onSubmit(formData);
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // ตรวจสอบข้อมูลที่จำเป็น
+      if (!formData.name || !formData.phone || !formData.message) {
+        throw new Error('กรุณากรอกข้อมูลให้ครบถ้วน');
+      }
+
+      // เรียกใช้ onSubmit callback
+      await onSubmit({
+        ...formData,
+        postId: post?.id
+      });
+
+      setSuccess(true);
+      setTimeout(() => {
+        onClose();
+        setSuccess(false);
+        setFormData({
+          name: '',
+          phone: '',
+          email: '',
+          message: '',
+          preferredDate: '',
+          preferredTime: ''
+        });
+      }, 2000);
+    } catch (err) {
+      setError(err.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // ป้องกันการ bubble event จาก overlay สู่ modal
-  const handleModalClick = (e) => {
-    if (!e) return;
-    e.stopPropagation();
-  };
-
-  if (!post || Object.keys(post).length === 0) {
-    return (
-      <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
-        <div className="fixed inset-0 bg-opacity-75 backdrop-blur-[5px] transition-opacity" onClick={onCancel}></div>
-        <div className="bg-white rounded-lg p-4 text-center text-gray-500">
-          ไม่พบข้อมูลโพสต์
-        </div>
-      </div>
-    );
-  }
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
-      {/* Overlay - ปรับให้คลิกแล้วทำงาน */}
-      <div 
-        className="fixed inset-0 bg-opacity-75 backdrop-blur-[5px] transition-opacity" 
-        onClick={onCancel}
-      ></div>
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+          <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
 
-      {/* Modal content - เพิ่ม z-index และ relative positioning ให้อยู่เหนือ overlay */}
-      <div 
-        className="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full relative z-50"
-        onClick={handleModalClick}
-      >
-        <form onSubmit={handleSubmit}>
+        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <div className="mb-4">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                {post.type === "Donation" ? "แบบฟอร์มขอรับบริจาค" : "แบบฟอร์มเสนอความช่วยเหลือ"}
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900">
+                ขอรับบริจาค: {post?.title || 'ไม่ระบุชื่อ'}
               </h3>
-              <p className="mt-1 text-sm text-gray-500">
-                กรุณากรอกข้อมูลเพื่อดำเนินการต่อ
-              </p>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-500"
+                aria-label="ปิด"
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
             </div>
 
-            {/* ข้อมูลส่วนตัว */}
-            <div className="mb-4">
-              <h4 className="text-md font-medium text-gray-900 mb-2">ข้อมูลส่วนตัว</h4>
-              <div className="grid grid-cols-1 gap-y-4">
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg flex items-center">
+                <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2" />
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg flex items-center">
+                <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
+                ส่งคำขอสำเร็จ
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                    ชื่อ-นามสกุล
+                    ชื่อ-นามสกุล *
                   </label>
                   <input
                     type="text"
@@ -108,13 +121,14 @@ const RequestFormModal = ({ post = {}, onSubmit = () => {}, onCancel = () => {} 
                     id="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     required
                   />
                 </div>
+
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                    เบอร์โทรศัพท์
+                    เบอร์โทรศัพท์ *
                   </label>
                   <input
                     type="tel"
@@ -122,10 +136,11 @@ const RequestFormModal = ({ post = {}, onSubmit = () => {}, onCancel = () => {} 
                     id="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     required
                   />
                 </div>
+
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                     อีเมล
@@ -136,178 +151,78 @@ const RequestFormModal = ({ post = {}, onSubmit = () => {}, onCancel = () => {} 
                     id="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700">
+                    ข้อความ *
+                  </label>
+                  <textarea
+                    name="message"
+                    id="message"
+                    rows="3"
+                    value={formData.message}
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     required
-                  />
+                  ></textarea>
                 </div>
-              </div>
-            </div>
 
-            {/* ที่อยู่จัดส่ง */}
-            <div className="mb-4">
-              <h4 className="text-md font-medium text-gray-900 mb-2">
-                <FontAwesomeIcon icon={faMapMarkedAlt} className="mr-2" />
-                ที่อยู่จัดส่ง
-              </h4>
-              
-              <div className="mt-2 mb-3">
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    name="addressType"
-                    id="useSavedAddress"
-                    value="saved"
-                    checked={formData.addressType === 'saved'}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="useSavedAddress" className="text-sm text-gray-700">
-                    เลือกจากที่อยู่ที่บันทึกไว้
-                  </label>
-                </div>
-                
-                {formData.addressType === 'saved' && (
-                  <div className="mt-2 ml-6">
-                    <select
-                      name="selectedAddressId"
-                      value={formData.selectedAddressId}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="preferredDate" className="block text-sm font-medium text-gray-700">
+                      วันที่ต้องการรับ
+                    </label>
+                    <input
+                      type="date"
+                      name="preferredDate"
+                      id="preferredDate"
+                      value={formData.preferredDate}
                       onChange={handleChange}
-                      className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                      {mockUser.savedAddresses?.map(addr => (
-                        <option key={addr.id} value={addr.id}>
-                          {addr.label} - {addr.address}
-                        </option>
-                      )) || (
-                        <option value="">ไม่มีที่อยู่ที่บันทึกไว้</option>
-                      )}
-                    </select>
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    />
                   </div>
-                )}
-              </div>
-              
-              <div>
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    name="addressType"
-                    id="useNewAddress"
-                    value="new"
-                    checked={formData.addressType === 'new'}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="useNewAddress" className="text-sm text-gray-700">
-                    เพิ่มที่อยู่ใหม่
-                  </label>
-                </div>
-                
-                {formData.addressType === 'new' && (
-                  <div className="mt-2 ml-6">
-                    <textarea
-                      name="newAddress"
-                      rows="3"
-                      value={formData.newAddress}
+
+                  <div>
+                    <label htmlFor="preferredTime" className="block text-sm font-medium text-gray-700">
+                      เวลาที่ต้องการรับ
+                    </label>
+                    <input
+                      type="time"
+                      name="preferredTime"
+                      id="preferredTime"
+                      value={formData.preferredTime}
                       onChange={handleChange}
-                      className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                      placeholder="กรอกที่อยู่ใหม่ของคุณ"
-                    ></textarea>
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    />
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* วิธีการรับของ */}
-            <div className="mb-4">
-              <h4 className="text-md font-medium text-gray-900 mb-2">วิธีการรับของ</h4>
-              <div className="mt-2">
-                <div className="flex items-center mb-2">
-                  <input
-                    type="radio"
-                    name="pickupMethod"
-                    id="selfPickup"
-                    value="self"
-                    checked={formData.pickupMethod === 'self'}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="selfPickup" className="text-sm text-gray-700">
-                    <FontAwesomeIcon icon={faLocationArrow} className="mr-2" />
-                    รับด้วยตนเอง
-                  </label>
-                </div>
-                
-                <div className="flex items-center">
-                  <input
-                    type="radio"
-                    name="pickupMethod"
-                    id="deliveryRequest"
-                    value="delivery"
-                    checked={formData.pickupMethod === 'delivery'}
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="deliveryRequest" className="text-sm text-gray-700">
-                    <FontAwesomeIcon icon={faTruck} className="mr-2" />
-                    ขอความช่วยเหลือในการจัดส่ง
-                  </label>
                 </div>
               </div>
-            </div>
 
-            {/* เหตุผลและเวลารับของ */}
-            <div className="grid grid-cols-1 gap-4 mb-4">
-              <div>
-                <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
-                  เหตุผลในการขอรับบริจาค (ไม่บังคับ)
-                </label>
-                <textarea
-                  name="reason"
-                  id="reason"
-                  rows="2"
-                  value={formData.reason}
-                  onChange={handleChange}
-                  className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                  placeholder="กรอกเหตุผลในการขอรับบริจาค"
-                ></textarea>
+              <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm"
+                >
+                  {loading ? (
+                    <FontAwesomeIcon icon={faSpinner} className="animate-spin mr-2" />
+                  ) : null}
+                  {loading ? 'กำลังส่ง...' : 'ส่งคำขอ'}
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
+                >
+                  ยกเลิก
+                </button>
               </div>
-              
-              <div>
-                <label htmlFor="preferredTime" className="block text-sm font-medium text-gray-700">
-                  เวลาที่สะดวกในการรับของ
-                </label>
-                <input
-                  type="datetime-local"
-                  name="preferredTime"
-                  id="preferredTime"
-                  value={formData.preferredTime}
-                  onChange={handleChange}
-                  className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-            </div>
+            </form>
           </div>
-
-          {/* ปุ่มดำเนินการ */}
-          <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-            <button
-              type="submit"
-              className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-            >
-              <FontAwesomeIcon icon={faSave} className="mr-2" />
-              บันทึก
-            </button>
-            <button
-              type="button"
-              onClick={onCancel}
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-            >
-              <FontAwesomeIcon icon={faTimes} className="mr-2" />
-              ยกเลิก
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );

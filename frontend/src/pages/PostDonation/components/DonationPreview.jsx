@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -5,11 +7,12 @@ import {
   faShareAlt, faImage, faPaperPlane, faSave, faThLarge,
   faCouch, faTshirt, faLaptop, faBlender, faBaby,
   faBook, faUtensils, faFutbol, faHome, faBox,
-  faChevronLeft, faChevronRight
+  faChevronLeft, faChevronRight, faClock, faUser, faSpinner, faTimes
 } from '@fortawesome/free-solid-svg-icons';
+import Image from 'next/image';
 
-const DonationPreview = ({ formData, previewImages, categories, getConditionText }) => {
-  const [currentImage, setCurrentImage] = useState(0);
+const DonationPreview = ({ formData = {}, previewImages = [], categories, onClose = () => {} }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Helper function to get correct icon
   const getCategoryIcon = (iconName) => {
@@ -28,6 +31,40 @@ const DonationPreview = ({ formData, previewImages, categories, getConditionText
     }
   };
 
+  const handlePreviousImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === 0 ? previewImages.length - 1 : prevIndex - 1
+    );
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === previewImages.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const getConditionText = (condition) => {
+    const conditions = {
+      'Poor': 'สภาพไม่ดี',
+      'Fair': 'สภาพพอใช้',
+      'Good': 'สภาพดี',
+      'Like_New': 'เหมือนใหม่',
+      'New': 'ใหม่'
+    };
+    return conditions[condition] || condition;
+  };
+
+  const getConditionColor = (condition) => {
+    const colors = {
+      'Poor': 'bg-red-100 text-red-800',
+      'Fair': 'bg-yellow-100 text-yellow-800',
+      'Good': 'bg-green-100 text-green-800',
+      'Like_New': 'bg-blue-100 text-blue-800',
+      'New': 'bg-purple-100 text-purple-800'
+    };
+    return colors[condition] || 'bg-gray-100 text-gray-800';
+  };
+
   if (!previewImages || previewImages.length === 0) {
     return (
       <div className="md:w-1/2 relative">
@@ -38,96 +75,106 @@ const DonationPreview = ({ formData, previewImages, categories, getConditionText
     );
   }
 
-  const handlePrevImage = () => {
-    setCurrentImage((prev) => (prev === 0 ? previewImages.length - 1 : prev - 1));
-  };
-  
-  const handleNextImage = () => {
-    setCurrentImage((prev) => (prev === previewImages.length - 1 ? 0 : prev + 1));
-  };
-
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 sticky top-24">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">
-        Preview
-      </h2>
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <div className="relative h-48 bg-gray-100">
-          <div className="h-96 relative">
-            <img
-              src={previewImages[currentImage]}
-              alt="Item preview"
-              className="w-full h-full object-cover object-top"
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+      {/* ส่วนหัว */}
+      <div className="p-4 border-b flex justify-between items-center">
+        <h2 className="text-xl font-semibold">ตัวอย่างการแสดงผล</h2>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 focus:outline-none"
+          aria-label="ปิด"
+        >
+          <FontAwesomeIcon icon={faTimes} />
+        </button>
+      </div>
+
+      {/* ส่วนรูปภาพ */}
+      <div className="relative h-64 bg-gray-100">
+        {previewImages.length > 0 ? (
+          <>
+            <Image
+              src={previewImages[currentImageIndex]}
+              alt={`รูปภาพ ${currentImageIndex + 1}`}
+              fill
+              className="object-cover"
             />
-            <button
-              onClick={handlePrevImage}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 rounded-full p-2 shadow-md hover:bg-white cursor-pointer !rounded-button whitespace-nowrap"
-            >
-              <FontAwesomeIcon icon={faChevronLeft} className="text-gray-700" />
-            </button>
-            <button
-              onClick={handleNextImage}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 rounded-full p-2 shadow-md hover:bg-white cursor-pointer !rounded-button whitespace-nowrap"
-            >
-              <FontAwesomeIcon icon={faChevronRight} className="text-gray-700" />
-            </button>
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-              {previewImages.map((_, index) => (
+            {previewImages.length > 1 && (
+              <>
                 <button
-                  key={index}
-                  onClick={() => setCurrentImage(index)}
-                  className={`w-2.5 h-2.5 rounded-full ${currentImage === index ? "bg-indigo-600" : "bg-white/70"} cursor-pointer !rounded-button whitespace-nowrap`}
-                ></button>
-              ))}
-            </div>
+                  onClick={handlePreviousImage}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 text-gray-800 rounded-full w-8 h-8 flex items-center justify-center hover:bg-white transition-colors"
+                  aria-label="รูปก่อนหน้า"
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} />
+                </button>
+                <button
+                  onClick={handleNextImage}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 text-gray-800 rounded-full w-8 h-8 flex items-center justify-center hover:bg-white transition-colors"
+                  aria-label="รูปถัดไป"
+                >
+                  <FontAwesomeIcon icon={faChevronRight} />
+                </button>
+              </>
+            )}
+          </>
+        ) : (
+          <div className="h-full flex items-center justify-center text-gray-400">
+            <FontAwesomeIcon icon={faSpinner} className="fa-spin text-4xl" />
+          </div>
+        )}
+      </div>
+
+      {/* ส่วนรายละเอียด */}
+      <div className="p-4">
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="text-lg font-semibold">{formData.title || 'ชื่อสิ่งของ'}</h3>
+          {formData.condition && (
+            <span className={`px-2 py-1 rounded-full text-sm ${getConditionColor(formData.condition)}`}>
+              {getConditionText(formData.condition)}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center text-gray-600 mb-2">
+          <FontAwesomeIcon 
+            icon={formData.category ? getCategoryIcon(categories.find((c) => c.name === formData.category)?.icon) : faTag} 
+            className="mr-2 text-blue-500" 
+          />
+          <span>{formData.category || "Category"}</span>
+        </div>
+
+        <div className="space-y-2 text-sm text-gray-500">
+          <div className="flex items-center">
+            <FontAwesomeIcon icon={faMapMarkerAlt} className="w-4 mr-2" />
+            <span>{formData.location || 'สถานที่...'}</span>
+          </div>
+          <div className="flex items-center">
+            <FontAwesomeIcon icon={faClock} className="w-4 mr-2" />
+            <span>โพสต์เมื่อ {new Date().toLocaleDateString('th-TH')}</span>
+          </div>
+          <div className="flex items-center">
+            <FontAwesomeIcon icon={faUser} className="w-4 mr-2" />
+            <span>โพสต์โดย {formData.postedBy || 'ผู้ใช้'}</span>
           </div>
         </div>
-        <div className="p-4">
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
-            {formData.title || "Item Title"}
-          </h3>
-          <div className="flex items-center text-gray-600 mb-2">
-            <FontAwesomeIcon 
-              icon={formData.category ? getCategoryIcon(categories.find((c) => c.name === formData.category)?.icon) : faTag} 
-              className="mr-2 text-blue-500" 
-            />
-            <span>{formData.category || "Category"}</span>
-          </div>
-          <div className="flex items-center text-gray-600 mb-2">
-            <FontAwesomeIcon 
-              icon={faStar} 
-              className="mr-2 text-amber-400" 
-            />
-            <span>
-              Condition:{" "}
-              {formData.condition > 0
-                ? getConditionText(formData.condition)
-                : "Not specified"}
-            </span>
-          </div>
-          <div className="flex items-center text-gray-600 mb-4">
-            <FontAwesomeIcon 
-              icon={faMapMarkerAlt} 
-              className="mr-2 text-red-500" 
-            />
-            <span>{formData.location || "Location"}</span>
-          </div>
-          <p className="text-gray-700 text-sm mb-4 line-clamp-3">
-            {formData.description ||
-              "Item description will appear here..."}
-          </p>
-          <div className="flex justify-between">
-            <span className="text-green-500 font-medium text-sm">
-              Available for donation
-            </span>
-            <div className="flex space-x-2">
-              <button className="text-gray-400 p-2 rounded-full hover:bg-gray-100 cursor-pointer">
-                <FontAwesomeIcon icon={faBookmark} />
-              </button>
-              <button className="text-gray-400 p-2 rounded-full hover:bg-gray-100 cursor-pointer">
-                <FontAwesomeIcon icon={faShareAlt} />
-              </button>
-            </div>
+
+        <p className="text-gray-700 text-sm mb-4 line-clamp-3">
+          {formData.description ||
+            "Item description will appear here..."}
+        </p>
+
+        <div className="flex justify-between">
+          <span className="text-green-500 font-medium text-sm">
+            Available for donation
+          </span>
+          <div className="flex space-x-2">
+            <button className="text-gray-400 p-2 rounded-full hover:bg-gray-100 cursor-pointer">
+              <FontAwesomeIcon icon={faBookmark} />
+            </button>
+            <button className="text-gray-400 p-2 rounded-full hover:bg-gray-100 cursor-pointer">
+              <FontAwesomeIcon icon={faShareAlt} />
+            </button>
           </div>
         </div>
       </div>

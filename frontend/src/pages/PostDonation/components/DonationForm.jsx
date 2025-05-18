@@ -23,8 +23,8 @@ const LeafletMap = dynamic(
   }
 );
 
-const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, getConditionText, categories }) => {
-  const { user, isAuthenticated } = useAuth();
+const DonationForm = ({ formData = {}, setFormData = () => {}, previewImages = [], setPreviewImages = () => {}, getConditionText = () => {}, categories = [] }) => {
+  const { user = null, isAuthenticated = () => false } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -45,24 +45,24 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
     } else {
       // Default categories if not provided
       setCategoryOptions([
-        { name: "furniture", icon: "fa-couch" },
-        { name: "clothing", icon: "fa-tshirt" },
-        { name: "electronics", icon: "fa-laptop" },
-        { name: "appliances", icon: "fa-blender" },
-        { name: "kids_toys", icon: "fa-baby" },
-        { name: "books", icon: "fa-book" },
-        { name: "kitchen", icon: "fa-utensils" },
-        { name: "other", icon: "fa-box" }
+        { name: "เฟอร์นิเจอร์", icon: "fa-couch" },
+        { name: "เสื้อผ้า", icon: "fa-tshirt" },
+        { name: "อิเล็กทรอนิกส์", icon: "fa-laptop" },
+        { name: "เครื่องใช้ไฟฟ้า", icon: "fa-blender" },
+        { name: "ของเล่นเด็ก", icon: "fa-baby" },
+        { name: "หนังสือ", icon: "fa-book" },
+        { name: "เครื่องครัว", icon: "fa-utensils" },
+        { name: "อื่นๆ", icon: "fa-box" }
       ]);
     }
     
     // Set condition options
     setConditionOptions([
-      { value: "Poor", text: "Poor" },
-      { value: "Fair", text: "Fair" },
-      { value: "Good", text: "Good" },
-      { value: "Like_New", text: "Like New" },
-      { value: "New", text: "New" }
+      { value: "Poor", text: "สภาพไม่ดี" },
+      { value: "Fair", text: "สภาพพอใช้" },
+      { value: "Good", text: "สภาพดี" },
+      { value: "Like_New", text: "เหมือนใหม่" },
+      { value: "New", text: "ใหม่" }
     ]);
   }, [categories]);
 
@@ -440,13 +440,13 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
   return (
     <>
       <form onSubmit={handleSubmit}>
-        {/* Item Title */}
+        {/* ชื่อสิ่งของ */}
         <div className="mb-6">
           <label
             htmlFor="title"
             className="block text-gray-700 font-medium mb-2"
           >
-            Item Title <span className="text-red-500">*</span>
+            ชื่อสิ่งของ <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -454,24 +454,24 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
             name="title"
             value={formData.title || ""}
             onChange={handleInputChange}
-            placeholder="e.g., Wooden Dining Table, Winter Jacket"
+            placeholder="เช่น โต๊ะอาหารไม้ เสื้อกันหนาว"
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             required
           />
         </div>
 
-        {/* Category Selection */}
+        {/* หมวดหมู่ */}
         <div className="mb-6">
           <label
             htmlFor="category"
             className="block text-gray-700 font-medium mb-2"
           >
-            Category <span className="text-red-500">*</span>
+            หมวดหมู่ <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <button
               type="button"
-              className="w-full flex items-center justify-between bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm !rounded-button whitespace-nowrap cursor-pointer"
+              className="w-full flex items-center justify-between bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
             >
               <span className="flex items-center">
@@ -484,7 +484,7 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
                     {formData.category}
                   </>
                 ) : (
-                  "Select a category"
+                  "เลือกหมวดหมู่"
                 )}
               </span>
               <FontAwesomeIcon 
@@ -512,10 +512,10 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
           </div>
         </div>
 
-        {/* Condition Selection */}
+        {/* สภาพสิ่งของ */}
         <div className="mb-6">
           <label className="block text-gray-700 font-medium mb-2">
-            Condition <span className="text-red-500">*</span>
+            สภาพสิ่งของ <span className="text-red-500">*</span>
           </label>
           <div className="flex flex-col space-y-2">
             {conditionOptions.map((condition) => (
@@ -537,30 +537,30 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
           </div>
         </div>
 
-        {/* Description */}
+        {/* คำอธิบาย */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <label
               htmlFor="description"
               className="block text-gray-700 font-medium"
             >
-              Description <span className="text-red-500">*</span>
+              คำอธิบาย <span className="text-red-500">*</span>
             </label>
             <button
               type="button"
               onClick={generateDescription}
               disabled={isGeneratingDescription}
-              className="text-sm text-blue-600 hover:text-blue-800 flex items-center !rounded-button whitespace-nowrap cursor-pointer"
+              className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
             >
               {isGeneratingDescription ? (
                 <>
                   <FontAwesomeIcon icon={faSpinner} className="fa-spin mr-1" />
-                  Generating...
+                  กำลังสร้าง...
                 </>
               ) : (
                 <>
                   <FontAwesomeIcon icon={faMagic} className="mr-1" />
-                  Generate with AI
+                  สร้างด้วย AI
                 </>
               )}
             </button>
@@ -570,26 +570,26 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
             name="description"
             value={formData.description || ""}
             onChange={handleInputChange}
-            placeholder="Describe your item's features, condition, and any other relevant details..."
+            placeholder="อธิบายรายละเอียด สภาพ และข้อมูลอื่นๆ ที่เกี่ยวข้อง..."
             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             rows={5}
             required
           ></textarea>
           <div className="flex justify-between text-xs text-gray-500 mt-1">
             <span>
-              Be specific to help others understand what you're offering
+              ให้รายละเอียดที่ชัดเจนเพื่อให้ผู้อื่นเข้าใจสิ่งที่คุณต้องการบริจาค
             </span>
             <span>{(formData.description || "").length}/500</span>
           </div>
         </div>
 
-        {/* Location */}
+        {/* สถานที่ */}
         <div className="mb-6">
           <label
             htmlFor="location"
             className="block text-gray-700 font-medium mb-2"
           >
-            Location <span className="text-red-500">*</span>
+            สถานที่ <span className="text-red-500">*</span>
           </label>
           <div className="flex space-x-2">
             <div className="relative flex-1">
@@ -599,7 +599,7 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
                 name="location"
                 value={formData.location || ""}
                 onChange={handleInputChange}
-                placeholder="e.g., Downtown, Seattle"
+                placeholder="เช่น ตัวเมือง, กรุงเทพฯ"
                 className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 required
               />
@@ -614,11 +614,10 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
               className="flex items-center px-4 py-3 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
             >
               <FontAwesomeIcon icon={faMapLocation} className="mr-2" />
-              Pick on Map
+              เลือกบนแผนที่
             </button>
           </div>
           
-          {/* แสดงข้อมูลที่อยู่ที่ได้จาก API */}
           {addressData && (
             <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
               <p><span className="font-medium">ตำแหน่ง:</span> {coordinates && `${coordinates.lat.toFixed(5)}, ${coordinates.lng.toFixed(5)}`}</p>
@@ -634,14 +633,14 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
           )}
           
           <p className="text-xs text-gray-500 mt-1">
-            For safety, provide a general area rather than your exact address
+            เพื่อความปลอดภัย กรุณาระบุพื้นที่ทั่วไปแทนที่อยู่ที่แน่นอน
           </p>
         </div>
 
-        {/* Photo Upload */}
+        {/* อัพโหลดรูปภาพ */}
         <div className="mb-6">
           <label className="block text-gray-700 font-medium mb-2">
-            Photos <span className="text-gray-500">(Up to 5)</span>
+            รูปภาพ <span className="text-gray-500">(สูงสุด 5 รูป)</span>
           </label>
           <div
             className={`border-2 border-dashed rounded-lg p-6 text-center ${dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"}`}
@@ -676,37 +675,37 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
               className="text-4xl text-blue-500 mb-3" 
             />
             <p className="text-gray-700 mb-1">
-              Drag and drop your photos here
+              ลากและวางรูปภาพที่นี่
             </p>
             <p className="text-gray-500 text-sm mb-2">
-              or click to browse files
+              หรือคลิกเพื่อเลือกไฟล์
             </p>
             <button
               type="button"
-              className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-sm hover:bg-blue-200 transition-colors !rounded-button whitespace-nowrap cursor-pointer"
+              className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-sm hover:bg-blue-200 transition-colors"
             >
-              Select Photos
+              เลือกรูปภาพ
             </button>
           </div>
 
-          {/* Preview Images */}
           {previewImages.length > 0 && (
             <div className="mt-4">
               <p className="text-sm text-gray-700 mb-2">
-                Uploaded Photos:
+                รูปภาพที่อัพโหลด:
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                 {previewImages.map((url, index) => (
                   <div key={index} className="relative group">
                     <img
                       src={url}
-                      alt={`Upload ${index + 1}`}
+                      alt={`รูปภาพ ${index + 1}`}
                       className="w-full h-24 object-cover rounded-lg"
                     />
                     <button
                       type="button"
                       onClick={() => removePhoto(index)}
-                      className="absolute top-1 right-1 bg-white/80 text-red-500 rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      className="absolute top-1 right-1 bg-white/80 text-red-500 rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="ลบรูปภาพ"
                     >
                       <FontAwesomeIcon icon={faTimes} />
                     </button>
@@ -717,7 +716,7 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
           )}
         </div>
 
-        {/* Submit Button */}
+        {/* ปุ่มส่ง */}
         <div className="mt-8">
           <button
             type="submit"
@@ -727,33 +726,32 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
             {isSubmitting ? (
               <>
                 <FontAwesomeIcon icon={faSpinner} className="fa-spin mr-2" />
-                Submitting...
+                กำลังส่ง...
               </>
             ) : (
-              "Submit Donation"
+              "ส่งการบริจาค"
             )}
           </button>
         </div>
 
-        {/* Map Modal */}
+        {/* Modal แผนที่ */}
         {showMapModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
             <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-auto flex flex-col">
               <div className="p-4 border-b flex justify-between items-center">
-                <h3 className="text-lg font-semibold">Select Location on Map</h3>
+                <h3 className="text-lg font-semibold">เลือกตำแหน่งบนแผนที่</h3>
                 <button 
                   type="button"
                   className="text-gray-500 hover:text-gray-700 focus:outline-none"
                   onClick={() => setShowMapModal(false)}
+                  aria-label="ปิด"
                 >
                   <FontAwesomeIcon icon={faTimes} />
                 </button>
               </div>
               <div className="p-4 flex-1">
-                {/* ใช้ component แผนที่แบบ dynamic */}
                 <LeafletMap onSelectLocation={handleCoordinatesSelected} />
                 
-                {/* แสดงข้อมูลที่อยู่ */}
                 {addressData && (
                   <div className="mt-4 p-3 bg-gray-100 rounded">
                     <p className="text-sm font-medium">ข้อมูลที่อยู่:</p>
@@ -778,7 +776,7 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
                   className="bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors w-full"
                   onClick={() => setShowMapModal(false)}
                 >
-                  Confirm Location
+                  ยืนยันตำแหน่ง
                 </button>
               </div>
             </div>
@@ -786,7 +784,7 @@ const DonationForm = ({ formData, setFormData, previewImages, setPreviewImages, 
         )}
       </form>
       
-      {/* Login Modal */}
+      {/* Modal เข้าสู่ระบบ */}
       {showLoginModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
           <div className="bg-white rounded-xl w-full max-w-md p-6">

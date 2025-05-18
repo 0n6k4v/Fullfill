@@ -13,11 +13,34 @@ import {
   faHandshake,
   faHandHoldingHeart,
   faThLarge, faCouch, faTshirt, faLaptop, faBlender, faBaby,
-  faBook, faUtensils
+  faBook, faUtensils,
+  faClock,
+  faUser,
+  faHeart,
+  faComment,
+  faExclamationCircle,
+  faTimesCircle
 } from '@fortawesome/free-solid-svg-icons';
 import RequestFormModal from './RequestFormModal';
 
-const PostCard = ({ post = null, viewMode = 'grid' }) => {
+const PostCard = ({ post = {}, onStatusChange }) => {
+  const {
+    id,
+    title = 'ไม่ระบุชื่อ',
+    description = 'ไม่มีคำอธิบาย',
+    category = 'ไม่ระบุหมวดหมู่',
+    condition = 'ไม่ระบุสภาพ',
+    location = 'ไม่ระบุสถานที่',
+    image = { url: '/placeholder.jpg' },
+    created_at = new Date().toISOString(),
+    uploaded_by = { name: 'ไม่ระบุผู้ใช้' },
+    status = 'available',
+    expire = null,
+    matched_userid = null,
+    lat = null,
+    lon = null
+  } = post;
+
   // State เพื่อควบคุมการแสดง Modal
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
@@ -157,128 +180,144 @@ const PostCard = ({ post = null, viewMode = 'grid' }) => {
     calculateDistance();
   }, [userLocation, post?.lat, post?.lon]);
 
-  if (!post) {
-    return (
-      <div className="bg-white rounded-lg shadow-sm p-4 text-center text-gray-500">
-        ไม่พบข้อมูลโพสต์
-      </div>
-    );
-  }
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'available':
+        return 'bg-green-100 text-green-800';
+      case 'reserved':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800';
+      case 'expired':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'available':
+        return 'พร้อมรับบริจาค';
+      case 'reserved':
+        return 'ถูกจองแล้ว';
+      case 'completed':
+        return 'ส่งมอบแล้ว';
+      case 'expired':
+        return 'หมดอายุ';
+      default:
+        return 'ไม่ทราบสถานะ';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'available':
+        return faHeart;
+      case 'reserved':
+        return faExclamationCircle;
+      case 'completed':
+        return faHeart;
+      case 'expired':
+        return faTimesCircle;
+      default:
+        return faExclamationCircle;
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const handleStatusChange = (newStatus) => {
+    if (onStatusChange) {
+      onStatusChange(id, newStatus);
+    }
+  };
 
   return (
     <>
-      <div
-        className={`bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow ${
-          viewMode === "list" ? "flex" : ""
-        }`}
-      >
-        <div
-          className={`${viewMode === "list" ? "w-1/3 h-full" : "h-48"} relative`}
-        >
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+        <div className="relative">
           <img
-            src={post.image || '/placeholder-image.jpg'}
-            alt={post.title || 'No title'}
-            className="w-full h-full object-cover object-top"
+            src={image?.url || '/placeholder.jpg'}
+            alt={title}
+            className="w-full h-48 object-cover"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = '/placeholder-image.jpg';
+              e.target.src = '/placeholder.jpg';
             }}
           />
-          <div className="absolute top-2 left-2">
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                post.type === "Offer"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-blue-100 text-blue-800"
-              }`}
-            >
-              {post.type === "Offer" ? "การบริจาค" : "คำขอรับบริจาค"}
-            </span>
+          <div className={`absolute top-2 right-2 px-2 py-1 rounded-full text-sm ${getStatusColor(status)}`}>
+            <FontAwesomeIcon icon={getStatusIcon(status)} className="mr-1" />
+            {getStatusText(status)}
           </div>
         </div>
 
-        <div className={`p-4 ${viewMode === "list" ? "w-2/3" : ""}`}>
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-1">
-                {post.title || 'No title'}
-              </h3>
-              <div className="flex items-center text-sm text-gray-500 mb-2">
-                <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-red-500" />
-                <span>
-                  {post.location || 'No location'} • {distance}
-                </span>
-              </div>
-            </div>
-            <button 
-              className="text-gray-400 hover:text-gray-500 cursor-pointer"
-              onClick={(e) => {
-                if (!e) return;
-                e.preventDefault();
-                e.stopPropagation();
-                // TODO: Implement bookmark functionality
-              }}
-            >
-              <FontAwesomeIcon icon={faBookmark} />
-            </button>
-          </div>
+        <div className="p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2">{description}</p>
 
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-            {post.description || 'No description'}
-          </p>
-
-          <div className="flex flex-wrap gap-2 mb-3">
-            {/* Category Tag - Updated to match CatalogPage style */}
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-indigo-100 text-indigo-800">
-              <FontAwesomeIcon icon={getCategoryIcon(post.category)} className="mr-1" size="sm" />
-              {post.category || 'Uncategorized'}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+              {category}
             </span>
-            
-            {/* Condition Tag - Updated to match CatalogPage style */}
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${getConditionColors(post.condition).bg} ${getConditionColors(post.condition).text}`}>
-              {post.condition || 'Unknown'}
+            <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+              {condition}
             </span>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center text-sm text-gray-500 mb-4">
+            <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" />
+            <span>{location}</span>
+          </div>
+
+          <div className="flex items-center justify-between text-sm text-gray-500">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <FontAwesomeIcon icon={faUserCircle} className="text-gray-400 text-xl" />
-              </div>
-              <div className="ml-2">
-                <p className="text-sm font-medium text-gray-900">
-                  {post.uploaded_by ? `User #${post.uploaded_by}` : "Anonymous User"}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {post.created_at ? new Date(post.created_at).toLocaleDateString('th-TH') : 'No date'}
-                </p>
-              </div>
+              <FontAwesomeIcon icon={faClock} className="mr-2" />
+              <span>{formatDate(created_at)}</span>
             </div>
-
-            <button 
-              onClick={handleRequestClick}
-              className={`inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white ${buttonColor} focus:outline-none !rounded-button whitespace-nowrap`}
-            >
-              <FontAwesomeIcon icon={buttonIcon} className="mr-1" />
-              {post.type === "Offer" ? "ขอรับบริจาค" : "เสนอความช่วยเหลือ"}
-            </button>
+            <div className="flex items-center">
+              <FontAwesomeIcon icon={faUser} className="mr-2" />
+              <span>{uploaded_by?.name}</span>
+            </div>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-gray-100 flex justify-end text-xs text-gray-500">
-            <div>
-              <button 
-                className="text-gray-500 hover:text-gray-700 cursor-pointer"
-                onClick={(e) => {
-                  if (!e) return;
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // TODO: Implement share functionality
-                }}
+          {status === 'available' && (
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                onClick={() => handleStatusChange('reserved')}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
+                aria-label="จองสิ่งของ"
               >
-                <FontAwesomeIcon icon={faShareAlt} className="mr-1" /> แชร์
+                จองสิ่งของ
               </button>
             </div>
-          </div>
+          )}
+
+          {status === 'reserved' && (
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                onClick={() => handleStatusChange('completed')}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                aria-label="ยืนยันการส่งมอบ"
+              >
+                ยืนยันการส่งมอบ
+              </button>
+              <button
+                onClick={() => handleStatusChange('available')}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                aria-label="ยกเลิกการจอง"
+              >
+                ยกเลิกการจอง
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
