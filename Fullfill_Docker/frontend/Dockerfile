@@ -8,7 +8,10 @@ RUN npm ci
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY frontend/ .
+COPY frontend/src ./src
+COPY frontend/public ./public
+COPY frontend/package.json ./
+COPY frontend/next.config.js ./
 RUN npm run build
 
 FROM base AS runner
