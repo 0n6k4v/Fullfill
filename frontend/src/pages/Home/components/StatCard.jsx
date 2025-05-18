@@ -11,13 +11,18 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 const StatCard = ({ 
-  title = 'No Title', 
-  value = 0, 
-  icon = null, 
-  color = 'bg-blue-500',
-  change = 0,
-  changeType = 'neutral'
+  stat = {},
+  index = 0
 }) => {
+  const {
+    title = 'ไม่มีชื่อ',
+    value = 0,
+    icon = null,
+    color = 'bg-blue-500',
+    change = 0,
+    changeType = 'neutral'
+  } = stat;
+
   const getChangeColor = (type) => {
     if (!type) return 'text-gray-600';
     
@@ -41,14 +46,22 @@ const StatCard = ({
     return val > 0 ? `+${val}` : val;
   };
 
+  const getIcon = (index) => {
+    const icons = [faHandHoldingHeart, faBoxOpen, faClipboardList, faCheckCircle];
+    return icons[index % icons.length];
+  };
+
+  const getColor = (index) => {
+    const colors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500'];
+    return colors[index % colors.length];
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex items-center">
-        {icon && (
-          <div className={`${color} p-3 rounded-lg`}>
-            <FontAwesomeIcon icon={icon} className="text-white text-xl" />
-          </div>
-        )}
+        <div className={`${getColor(index)} p-3 rounded-lg`}>
+          <FontAwesomeIcon icon={getIcon(index)} className="text-white text-xl" />
+        </div>
         <div className="ml-4">
           <h3 className="text-sm font-medium text-gray-500">{title}</h3>
           <p className="text-2xl font-semibold text-gray-900">{formatValue(value)}</p>
