@@ -11,7 +11,7 @@ import {
 import { faHeart } from '@fortawesome/free-regular-svg-icons';
 import RequestFormModal from '../../../components/RequestFormModal';
 
-const SimilarItems = ({ items }) => {
+const SimilarItems = ({ items = [] }) => {
   // State สำหรับควบคุม Modal แต่ละรายการ
   const [activeRequestItem, setActiveRequestItem] = useState(null);
 
@@ -31,6 +31,17 @@ const SimilarItems = ({ items }) => {
     setActiveRequestItem(null);
     alert("คำขอของคุณถูกส่งเรียบร้อยแล้ว!");
   };
+
+  if (!items || items.length === 0) {
+    return (
+      <div className="mt-10">
+        <h2 className="text-xl font-bold text-gray-800 mb-6">
+          รายการที่คล้ายกัน
+        </h2>
+        <p className="text-gray-500">No similar items available</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-10">

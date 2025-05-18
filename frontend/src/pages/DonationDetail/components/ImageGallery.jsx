@@ -5,9 +5,19 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as fasHeart, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as farHeart } from '@fortawesome/free-regular-svg-icons';
 
-const ImageGallery = ({ images, type }) => {
+const ImageGallery = ({ images = [], type = 'Donation' }) => {
   const [currentImage, setCurrentImage] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+
+  if (!images || images.length === 0) {
+    return (
+      <div className="md:w-1/2 relative">
+        <div className="h-96 bg-gray-200 flex items-center justify-center">
+          <p className="text-gray-500">No images available</p>
+        </div>
+      </div>
+    );
+  }
 
   const handlePrevImage = () => {
     setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));

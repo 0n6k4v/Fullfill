@@ -12,20 +12,41 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import DonationRequestModal from './DonationRequestModal';
 
-const ItemDetails = ({ item }) => {
+const ItemDetails = ({ item = {} }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  if (!item || Object.keys(item).length === 0) {
+    return (
+      <div className="md:w-1/2 p-6">
+        <p className="text-gray-500">No item details available</p>
+      </div>
+    );
+  }
+
+  const {
+    title = '',
+    location = '',
+    distance = '',
+    description = '',
+    tags = [],
+    donorName = '',
+    postedTime = '',
+    details = {},
+    pickupLocation = '',
+    pickupTime = ''
+  } = item;
 
   return (
     <div className="md:w-1/2 p-6">
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            {item.title}
+            {title}
           </h1>
           <div className="flex items-center mb-4">
             <FontAwesomeIcon icon={faMapMarkerAlt} className="text-red-500 mr-2" />
             <span className="text-gray-600">
-              {item.location} • {item.distance}
+              {location} • {distance}
             </span>
           </div>
         </div>
@@ -40,9 +61,9 @@ const ItemDetails = ({ item }) => {
       </div>
       
       <div className="border-t border-b py-4 my-4">
-        <p className="text-gray-700 mb-4">{item.description}</p>
+        <p className="text-gray-700 mb-4">{description}</p>
         <div className="flex flex-wrap gap-2 mb-4">
-          {item.tags.map((tag, index) => (
+          {tags.map((tag, index) => (
             <span key={index} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
               {tag}
             </span>
@@ -56,8 +77,8 @@ const ItemDetails = ({ item }) => {
               </div>
             </div>
             <div>
-              <p className="font-medium text-gray-800">{item.donorName}</p>
-              <p className="text-gray-500 text-sm">{item.postedTime}</p>
+              <p className="font-medium text-gray-800">{donorName}</p>
+              <p className="text-gray-500 text-sm">{postedTime}</p>
             </div>
           </div>
           <button
@@ -73,7 +94,7 @@ const ItemDetails = ({ item }) => {
       <div>
         <h2 className="text-lg font-bold text-gray-800 mb-3">รายละเอียดเพิ่มเติม</h2>
         <div className="grid grid-cols-2 gap-4">
-          {Object.entries(item.details).map(([key, value], index) => (
+          {Object.entries(details).map(([key, value], index) => (
             <div key={index}>
               <p className="text-gray-600 text-sm">{key}</p>
               <p className="font-medium">{value}</p>
@@ -87,14 +108,14 @@ const ItemDetails = ({ item }) => {
             <FontAwesomeIcon icon={faMapMarkerAlt} className="text-gray-600 mt-1 mr-3" />
             <div>
               <p className="font-medium">รับที่บ้านของผู้บริจาค</p>
-              <p className="text-gray-600">{item.pickupLocation}</p>
+              <p className="text-gray-600">{pickupLocation}</p>
             </div>
           </div>
           <div className="flex items-start">
             <FontAwesomeIcon icon={faClock} className="text-gray-600 mt-1 mr-3" />
             <div>
               <p className="font-medium">เวลาที่สะดวก</p>
-              <p className="text-gray-600">{item.pickupTime}</p>
+              <p className="text-gray-600">{pickupTime}</p>
             </div>
           </div>
         </div>

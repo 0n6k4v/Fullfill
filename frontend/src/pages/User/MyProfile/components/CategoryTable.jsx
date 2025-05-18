@@ -2,7 +2,7 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTshirt, faBook, faUtensils, faBox } from '@fortawesome/free-solid-svg-icons';
 
-const CategoryTable = ({ categoryData }) => {
+const CategoryTable = ({ categoryData = {} }) => {
   // Helper function to get appropriate icon based on category name
   const getCategoryIcon = (category) => {
     switch(category) {
@@ -16,6 +16,21 @@ const CategoryTable = ({ categoryData }) => {
         return { icon: faBox, color: 'text-blue-500' };
     }
   };
+
+  if (!categoryData || Object.keys(categoryData).length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-medium text-gray-900">
+            Category-wise Analysis
+          </h3>
+        </div>
+        <div className="p-6">
+          <p className="text-gray-500">No category data available</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">

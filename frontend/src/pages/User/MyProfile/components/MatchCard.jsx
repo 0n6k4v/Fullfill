@@ -9,43 +9,60 @@ import {
   faCheckCircle
 } from '@fortawesome/free-solid-svg-icons';
 
-const MatchCard = ({ match }) => {
+const MatchCard = ({ match = {} }) => {
+  if (!match || Object.keys(match).length === 0) {
+    return (
+      <div className="border border-gray-200 rounded-lg p-4 mb-4">
+        <p className="text-gray-500">No match data available</p>
+      </div>
+    );
+  }
+
+  const {
+    userAvatar = '',
+    user = '',
+    type = '',
+    item = '',
+    status = '',
+    date = ''
+  } = match;
+
   return (
     <div className="border border-gray-200 rounded-lg p-4 mb-4 hover:shadow-sm transition-shadow duration-200">
       <div className="flex items-center">
         <img
           className="h-10 w-10 rounded-full"
-          src={match.userAvatar}
-          alt={`${match.user}'s avatar`}
+          src={userAvatar}
+          alt={`${user}'s avatar`}
         />
         <div className="ml-3">
-          <p className="text-sm font-medium text-gray-900">{match.user}</p>
+          <p className="text-sm font-medium text-gray-900">{user}</p>
           <p className="text-xs text-gray-500">
-            {match.type === "incoming" ? "Offering: " : "Item: "}{match.item}
+            {type === "incoming" ? "Offering: " : "Item: "}{item}
           </p>
         </div>
         <div className="ml-auto flex items-center">
           <span
             className={`px-2 py-1 text-xs rounded-full ${
-              match.status === "Pending"
+              status === "Pending"
                 ? "bg-yellow-100 text-yellow-800"
-                : match.status === "Accepted"
+                : status === "Accepted"
                   ? "bg-green-100 text-green-800"
                   : "bg-gray-100 text-gray-800"
             }`}
           >
-            {match.status}
+            {status}
           </span>
         </div>
       </div>
       <div className="mt-3 text-xs text-gray-500">
-        <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" /> {match.date}
+        <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" /> {date}
       </div>
       <div className="mt-4 flex space-x-3">
         <button className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 cursor-pointer !rounded-button whitespace-nowrap">
           <FontAwesomeIcon icon={faAddressBook} className="mr-1" /> View Contact
         </button>
-        {match.type === "incoming" && match.status === "Pending" ? (
+        {type === "incoming" && status === "Pending" ? (
           <>
             <button className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 cursor-pointer !rounded-button whitespace-nowrap">
               <FontAwesomeIcon icon={faCheck} className="mr-1" /> Accept
@@ -54,7 +71,7 @@ const MatchCard = ({ match }) => {
               <FontAwesomeIcon icon={faTimes} className="mr-1" /> Decline
             </button>
           </>
-        ) : match.type === "outgoing" && match.status === "Accepted" ? (
+        ) : type === "outgoing" && status === "Accepted" ? (
           <button className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 cursor-pointer !rounded-button whitespace-nowrap">
             <FontAwesomeIcon icon={faCheckCircle} className="mr-1" /> Mark as Received
           </button>
