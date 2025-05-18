@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import PasswordInput from './PasswordInput';
 import PasswordStrengthMeter from './PasswordStrengthMeter';
 import SocialButton from './SocialButton';
-import axios from 'axios';
+import api from '@/services/api';
 
 const RegisterForm = ({ 
   showPassword = false, 
@@ -132,23 +132,16 @@ const RegisterForm = ({
     setError('');
     
     try {
-      // กำหนด API URL
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/register`;
-      console.log("Sending request to:", apiUrl);
-      
-      // แปลงข้อมูลติดต่อเป็นรูปแบบที่เหมาะสมสำหรับ API
       const formattedContactInfo = {};
       
-      // กรองเฉพาะข้อมูลที่มีค่า
       contactInfo.forEach(contact => {
         if (contact.value && contact.value.trim() !== '') {
           formattedContactInfo[contact.type] = contact.value.trim();
         }
       });
       
-      // ส่งข้อมูลไปยัง API
-      const response = await axios.post(
-        apiUrl, 
+      const response = await api.post(
+        '/api/auth/register', 
         {
           email: formData.email,
           password: formData.password,

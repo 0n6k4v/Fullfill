@@ -17,7 +17,7 @@ const UserActivityChart = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await api.get('/users/me/activity/chart');
+        const response = await api.get('/api/users/me/activity/chart');
         if (response?.data) {
           setChartData({
             categories: response.data.categories || [],

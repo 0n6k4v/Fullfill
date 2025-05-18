@@ -16,41 +16,55 @@ import DonationCard from '@/components/PostCard';
 import SearchAndFilter from './SearchAndFilter';
 
 const CatalogPage = () => {
-  // State for mode toggle (Request/Donation)
-  const [mode, setMode] = useState('donation'); // 'donation' or 'request'
+  const [mode, setMode] = useState('donation');
 
-  // State for filters
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [locationFilter, setLocationFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('any');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid', 'list', or 'map'
+  const [viewMode, setViewMode] = useState('grid');
   const [conditionFilter, setConditionFilter] = useState('all');
   const [sortOption, setSortOption] = useState('newest');
 
-  // New states for API data
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 1. เพิ่ม state สำหรับเก็บพิกัดของผู้ใช้
   const [userLocation, setUserLocation] = useState(null);
   const [distances, setDistances] = useState({});
   const [loadingDistances, setLoadingDistances] = useState(false);
   
-  // Predefined locations - ในอนาคตอาจดึงจาก API
-  const locations = [
-    "All Locations",
-    "Downtown, Seattle",
-    "Capitol Hill, Seattle",
-    "Ballard, Seattle",
-    "Fremont, Seattle",
-    "Queen Anne, Seattle",
-    "University District, Seattle",
-  ];
+  const [locations, setLocations] = useState([]);
+  const [loadingLocations, setLoadingLocations] = useState(false);
 
-  // Categories based on ER diagram enum definitions
+  const fetchProvinces = async () => {
+    try {
+      setLoadingLocations(true);
+      const response = await api.get('api/provinces/');
+      
+      if (response.data) {
+        const provincesData = [
+          { id: 0, name: "ทุกพื้นที่" },
+          ...response.data.map(province => ({
+            id: province.id,
+            name: province.name_th
+          }))
+        ];
+        
+        setLocations(provincesData);
+      }
+    } catch (err) {
+      console.error("Error fetching provinces:", err);
+    } finally {
+      setLoadingLocations(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProvinces();
+  }, []);
+
   const categories = [
     { id: 'all', name: 'All Items', icon: faThLarge },
     { id: 'furniture', name: 'Furniture', icon: faCouch },
@@ -63,7 +77,6 @@ const CatalogPage = () => {
     { id: 'other', name: 'Other', icon: faThLarge }
   ];
 
-  // Condition enum definitions
   const conditions = [
     { id: 'all', name: 'All Conditions' },
     { id: 'new', name: 'New' },
@@ -74,13 +87,11 @@ const CatalogPage = () => {
     { id: 'any', name: 'Any' }
   ];
 
-  // Helper function to get the icon for a category
   const getCategoryIcon = (categoryId) => {
     const category = categories.find(c => c.id === categoryId.toLowerCase());
     return category ? category.icon : faThLarge;
   };
 
-  // Helper function to get condition colors
   const getConditionColors = (conditionId) => {
     const conditionId_lower = conditionId?.toLowerCase();
     switch (conditionId_lower) {
@@ -101,18 +112,15 @@ const CatalogPage = () => {
     }
   };
 
-  // Fetch items from API
   const fetchItems = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      // สร้าง query parameters สำหรับการกรองข้อมูล
       const params = {
         type: mode === 'donation' ? 'Offer' : 'Request'
       };
       
-      // เพิ่มพารามิเตอร์การกรองเฉพาะเมื่อมีการเลือก
       if (categoryFilter !== 'all') {
         params.category = categoryFilter;
       }
@@ -125,7 +133,10 @@ const CatalogPage = () => {
         params.search = searchQuery;
       }
       
-      // ถ้าต้องการกรองตามวันที่
+      if (locationFilter && locationFilter !== "ทุกพื้นที่") {
+        params.province = locationFilter;
+      }
+      
       if (dateFilter !== 'any') {
         const now = new Date();
         let fromDate;
@@ -145,12 +156,9 @@ const CatalogPage = () => {
         }
       }
       
-      // เรียก API
-      const response = await api.get('api/v1/items/', { params });
+      const response = await api.get('api/items/', { params });
       
-      // ตรวจสอบว่ามีข้อมูลและแปลงข้อมูลให้ตรงกับรูปแบบที่ต้องการ
       if (response.data) {
-        // อาจจำเป็นต้องแปลงข้อมูลจาก API ให้ตรงกับโครงสร้างที่ใช้ใน UI
         const transformedItems = response.data.map(item => ({
           id: item.id,
           TYPE: item.type === 'Offer' ? 'donation' : 'request',
@@ -180,14 +188,11 @@ const CatalogPage = () => {
     }
   };
 
-  // ใช้ useEffect เพื่อเรียกข้อมูลเมื่อโหลดหน้าหรือเมื่อตัวกรองเปลี่ยน
   useEffect(() => {
     fetchItems();
-  }, [mode, categoryFilter, conditionFilter, dateFilter, searchQuery]);
+  }, [mode, categoryFilter, conditionFilter, dateFilter, searchQuery, locationFilter]); // เพิ่ม locationFilter ใน dependency array
 
-  // 2. เพิ่ม useEffect เพื่อรับตำแหน่งปัจจุบันของผู้ใช้
   useEffect(() => {
-    // ขอตำแหน่งผู้ใช้ด้วย Geolocation API
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -203,19 +208,13 @@ const CatalogPage = () => {
     }
   }, []);
 
-  // Filter and sort items in the frontend
   const filteredItems = items.filter(item => {
-    // ถ้าใช้การกรองจาก API แล้ว ส่วนนี้อาจไม่จำเป็นต้องกรองอีก
-    // หรืออาจเหลือไว้เพื่อกรองเพิ่มเติมสำหรับบางเงื่อนไข
-    
-    // Filter by location (เนื่องจากอาจไม่มีการกรองด้านนี้ใน API)
     if (locationFilter && !item.Location.toLowerCase().includes(locationFilter.toLowerCase())) {
       return false;
     }
 
     return true;
   }).sort((a, b) => {
-    // Apply sorting based on selected option
     switch (sortOption) {
       case 'newest':
         return new Date(b.created_at) - new Date(a.created_at);
@@ -246,7 +245,6 @@ const CatalogPage = () => {
     setSearchQuery('');
   };
 
-  // 3. เพิ่มฟังก์ชันสำหรับคำนวณระยะทางโดยใช้ Longdo Map API
   const calculateDistance = async (userLat, userLon, itemLat, itemLon, itemId) => {
     if (!userLat || !userLon || !itemLat || !itemLon) {
       return null;
@@ -257,18 +255,14 @@ const CatalogPage = () => {
       const url = `https://api.longdo.com/RouteService/json/route/guide?flat=${userLat}&flon=${userLon}&tlat=${itemLat}&tlon=${itemLon}&mode=t&type=25&locale=th&key=${apiKey}`;
       
       const response = await fetch(url);
-      const text = await response.text(); // รับข้อมูลเป็น text ก่อน
+      const text = await response.text();
     
       try {
-        // ลองแปลงเป็น JSON
         const data = JSON.parse(text);
         
-        // ตรวจสอบว่ามีข้อมูลระยะทางหรือไม่ตามโครงสร้างใหม่
         if (data && data.data && Array.isArray(data.data) && data.data.length > 0 && data.data[0].distance) {
-          // แปลงระยะทางจากเมตรเป็นกิโลเมตร
           const distanceKm = (data.data[0].distance / 1000).toFixed(1);
           
-          // เก็บระยะทางในสถานะ
           setDistances(prev => ({
             ...prev,
             [itemId]: `${distanceKm} กม.`
@@ -290,14 +284,11 @@ const CatalogPage = () => {
     }
   };
 
-  // 4. ปรับปรุงฟังก์ชัน getItemDistance
   const getItemDistance = (itemLocation, itemLat, itemLon, itemId) => {
-    // ถ้ามีระยะทางที่คำนวณไว้แล้ว ให้ใช้ค่านั้น
     if (distances[itemId]) {
       return distances[itemId];
     }
     
-    // ถ้ามีพิกัดของผู้ใช้และของสิ่งของ ให้คำนวณระยะทาง
     if (userLocation && itemLat && itemLon) {
       calculateDistance(
         userLocation.lat, 
@@ -306,27 +297,22 @@ const CatalogPage = () => {
         itemLon, 
         itemId
       );
-      return "กำลังคำนวณ..."; // แสดงขณะกำลังคำนวณ
+      return "กำลังคำนวณ...";
     }
     
-    // ถ้าไม่มีข้อมูลพิกัด ใช้ระยะทางจำลอง
     const distanceMap = {
       'กรุงเทพฯ': '5.2 กม.',
       'ปทุมธานี': '15.7 กม.',
       'นนทบุรี': '8.3 กม.',
-      // เพิ่มเมืองอื่นๆ ตามต้องการ
     };
     
     return distanceMap[itemLocation] || "ไม่ทราบระยะทาง";
   };
 
-  // 5. หลังจากโหลดข้อมูลจาก API สำเร็จ คำนวณระยะทางสำหรับทุกรายการ
   useEffect(() => {
-    // ถ้ามีข้อมูลพิกัดของผู้ใช้และมีรายการสิ่งของ
     if (userLocation && items.length > 0 && !loadingDistances) {
       setLoadingDistances(true);
       
-      // คำนวณระยะทางสำหรับทุกรายการที่มีพิกัด
       const calculateAllDistances = async () => {
         const distancePromises = items
           .filter(item => item.lat && item.lon)
@@ -370,6 +356,8 @@ const CatalogPage = () => {
           dateFilter={dateFilter}
           setDateFilter={setDateFilter}
           clearFilters={clearFilters}
+          locations={locations} // ส่งข้อมูลจังหวัดไปยัง SearchAndFilter component
+          loadingLocations={loadingLocations}
         />
 
         {loading ? (

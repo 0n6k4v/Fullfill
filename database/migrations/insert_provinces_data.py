@@ -135,8 +135,7 @@ async def main():
     DB_NAME = os.getenv('DB_NAME', 'fullfill')  # ชื่อฐานข้อมูล
 
     # สร้าง connection string
-    connection_string = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
+    connection_string = f"postgresql://fullfill_user:ZHQFDW9lwIIRTSn9ce4d2mgJ09UOXYMM@dpg-d0kl2tvfte5s738phbr0-a.oregon-postgres.render.com/fullfill_hcph"
     # อ่านไฟล์ GeoJSON
     geojson_file = "provinces.geojson"  # ระบุพาธไฟล์ GeoJSON
     geojson_data = read_geojson(geojson_file)

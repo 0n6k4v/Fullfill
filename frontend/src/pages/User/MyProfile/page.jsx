@@ -33,7 +33,7 @@ const MyProfile = () => {
     const fetchUserProfile = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/users/me');
+        const response = await api.get('/api/users/me');
         
         // Format user profile data from API response
         const userData = response.data;
@@ -60,7 +60,7 @@ const MyProfile = () => {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const response = await api.get('/users/me/analytics', {
+        const response = await api.get('/api/users/me/analytics', {
           params: { period: selectedDateRange }
         });
         
@@ -100,7 +100,7 @@ const MyProfile = () => {
       if (categoryData) return; // Skip if already loaded with analytics
       
       try {
-        const response = await api.get('/users/me/categories', {
+        const response = await api.get('/api/users/me/categories', {
           params: { period: selectedDateRange }
         });
         
@@ -119,7 +119,7 @@ const MyProfile = () => {
   useEffect(() => {
     const fetchUserActivity = async () => {
       try {
-        const response = await api.get('/users/me/activity');
+        const response = await api.get('/api/users/me/activity');
         
         setUserActivityData({
           recentDonations: response.data.recent_donations || [],
@@ -143,7 +143,7 @@ const MyProfile = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await api.get('/users/me/posts', {
+        const response = await api.get('/api/users/me/posts', {
           params: { 
             category: selectedCategory !== 'all' ? selectedCategory : undefined,
             period: selectedDateRange
@@ -175,7 +175,7 @@ const MyProfile = () => {
   useEffect(() => {
     const fetchMatches = async () => {
       try {
-        const response = await api.get('/users/me/matches');
+        const response = await api.get('/api/users/me/matches');
         
         // Format matches data
         const matchesData = response.data.map(match => ({

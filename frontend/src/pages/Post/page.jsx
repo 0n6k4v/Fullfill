@@ -79,7 +79,7 @@ const Post = () => {
       }
       
       // เรียก API
-      const response = await api.get('/items/', { params });
+      const response = await api.get('/api/items/', { params });
       
       if (response.data) {
         // แปลงข้อมูลจาก API ให้เป็นรูปแบบที่เข้ากับ PostCard

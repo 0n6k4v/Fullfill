@@ -2,8 +2,6 @@ import React from "react";
 import Header from "../../components/Header";
 import HeroSection from "./components/HeroSection";
 import CatalogPage from "./components/CatalogPage";
-import SearchAndFilter from "./components/SearchAndFilter";
-import DonationList from "./components/DonationList";
 import Statistics from "./components/Statistics";
 import HowItWorks from "./components/HowItWorks";
 import Testimonials from "./components/Testimonials";
@@ -17,8 +15,6 @@ const HomePage = () => {
       <Header />
       <HeroSection />
       <CatalogPage />
-      {/* <SearchAndFilter /> */}
-      {/* <DonationList /> */}
       <Statistics />
       <HowItWorks />
       <Testimonials />

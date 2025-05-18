@@ -1,11 +1,7 @@
 import axios from 'axios';
 
-// กำหนด URL ตาม environment
 const API_URL = 'https://fullfill-backend.onrender.com';
 
-console.log('Current API URL:', API_URL); 
-
-// สร้าง instance ของ axios สำหรับเรียกใช้ API
 const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -13,7 +9,6 @@ const api = axios.create({
   }
 });
 
-// เพิ่ม interceptor เพื่อแนบ token กับทุก request
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
@@ -40,7 +35,7 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
-          const res = await axios.post(`${API_URL}/api/v1/auth/refresh`, {
+          const res = await axios.post(`${API_URL}/api/auth/refresh`, {
             refresh_token: refreshToken
           });
           

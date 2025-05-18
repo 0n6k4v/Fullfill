@@ -48,9 +48,9 @@ const Dashboard = () => {
       setError(null);
       try {
         const [summaryRes, chartsRes, neededItemsRes] = await Promise.all([
-          api.get('/dashboard/summary'),
-          api.get('/dashboard/charts'),
-          api.get('/dashboard/needed-items')
+          api.get('/api/dashboard/summary'),
+          api.get('/api/dashboard/charts'),
+          api.get('/api/dashboard/needed-items')
         ]);
 
         const summary = summaryRes.data;

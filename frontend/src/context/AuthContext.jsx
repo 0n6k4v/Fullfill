@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
         // ตั้งค่า token ใน header
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
-        const response = await api.get('/api/v1/users/me');
+        const response = await api.get('/api/users/me');
         if (response.data) {
           setUser(response.data);
         } else {
@@ -49,7 +49,7 @@ export function AuthProvider({ children }) {
       params.append('username', email);
       params.append('password', password);
 
-      const response = await api.post('/api/v1/auth/login', params, {
+      const response = await api.post('/api/auth/login', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
       
-      const userResponse = await api.get('/api/v1/users/me');
+      const userResponse = await api.get('/api/users/me');
       
       setUser(userResponse.data);
       router.push('/User/MyProfile');
@@ -91,7 +91,7 @@ export function AuthProvider({ children }) {
 
   const register = async (userData) => {
     try {
-      const response = await api.post('/api/v1/auth/register', userData);
+      const response = await api.post('/api/auth/register', userData);
 
       const { access_token, refresh_token } = response.data;
       
@@ -101,7 +101,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
       
-      const userResponse = await api.get('/api/v1/users/me');
+      const userResponse = await api.get('/api/users/me');
       
       setUser(userResponse.data);
       router.push('/dashboard');

@@ -129,16 +129,16 @@ const GlobalHeader = ({ user = null }) => {
           {isAuthenticated ? (
             <>
               <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-                Home
+                หน้าหลัก
               </Link>
               <Link href="/Post" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-                Post
+                โพสต์
               </Link>
               <Link href="/Map" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-                Maps
+                แผนที่
               </Link>
               <Link href="/Dashboard" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-                Dashboard
+                แดชบอร์ด
               </Link>
               <div className="flex items-center space-x-2">
                 <button className="p-1 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
@@ -161,20 +161,20 @@ const GlobalHeader = ({ user = null }) => {
                         href="/User/MyProfile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        <FontAwesomeIcon icon={faUser} className="mr-2" /> My Profile
+                        <FontAwesomeIcon icon={faUser} className="mr-2" /> โปรไฟล์ของฉัน
                       </Link>
                       <Link
                         href="/User/MyPost"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        <FontAwesomeIcon icon={faListAlt} className="mr-2" /> My Post
+                        <FontAwesomeIcon icon={faListAlt} className="mr-2" /> โพสต์ของฉัน
                       </Link>
                       <div className="border-t border-gray-100"></div>
                       <button
                         onClick={handleLogout}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       >
-                        <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" /> Logout
+                        <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" /> ออกจากระบบ
                       </button>
                     </div>
                   )}
@@ -187,28 +187,28 @@ const GlobalHeader = ({ user = null }) => {
                 href="/how-it-works"
                 className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
-                How It Works
+                วิธีการทำงาน
               </Link>
               <Link
                 href="/organizations"
                 className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
-                Organizations
+                องค์กร
               </Link>
               <Link
                 href="/success-stories"
                 className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
-                Success Stories
+                เรื่องราวความสำเร็จ
               </Link>
               <Link
                 href="/about"
                 className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
               >
-                About Us
+                เกี่ยวกับเรา
               </Link>
               <Link href="/Auth" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors !rounded-button whitespace-nowrap cursor-pointer">
-                Sign In
+                เข้าสู่ระบบ
               </Link>
             </>
           )}
@@ -225,28 +225,28 @@ const GlobalHeader = ({ user = null }) => {
                   className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Home
+                  หน้าหลัก
                 </Link>
                 <Link 
                   href="/Post"
                   className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Post
+                  โพสต์
                 </Link>
                 <Link 
                   href="/Map"
                   className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Maps
+                  แผนที่
                 </Link>
                 <Link 
                   href="/Dashboard"
                   className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Dashboard
+                  แดชบอร์ด
                 </Link>
               </>
             ) : (
@@ -256,35 +256,35 @@ const GlobalHeader = ({ user = null }) => {
                   className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  How It Works
+                  วิธีการทำงาน
                 </Link>
                 <Link 
                   href="/organizations"
                   className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Organizations
+                  องค์กร
                 </Link>
                 <Link 
                   href="/success-stories"
                   className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Success Stories
+                  เรื่องราวความสำเร็จ
                 </Link>
                 <Link 
                   href="/about"
                   className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  About Us
+                  เกี่ยวกับเรา
                 </Link>
                 <Link 
                   href="/Auth"
                   className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Sign In
+                  เข้าสู่ระบบ
                 </Link>
               </>
             )}

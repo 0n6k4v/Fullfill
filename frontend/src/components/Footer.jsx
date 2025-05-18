@@ -19,8 +19,8 @@ const Footer = () => {
                 <span className="text-amber-400">Ful</span>fill
               </h3>
               <p className="mb-4">
-                Connecting donors and recipients to create a more sustainable
-                and compassionate community.
+                เชื่อมโยงผู้บริจาคและผู้รับเพื่อสร้างชุมชนที่ยั่งยืน
+                และเปี่ยมด้วยความเอื้ออาทรมากขึ้น
               </p>
               <div className="flex space-x-4">
                 <a
@@ -51,7 +51,7 @@ const Footer = () => {
             </div>
             <div>
               <h4 className="text-lg font-semibold text-white mb-4">
-                Quick Links
+                ลิงก์ด่วน
               </h4>
               <ul className="space-y-2">
                 <li>
@@ -59,7 +59,7 @@ const Footer = () => {
                     href="#"
                     className="hover:text-white transition-colors cursor-pointer"
                   >
-                    Home
+                    หน้าหลัก
                   </a>
                 </li>
                 <li>
@@ -67,7 +67,7 @@ const Footer = () => {
                     href="#"
                     className="hover:text-white transition-colors cursor-pointer"
                   >
-                    About Us
+                    เกี่ยวกับเรา
                   </a>
                 </li>
                 <li>
@@ -75,7 +75,7 @@ const Footer = () => {
                     href="#"
                     className="hover:text-white transition-colors cursor-pointer"
                   >
-                    How It Works
+                    วิธีการทำงาน
                   </a>
                 </li>
                 <li>
@@ -83,7 +83,7 @@ const Footer = () => {
                     href="#"
                     className="hover:text-white transition-colors cursor-pointer"
                   >
-                    Success Stories
+                    เรื่องราวความสำเร็จ
                   </a>
                 </li>
                 <li>
@@ -91,14 +91,14 @@ const Footer = () => {
                     href="#"
                     className="hover:text-white transition-colors cursor-pointer"
                   >
-                    Contact
+                    ติดต่อเรา
                   </a>
                 </li>
               </ul>
             </div>
             <div>
               <h4 className="text-lg font-semibold text-white mb-4">
-                Resources
+                แหล่งข้อมูล
               </h4>
               <ul className="space-y-2">
                 <li>
@@ -106,7 +106,7 @@ const Footer = () => {
                     href="#"
                     className="hover:text-white transition-colors cursor-pointer"
                   >
-                    Partner Organizations
+                    องค์กรพันธมิตร
                   </a>
                 </li>
                 <li>
@@ -114,7 +114,7 @@ const Footer = () => {
                     href="#"
                     className="hover:text-white transition-colors cursor-pointer"
                   >
-                    Donation Guidelines
+                    แนวทางการบริจาค
                   </a>
                 </li>
                 <li>
@@ -122,7 +122,7 @@ const Footer = () => {
                     href="#"
                     className="hover:text-white transition-colors cursor-pointer"
                   >
-                    FAQ
+                    คำถามที่พบบ่อย
                   </a>
                 </li>
                 <li>
@@ -130,7 +130,7 @@ const Footer = () => {
                     href="#"
                     className="hover:text-white transition-colors cursor-pointer"
                   >
-                    Blog
+                    บล็อก
                   </a>
                 </li>
                 <li>
@@ -138,22 +138,22 @@ const Footer = () => {
                     href="#"
                     className="hover:text-white transition-colors cursor-pointer"
                   >
-                    Privacy Policy
+                    นโยบายความเป็นส่วนตัว
                   </a>
                 </li>
               </ul>
             </div>
             <div>
               <h4 className="text-lg font-semibold text-white mb-4">
-                Subscribe
+                สมัครรับข่าวสาร
               </h4>
               <p className="mb-4">
-                Stay updated with our latest news and features
+                อัปเดตข่าวสารและฟีเจอร์ใหม่ล่าสุดของเรา
               </p>
               <div className="flex">
                 <input
                   type="email"
-                  placeholder="Your email"
+                  placeholder="อีเมลของคุณ"
                   className="px-4 py-2 rounded-l-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 w-full"
                 />
                 <button className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-r-lg transition-colors !rounded-button whitespace-nowrap cursor-pointer">
@@ -161,7 +161,7 @@ const Footer = () => {
                 </button>
               </div>
               <div className="mt-4">
-                <p>Secure payments via:</p>
+                <p>ชำระเงินอย่างปลอดภัยผ่าน:</p>
                 <div className="flex space-x-3 mt-2">
                   <FontAwesomeIcon icon={faCcVisa} className="text-2xl"/>
                   <FontAwesomeIcon icon={faCcMastercard} className="text-2xl"/>
