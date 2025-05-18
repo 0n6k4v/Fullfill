@@ -44,6 +44,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       console.log('Attempting login with:', { email });
+      console.log(`${api}`);
 
       const params = new URLSearchParams();
       params.append('username', email);
