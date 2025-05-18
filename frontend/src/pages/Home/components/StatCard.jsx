@@ -19,7 +19,9 @@ const StatCard = ({
   changeType = 'neutral'
 }) => {
   const getChangeColor = (type) => {
-    switch (type) {
+    if (!type) return 'text-gray-600';
+    
+    switch (type.toLowerCase()) {
       case 'increase':
         return 'text-green-600';
       case 'decrease':
@@ -27,6 +29,16 @@ const StatCard = ({
       default:
         return 'text-gray-600';
     }
+  };
+
+  const formatValue = (val) => {
+    if (typeof val !== 'number') return '0';
+    return val.toLocaleString('th-TH');
+  };
+
+  const formatChange = (val) => {
+    if (typeof val !== 'number') return '0';
+    return val > 0 ? `+${val}` : val;
   };
 
   return (
@@ -39,10 +51,10 @@ const StatCard = ({
         )}
         <div className="ml-4">
           <h3 className="text-sm font-medium text-gray-500">{title}</h3>
-          <p className="text-2xl font-semibold text-gray-900">{value}</p>
+          <p className="text-2xl font-semibold text-gray-900">{formatValue(value)}</p>
           {change !== 0 && (
             <p className={`text-sm ${getChangeColor(changeType)}`}>
-              {change > 0 ? '+' : ''}{change}%
+              {formatChange(change)}%
             </p>
           )}
         </div>

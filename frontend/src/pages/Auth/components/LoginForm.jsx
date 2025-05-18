@@ -6,9 +6,9 @@ import { useAuth } from '../../../context/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const LoginForm = ({ 
-  showPassword, 
-  setShowPassword, 
-  setActiveTab 
+  showPassword = false, 
+  setShowPassword = () => {}, 
+  setActiveTab = () => {} 
 }) => {
   const { login, error: authError } = useAuth();
   const router = useRouter();
@@ -27,6 +27,8 @@ const LoginForm = ({
   
   // ฟังก์ชันสำหรับจัดการการเปลี่ยนแปลงข้อมูลในฟอร์ม
   const handleChange = (e) => {
+    if (!e || !e.target) return;
+    
     const { id, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -36,16 +38,17 @@ const LoginForm = ({
   
   // ฟังก์ชันสำหรับส่งข้อมูลไปยัง API
   const handleSubmit = async (e) => {
+    if (!e) return;
     e.preventDefault();
     
     // ตรวจสอบความถูกต้องของข้อมูล
-    if (!formData.email.trim()) {
-      setError("Email is required");
+    if (!formData.email?.trim()) {
+      setError("กรุณากรอกอีเมล");
       return;
     }
     
     if (!formData.password) {
-      setError("Password is required");
+      setError("กรุณากรอกรหัสผ่าน");
       return;
     }
     
@@ -58,14 +61,14 @@ const LoginForm = ({
       
       if (success) {
         // เช็คว่ามี returnUrl หรือไม่
-        const returnUrl = searchParams.get('returnUrl') || '/';
+        const returnUrl = searchParams?.get('returnUrl') || '/';
         router.push(returnUrl);
       } else {
-        setError(authError || "Login failed. Please try again.");
+        setError(authError || "การเข้าสู่ระบบล้มเหลว กรุณาลองใหม่อีกครั้ง");
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      setError("เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง");
     } finally {
       setLoading(false);
     }
@@ -85,7 +88,7 @@ const LoginForm = ({
           htmlFor="email"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Email Address
+          อีเมล
         </label>
         <input
           type="email"
@@ -93,7 +96,7 @@ const LoginForm = ({
           value={formData.email}
           onChange={handleChange}
           className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-          placeholder="Enter your email"
+          placeholder="กรอกอีเมลของคุณ"
         />
       </div>
 
@@ -102,11 +105,11 @@ const LoginForm = ({
           htmlFor="password"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Password
+          รหัสผ่าน
         </label>
         <PasswordInput
           id="password"
-          placeholder="Enter your password"
+          placeholder="กรอกรหัสผ่านของคุณ"
           showPassword={showPassword}
           setShowPassword={setShowPassword}
           value={formData.password}
@@ -127,53 +130,59 @@ const LoginForm = ({
             htmlFor="rememberMe"
             className="ml-2 block text-sm text-gray-700"
           >
-            Remember me
+            จดจำฉัน
           </label>
         </div>
         <a
           href="#"
           className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
         >
-          Forgot password?
+          ลืมรหัสผ่าน?
         </a>
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className={`w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 transition font-medium !rounded-button whitespace-nowrap cursor-pointer ${loading ? 'opacity-70' : ''}`}
+        className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+          loading ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
       >
-        {loading ? "Logging in..." : "Log In"}
+        {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
       </button>
 
-      <div className="relative flex items-center justify-center mt-6">
-        <div className="absolute w-full border-t border-gray-300"></div>
-        <div className="relative px-4 bg-white text-sm text-gray-500">
-          Or continue with
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">หรือเข้าสู่ระบบด้วย</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <SocialButton 
           icon={faGoogle} 
-          platform="Google" 
-          color="text-red-500" 
+          text="Google"
+          onClick={() => console.log('Google login clicked')}
+          color="text-red-500"
         />
         <SocialButton 
           icon={faFacebook} 
-          platform="Facebook" 
-          color="text-blue-600" 
+          text="Facebook"
+          onClick={() => console.log('Facebook login clicked')}
+          color="text-blue-600"
         />
       </div>
 
       <p className="text-center text-gray-600 mt-6">
-        Don't have an account?
+        ยังไม่มีบัญชี?
         <button
           type="button"
           className="text-indigo-600 font-medium ml-1 hover:text-indigo-500 cursor-pointer"
           onClick={() => setActiveTab("register")}
         >
-          Register
+          ลงทะเบียน
         </button>
       </p>
     </form>

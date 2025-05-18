@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
-const LeafletMap = ({ onSelectLocation }) => {
+const LeafletMap = ({ onSelectLocation = () => {} }) => {
   const mapRef = useRef(null);
   const leafletRef = useRef(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -30,9 +30,15 @@ const LeafletMap = ({ onSelectLocation }) => {
   }, []);
 
   const fetchAddressFromCoordinates = async (lat, lng) => {
+    if (!lat || !lng) return null;
+    
     setIsAddressLoading(true);
     try {
       const longdo_api_key = process.env.NEXT_PUBLIC_LONGDO_MAP_API_KEY;
+      if (!longdo_api_key) {
+        throw new Error('Longdo Map API key is not defined');
+      }
+
       const response = await fetch(`https://api.longdo.com/map/services/address?lon=${lng}&lat=${lat}&noelevation=1&key=${longdo_api_key}`);
       
       if (!response.ok) {
@@ -128,6 +134,8 @@ const LeafletMap = ({ onSelectLocation }) => {
 
   // ฟังก์ชันสำหรับจัดการคลิกบนแผนที่
   const handleMapClick = async (e, L, map) => {
+    if (!e || !e.latlng || !L || !map) return;
+    
     // ดึงข้อมูลที่อยู่จากพิกัด
     const addressData = await fetchAddressFromCoordinates(e.latlng.lat, e.latlng.lng);
     
@@ -137,6 +145,8 @@ const LeafletMap = ({ onSelectLocation }) => {
   
   // ฟังก์ชันสำหรับเพิ่มหรืออัปเดตหมุด
   const addOrUpdateMarker = (L, map, lat, lng, addressData = null) => {
+    if (!L || !map || !lat || !lng) return;
+    
     // ลบหมุดเก่าถ้ามี
     if (markerRef.current) {
       map.removeLayer(markerRef.current);
@@ -156,6 +166,7 @@ const LeafletMap = ({ onSelectLocation }) => {
     // เพิ่ม event เมื่อลากหมุดเสร็จ
     marker.on('dragend', async function() {
       const pos = marker.getLatLng();
+      if (!pos) return;
       
       // ดึงข้อมูลที่อยู่จากพิกัดใหม่
       const newAddressData = await fetchAddressFromCoordinates(pos.lat, pos.lng);

@@ -21,7 +21,7 @@ import {
   faListAlt
 } from '@fortawesome/free-solid-svg-icons';
 
-const GlobalHeader = () => {
+const GlobalHeader = ({ user = null }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -29,8 +29,10 @@ const GlobalHeader = () => {
   const pathname = usePathname();
   
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    setIsAuthenticated(!!token);
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      setIsAuthenticated(!!token);
+    }
     
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
@@ -54,20 +56,13 @@ const GlobalHeader = () => {
   };
   
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-    setIsProfileMenuOpen(false);
-    window.location.href = '/';
-  };
-
-  const isBrowser = typeof window !== 'undefined';
-
-  useEffect(() => {
-    if (isBrowser) {
-      const token = localStorage.getItem('token');
-      setIsAuthenticated(!!token);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      setIsAuthenticated(false);
+      setIsProfileMenuOpen(false);
+      window.location.href = '/';
     }
-  }, [isBrowser]);
+  };
 
   return (
     <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
@@ -194,6 +189,27 @@ const GlobalHeader = () => {
                 >
                   Home
                 </Link>
+                <Link 
+                  href="/Post"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Post
+                </Link>
+                <Link 
+                  href="/Map"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Maps
+                </Link>
+                <Link 
+                  href="/Dashboard"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
               </>
             ) : (
               <>
@@ -203,6 +219,34 @@ const GlobalHeader = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   How It Works
+                </Link>
+                <Link 
+                  href="/organizations"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Organizations
+                </Link>
+                <Link 
+                  href="/success-stories"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Success Stories
+                </Link>
+                <Link 
+                  href="/about"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  About Us
+                </Link>
+                <Link 
+                  href="/Auth"
+                  className="block text-gray-600 hover:text-blue-600 transition-colors py-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Sign In
                 </Link>
               </>
             )}

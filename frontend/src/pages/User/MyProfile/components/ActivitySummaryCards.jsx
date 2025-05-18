@@ -2,26 +2,31 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBoxOpen, faHandshake, faHistory } from '@fortawesome/free-solid-svg-icons';
 
-const ActivitySummaryCards = ({ stats }) => {
+const ActivitySummaryCards = ({ stats = null }) => {
   // Ensure stats is an object and provide default values
   const safeStats = stats || {};
   
+  const formatValue = (val) => {
+    if (typeof val !== 'number') return '0';
+    return val.toLocaleString('th-TH');
+  };
+  
   const cards = [
     {
-      title: 'My Donations',
-      value: safeStats.myDonations || 0,
+      title: 'การบริจาคของฉัน',
+      value: formatValue(safeStats.myDonations),
       icon: faBoxOpen,
       color: 'bg-blue-500'
     },
     {
-      title: 'My Requests',
-      value: safeStats.myRequests || 0,
+      title: 'คำขอรับบริจาคของฉัน',
+      value: formatValue(safeStats.myRequests),
       icon: faHandshake,
       color: 'bg-green-500'
     },
     {
-      title: 'Completed Matches',
-      value: safeStats.completedMatches || 0,
+      title: 'การจับคู่ที่เสร็จสมบูรณ์',
+      value: formatValue(safeStats.completedMatches),
       icon: faHistory,
       color: 'bg-purple-500'
     }

@@ -13,7 +13,7 @@ import {
   faTruck
 } from '@fortawesome/free-solid-svg-icons';
 
-const RequestFormModal = ({ post, onSubmit, onCancel }) => {
+const RequestFormModal = ({ post = {}, onSubmit = () => {}, onCancel = () => {} }) => {
   // ข้อมูลตัวอย่างสำหรับ user (จริงๆ แล้วควรมาจาก context หรือ redux)
   const mockUser = {
     name: 'John Doe',
@@ -27,11 +27,11 @@ const RequestFormModal = ({ post, onSubmit, onCancel }) => {
 
   // State สำหรับฟอร์ม
   const [formData, setFormData] = useState({
-    name: mockUser.name,
-    phone: mockUser.phone,
-    email: mockUser.email,
+    name: mockUser.name || '',
+    phone: mockUser.phone || '',
+    email: mockUser.email || '',
     addressType: 'saved',
-    selectedAddressId: mockUser.savedAddresses[0]?.id || '',
+    selectedAddressId: mockUser.savedAddresses?.[0]?.id || '',
     newAddress: '',
     pickupMethod: 'self',
     reason: '',
@@ -40,20 +40,35 @@ const RequestFormModal = ({ post, onSubmit, onCancel }) => {
 
   // ฟังก์ชันจัดการการเปลี่ยนแปลงข้อมูลในฟอร์ม
   const handleChange = (e) => {
+    if (!e || !e.target) return;
+    
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   // ฟังก์ชันส่งฟอร์ม
   const handleSubmit = (e) => {
+    if (!e) return;
     e.preventDefault();
     onSubmit(formData);
   };
 
   // ป้องกันการ bubble event จาก overlay สู่ modal
   const handleModalClick = (e) => {
+    if (!e) return;
     e.stopPropagation();
   };
+
+  if (!post || Object.keys(post).length === 0) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
+        <div className="fixed inset-0 bg-opacity-75 backdrop-blur-[5px] transition-opacity" onClick={onCancel}></div>
+        <div className="bg-white rounded-lg p-4 text-center text-gray-500">
+          ไม่พบข้อมูลโพสต์
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
@@ -159,11 +174,13 @@ const RequestFormModal = ({ post, onSubmit, onCancel }) => {
                       onChange={handleChange}
                       className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                     >
-                      {mockUser.savedAddresses.map(addr => (
+                      {mockUser.savedAddresses?.map(addr => (
                         <option key={addr.id} value={addr.id}>
                           {addr.label} - {addr.address}
                         </option>
-                      ))}
+                      )) || (
+                        <option value="">ไม่มีที่อยู่ที่บันทึกไว้</option>
+                      )}
                     </select>
                   </div>
                 )}
@@ -251,43 +268,40 @@ const RequestFormModal = ({ post, onSubmit, onCancel }) => {
                   value={formData.reason}
                   onChange={handleChange}
                   className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                  placeholder="กรอกเหตุผลในการขอรับบริจาค"
                 ></textarea>
               </div>
               
               <div>
                 <label htmlFor="preferredTime" className="block text-sm font-medium text-gray-700">
-                  ช่วงเวลาที่สะดวกในการรับของ
+                  เวลาที่สะดวกในการรับของ
                 </label>
-                <select
+                <input
+                  type="datetime-local"
                   name="preferredTime"
                   id="preferredTime"
                   value={formData.preferredTime}
                   onChange={handleChange}
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                  className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                   required
-                >
-                  <option value="">กรุณาเลือกช่วงเวลา</option>
-                  <option value="morning">เช้า (9:00 - 12:00)</option>
-                  <option value="afternoon">บ่าย (13:00 - 17:00)</option>
-                  <option value="evening">เย็น (17:00 - 20:00)</option>
-                  <option value="weekend">วันหยุดสุดสัปดาห์</option>
-                </select>
+                />
               </div>
             </div>
           </div>
-          
+
+          {/* ปุ่มดำเนินการ */}
           <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
             <button
               type="submit"
-              className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+              className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
             >
               <FontAwesomeIcon icon={faSave} className="mr-2" />
-              {post.type === "Donation" ? "ส่งคำขอ" : "เสนอความช่วยเหลือ"}
+              บันทึก
             </button>
             <button
               type="button"
               onClick={onCancel}
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
             >
               <FontAwesomeIcon icon={faTimes} className="mr-2" />
               ยกเลิก

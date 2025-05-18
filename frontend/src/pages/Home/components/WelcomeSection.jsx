@@ -3,10 +3,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell } from '@fortawesome/free-solid-svg-icons';
 import QuickActions from './QuickActions';
 
-const WelcomeSection = ({ user = {} }) => {
-  const { name = 'Guest' } = user;
+const WelcomeSection = ({ user = null }) => {
+  const name = user?.name || 'Guest';
   const today = new Date();
-  const formattedDate = today.toLocaleDateString('en-US', {
+  const formattedDate = today.toLocaleDateString('th-TH', {
     month: 'long', 
     day: 'numeric',
     year: 'numeric'
@@ -18,8 +18,12 @@ const WelcomeSection = ({ user = {} }) => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">สวัสดี, {name}</h1>
           <p className="text-gray-600 mt-1">ยินดีต้อนรับกลับมาที่ Fullfill</p>
+          <p className="text-gray-500 text-sm mt-1">{formattedDate}</p>
         </div>
-        <button className="p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
+        <button 
+          className="p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+          onClick={() => {/* TODO: Implement notification functionality */}}
+        >
           <FontAwesomeIcon icon={faBell} className="text-xl" />
         </button>
       </div>

@@ -5,42 +5,42 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faFilter, faChevronUp, faChevronDown, faMapMarkerAlt, faThLarge } from '@fortawesome/free-solid-svg-icons';
 
 const SearchAndFilters = ({ 
-  searchQuery, 
-  setSearchQuery, 
-  categoryFilter, 
-  setCategoryFilter, 
-  conditionFilter, 
-  setConditionFilter, 
-  locationFilter, 
-  setLocationFilter, 
-  clearFilters 
+  searchQuery = '', 
+  setSearchQuery = () => {}, 
+  categoryFilter = 'all', 
+  setCategoryFilter = () => {}, 
+  conditionFilter = 'all', 
+  setConditionFilter = () => {}, 
+  locationFilter = '', 
+  setLocationFilter = () => {}, 
+  clearFilters = () => {} 
 }) => {
   const [showFilters, setShowFilters] = useState(false);
 
   // สำหรับจำลอง dropdown options
   const categories = [
-    { id: 'all', name: 'All Categories' },
-    { id: 'furniture', name: 'Furniture' },
-    { id: 'clothing', name: 'Clothing' },
-    { id: 'electronics', name: 'Electronics' },
-    { id: 'appliances', name: 'Appliances' },
-    { id: 'kids_toys', name: 'Kids & Toys' },
-    { id: 'books', name: 'Books' },
-    { id: 'kitchen', name: 'Kitchen' },
-    { id: 'other', name: 'Other' }
+    { id: 'all', name: 'ทุกหมวดหมู่' },
+    { id: 'furniture', name: 'เฟอร์นิเจอร์' },
+    { id: 'clothing', name: 'เสื้อผ้า' },
+    { id: 'electronics', name: 'อิเล็กทรอนิกส์' },
+    { id: 'appliances', name: 'เครื่องใช้ไฟฟ้า' },
+    { id: 'kids_toys', name: 'ของเล่นเด็ก' },
+    { id: 'books', name: 'หนังสือ' },
+    { id: 'kitchen', name: 'เครื่องครัว' },
+    { id: 'other', name: 'อื่นๆ' }
   ];
 
   const conditions = [
-    { id: 'all', name: 'All Conditions' },
-    { id: 'new', name: 'New' },
-    { id: 'like_new', name: 'Like New' },
-    { id: 'good', name: 'Good' },
-    { id: 'fair', name: 'Fair' },
-    { id: 'poor', name: 'Poor' }
+    { id: 'all', name: 'ทุกสภาพ' },
+    { id: 'new', name: 'ใหม่' },
+    { id: 'like_new', name: 'เหมือนใหม่' },
+    { id: 'good', name: 'ดี' },
+    { id: 'fair', name: 'พอใช้' },
+    { id: 'poor', name: 'เก่า' }
   ];
 
   const locations = [
-    "All Locations",
+    "ทุกสถานที่",
     "กรุงเทพฯ",
     "ปทุมธานี",
     "นนทบุรี",
@@ -49,13 +49,32 @@ const SearchAndFilters = ({
   ];
 
   const toggleFilters = () => {
-    setShowFilters(!showFilters);
+    setShowFilters(prev => !prev);
   };
 
   const handleSearch = (e) => {
+    if (!e) return;
     e.preventDefault();
-    // ส่งคำค้นหาไปยังหน้าหลัก (e.g., page.jsx)
-    // setSearchQuery จะทำงานแล้ว เนื่องจากรับมาจาก prop
+  };
+
+  const handleSearchChange = (e) => {
+    if (!e || !e.target) return;
+    setSearchQuery(e.target.value);
+  };
+
+  const handleCategoryChange = (e) => {
+    if (!e || !e.target) return;
+    setCategoryFilter(e.target.value);
+  };
+
+  const handleConditionChange = (e) => {
+    if (!e || !e.target) return;
+    setConditionFilter(e.target.value);
+  };
+
+  const handleLocationChange = (e) => {
+    if (!e || !e.target) return;
+    setLocationFilter(e.target.value);
   };
 
   return (
@@ -69,9 +88,9 @@ const SearchAndFilters = ({
             <input
               type="text"
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Search for items..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="ค้นหาสินค้า..."
+              value={searchQuery || ''}
+              onChange={handleSearchChange}
             />
           </div>
           <button
@@ -80,14 +99,14 @@ const SearchAndFilters = ({
             className="flex justify-center items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-indigo-600"
           >
             <FontAwesomeIcon icon={faFilter} className="mr-2" />
-            Filters
+            ตัวกรอง
             <FontAwesomeIcon icon={showFilters ? faChevronUp : faChevronDown} className="ml-2" />
           </button>
           <button
             type="submit"
             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md"
           >
-            Search
+            ค้นหา
           </button>
         </form>
       </div>
@@ -95,12 +114,12 @@ const SearchAndFilters = ({
       {showFilters && (
         <div className="px-4 pb-4 pt-1 bg-gray-50 border-t border-gray-200">
           <div className="flex justify-between mb-3">
-            <h3 className="font-medium text-gray-900">Filter Results</h3>
+            <h3 className="font-medium text-gray-900">กรองผลลัพธ์</h3>
             <button
               onClick={clearFilters}
               className="text-sm text-indigo-600 hover:text-indigo-800"
             >
-              Clear all filters
+              ล้างตัวกรองทั้งหมด
             </button>
           </div>
           
@@ -108,11 +127,11 @@ const SearchAndFilters = ({
             {/* Category Filter */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-indigo-600 flex items-center">
-                <FontAwesomeIcon icon={faThLarge} className="mr-2" /> Category
+                <FontAwesomeIcon icon={faThLarge} className="mr-2" /> หมวดหมู่
               </label>
               <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
+                value={categoryFilter || 'all'}
+                onChange={handleCategoryChange}
                 className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 {categories.map(category => (
@@ -126,11 +145,11 @@ const SearchAndFilters = ({
             {/* Condition Filter */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-indigo-600 flex items-center">
-                <FontAwesomeIcon icon={faFilter} className="mr-2" /> Condition
+                <FontAwesomeIcon icon={faFilter} className="mr-2" /> สภาพ
               </label>
               <select
-                value={conditionFilter}
-                onChange={(e) => setConditionFilter(e.target.value)}
+                value={conditionFilter || 'all'}
+                onChange={handleConditionChange}
                 className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 {conditions.map(condition => (
@@ -144,15 +163,15 @@ const SearchAndFilters = ({
             {/* Location Filter */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-indigo-600 flex items-center">
-                <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" /> Location
+                <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" /> สถานที่
               </label>
               <select
-                value={locationFilter}
-                onChange={(e) => setLocationFilter(e.target.value)}
+                value={locationFilter || ''}
+                onChange={handleLocationChange}
                 className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 {locations.map(location => (
-                  <option key={location} value={location === "All Locations" ? "" : location}>
+                  <option key={location} value={location === "ทุกสถานที่" ? "" : location}>
                     {location}
                   </option>
                 ))}

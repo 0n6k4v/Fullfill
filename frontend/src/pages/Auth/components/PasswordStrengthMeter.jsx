@@ -1,6 +1,15 @@
 import React from 'react';
 
-const PasswordStrengthMeter = ({ strength }) => {
+const PasswordStrengthMeter = ({ strength = 0 }) => {
+  const getStrengthColor = (level) => {
+    if (!level) return 'bg-gray-200';
+    
+    if (level <= 1) return 'bg-red-500';
+    if (level <= 2) return 'bg-yellow-500';
+    if (level <= 3) return 'bg-green-400';
+    return 'bg-green-600';
+  };
+
   return (
     <>
       <div className="mt-2 flex space-x-1">
@@ -8,22 +17,13 @@ const PasswordStrengthMeter = ({ strength }) => {
           <div
             key={level}
             className={`h-1.5 w-1/4 rounded-full ${
-              strength >= level
-                ? level <= 1
-                  ? "bg-red-500"
-                  : level <= 2
-                    ? "bg-yellow-500"
-                    : level <= 3
-                      ? "bg-green-400"
-                      : "bg-green-600"
-                : "bg-gray-200"
+              strength >= level ? getStrengthColor(level) : 'bg-gray-200'
             }`}
           ></div>
         ))}
       </div>
       <p className="text-xs text-gray-500 mt-1">
-        Password should be at least 8 characters with uppercase,
-        lowercase, numbers, and special characters
+        รหัสผ่านควรมีความยาวอย่างน้อย 8 ตัวอักษร ประกอบด้วยตัวพิมพ์ใหญ่ ตัวพิมพ์เล็ก ตัวเลข และอักขระพิเศษ
       </p>
     </>
   );

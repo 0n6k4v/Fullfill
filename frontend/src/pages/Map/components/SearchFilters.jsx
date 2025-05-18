@@ -5,18 +5,18 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faFilter, faChevronUp, faChevronDown, faMapMarkerAlt, faThLarge } from '@fortawesome/free-solid-svg-icons';
 
 const SearchFilters = ({ 
-  searchQuery, 
-  setSearchQuery, 
-  categoryFilter, 
-  setCategoryFilter, 
-  conditionFilter, 
-  setConditionFilter, 
-  locationFilter, 
-  setLocationFilter,
-  typeFilter,
-  setTypeFilter,
-  clearFilters,
-  onSearch
+  searchQuery = '', 
+  setSearchQuery = () => {}, 
+  categoryFilter = 'all', 
+  setCategoryFilter = () => {}, 
+  conditionFilter = 'all', 
+  setConditionFilter = () => {}, 
+  locationFilter = '', 
+  setLocationFilter = () => {},
+  typeFilter = 'all',
+  setTypeFilter = () => {},
+  clearFilters = () => {},
+  onSearch = () => {}
 }) => {
   const [showFilters, setShowFilters] = useState(false);
 
@@ -58,12 +58,38 @@ const SearchFilters = ({
   ];
 
   const toggleFilters = () => {
-    setShowFilters(!showFilters);
+    setShowFilters(prev => !prev);
   };
 
   const handleSearch = (e) => {
+    if (!e) return;
     e.preventDefault();
-    if (onSearch) onSearch();
+    onSearch();
+  };
+
+  const handleSearchChange = (e) => {
+    if (!e || !e.target) return;
+    setSearchQuery(e.target.value);
+  };
+
+  const handleTypeChange = (e) => {
+    if (!e || !e.target) return;
+    setTypeFilter(e.target.value);
+  };
+
+  const handleCategoryChange = (e) => {
+    if (!e || !e.target) return;
+    setCategoryFilter(e.target.value);
+  };
+
+  const handleConditionChange = (e) => {
+    if (!e || !e.target) return;
+    setConditionFilter(e.target.value);
+  };
+
+  const handleLocationChange = (e) => {
+    if (!e || !e.target) return;
+    setLocationFilter(e.target.value);
   };
 
   return (
@@ -78,8 +104,8 @@ const SearchFilters = ({
               type="text"
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="ค้นหารายการ..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchQuery || ''}
+              onChange={handleSearchChange}
             />
           </div>
           <button
@@ -119,8 +145,8 @@ const SearchFilters = ({
                 <FontAwesomeIcon icon={faThLarge} className="mr-2" /> ประเภทรายการ
               </label>
               <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
+                value={typeFilter || 'all'}
+                onChange={handleTypeChange}
                 className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 {types.map(type => (
@@ -137,8 +163,8 @@ const SearchFilters = ({
                 <FontAwesomeIcon icon={faThLarge} className="mr-2" /> หมวดหมู่
               </label>
               <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
+                value={categoryFilter || 'all'}
+                onChange={handleCategoryChange}
                 className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 {categories.map(category => (
@@ -155,8 +181,8 @@ const SearchFilters = ({
                 <FontAwesomeIcon icon={faFilter} className="mr-2" /> สภาพ
               </label>
               <select
-                value={conditionFilter}
-                onChange={(e) => setConditionFilter(e.target.value)}
+                value={conditionFilter || 'all'}
+                onChange={handleConditionChange}
                 className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 {conditions.map(condition => (
@@ -173,8 +199,8 @@ const SearchFilters = ({
                 <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" /> สถานที่
               </label>
               <select
-                value={locationFilter}
-                onChange={(e) => setLocationFilter(e.target.value)}
+                value={locationFilter || ''}
+                onChange={handleLocationChange}
                 className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 {locations.map(location => (

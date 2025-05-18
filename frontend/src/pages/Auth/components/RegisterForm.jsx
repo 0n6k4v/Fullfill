@@ -8,11 +8,11 @@ import SocialButton from './SocialButton';
 import axios from 'axios';
 
 const RegisterForm = ({ 
-  showPassword, 
-  setShowPassword, 
-  passwordStrength, 
-  handlePasswordChange, 
-  setActiveTab 
+  showPassword = false, 
+  setShowPassword = () => {}, 
+  passwordStrength = 0, 
+  handlePasswordChange = () => {}, 
+  setActiveTab = () => {} 
 }) => {
   // สร้าง state สำหรับเก็บข้อมูลฟอร์ม
   const [formData, setFormData] = useState({
@@ -25,7 +25,7 @@ const RegisterForm = ({
   
   // สร้าง state แยกสำหรับข้อมูลติดต่อที่หลากหลาย
   const [contactInfo, setContactInfo] = useState([
-    { type: 'phone', value: '', label: 'Phone' }
+    { type: 'phone', value: '', label: 'เบอร์โทรศัพท์' }
   ]);
   
   // state สำหรับจัดการข้อความ error และ loading
@@ -35,16 +35,18 @@ const RegisterForm = ({
   
   // ตัวเลือกประเภทการติดต่อ
   const contactTypes = [
-    { id: 'phone', label: 'Phone' },
+    { id: 'phone', label: 'เบอร์โทรศัพท์' },
     { id: 'line', label: 'LINE ID' },
     { id: 'facebook', label: 'Facebook' },
     { id: 'twitter', label: 'Twitter' },
     { id: 'instagram', label: 'Instagram' },
-    { id: 'other', label: 'Other' }
+    { id: 'other', label: 'อื่นๆ' }
   ];
   
   // ฟังก์ชันสำหรับจัดการการเปลี่ยนแปลงข้อมูลในฟอร์ม
   const handleChange = (e) => {
+    if (!e || !e.target) return;
+    
     const { id, value, type, checked } = e.target;
     
     // ถ้ามีการเปลี่ยนแปลงที่ password เรียกใช้ handlePasswordChange
@@ -64,6 +66,8 @@ const RegisterForm = ({
   
   // ฟังก์ชันจัดการการเปลี่ยนแปลงข้อมูลติดต่อ
   const handleContactChange = (index, field, value) => {
+    if (typeof index !== 'number' || !field || value === undefined) return;
+    
     const newContactInfo = [...contactInfo];
     newContactInfo[index][field] = value;
     setContactInfo(newContactInfo);
@@ -71,11 +75,13 @@ const RegisterForm = ({
   
   // ฟังก์ชันเพิ่มฟิลด์ข้อมูลติดต่อใหม่
   const addContactField = () => {
-    setContactInfo([...contactInfo, { type: 'phone', value: '', label: 'Phone' }]);
+    setContactInfo([...contactInfo, { type: 'phone', value: '', label: 'เบอร์โทรศัพท์' }]);
   };
   
   // ฟังก์ชันลบฟิลด์ข้อมูลติดต่อ
   const removeContactField = (index) => {
+    if (typeof index !== 'number') return;
+    
     const newContactInfo = [...contactInfo];
     newContactInfo.splice(index, 1);
     setContactInfo(newContactInfo);
@@ -83,7 +89,11 @@ const RegisterForm = ({
   
   // ฟังก์ชันสำหรับเปลี่ยนประเภทการติดต่อ
   const handleContactTypeChange = (index, type) => {
+    if (typeof index !== 'number' || !type) return;
+    
     const selectedType = contactTypes.find(t => t.id === type);
+    if (!selectedType) return;
+    
     const newContactInfo = [...contactInfo];
     newContactInfo[index].type = type;
     newContactInfo[index].label = selectedType.label;
@@ -92,17 +102,18 @@ const RegisterForm = ({
   
   // ฟังก์ชันสำหรับ validate ข้อมูล
   const validateForm = () => {
-    if (!formData.email.trim()) return "Email is required";
-    if (!formData.username.trim()) return "Username is required";
-    if (!formData.password) return "Password is required";
-    if (formData.password !== formData.confirmPassword) return "Passwords do not match";
-    if (!formData.agreeTerms) return "You must agree to the Terms of Service";
-    if (passwordStrength < 2) return "Please use a stronger password";
+    if (!formData.email?.trim()) return "กรุณากรอกอีเมล";
+    if (!formData.username?.trim()) return "กรุณากรอกชื่อผู้ใช้";
+    if (!formData.password) return "กรุณากรอกรหัสผ่าน";
+    if (formData.password !== formData.confirmPassword) return "รหัสผ่านไม่ตรงกัน";
+    if (!formData.agreeTerms) return "กรุณายอมรับเงื่อนไขการใช้งาน";
+    if (passwordStrength < 2) return "กรุณาใช้รหัสผ่านที่แข็งแกร่งกว่า";
     return null;
   };
   
   // ฟังก์ชันสำหรับส่งข้อมูลไปยัง API
   const handleSubmit = async (e) => {
+    if (!e) return;
     e.preventDefault();
     
     // เพิ่ม console.log เพื่อ debugging
@@ -172,10 +183,10 @@ const RegisterForm = ({
           setError(errorMessages);
         } else {
           // แสดงข้อความ error จาก API
-          setError(err.response.data.detail || "Registration failed. Please try again.");
+          setError(err.response.data.detail || "การลงทะเบียนล้มเหลว กรุณาลองใหม่อีกครั้ง");
         }
       } else {
-        setError("Network error. Please check your connection.");
+        setError("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต");
       }
     } finally {
       setLoading(false);
@@ -194,7 +205,7 @@ const RegisterForm = ({
       {/* แสดงข้อความสำเร็จถ้าลงทะเบียนสำเร็จ */}
       {success && (
         <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded">
-          Registration successful! Redirecting to login...
+          ลงทะเบียนสำเร็จ! กำลังเปลี่ยนไปหน้าเข้าสู่ระบบ...
         </div>
       )}
       
@@ -203,7 +214,7 @@ const RegisterForm = ({
           htmlFor="username"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Username
+          ชื่อผู้ใช้
         </label>
         <input
           type="text"
@@ -211,7 +222,7 @@ const RegisterForm = ({
           value={formData.username}
           onChange={handleChange}
           className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-          placeholder="Choose a username"
+          placeholder="เลือกชื่อผู้ใช้"
         />
       </div>
 
@@ -220,7 +231,7 @@ const RegisterForm = ({
           htmlFor="register-email"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Email Address
+          อีเมล
         </label>
         <input
           type="email"
@@ -228,14 +239,14 @@ const RegisterForm = ({
           value={formData.email}
           onChange={handleChange}
           className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-          placeholder="Enter your email"
+          placeholder="กรอกอีเมลของคุณ"
         />
       </div>
       
       {/* Contact Information - Dynamic Fields */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Contact Information (Optional)
+          ข้อมูลการติดต่อ (ไม่บังคับ)
         </label>
         
         {contactInfo.map((contact, index) => (
@@ -251,40 +262,34 @@ const RegisterForm = ({
               ))}
             </select>
             
-            {/* Input field กับปุ่มลบในแนวนอนเสมอ */}
-            <div className="flex w-full items-center gap-2">
-              <input
-                type="text"
-                value={contact.value}
-                onChange={(e) => handleContactChange(index, 'value', e.target.value)}
-                placeholder={`Enter your ${contact.label}`}
-                className="flex-grow px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-              />
-              
-              {contactInfo.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeContactField(index)}
-                  className="p-2 text-red-500 hover:text-red-700 flex-shrink-0"
-                  aria-label="Remove contact field"
-                >
-                  <FontAwesomeIcon icon={faTimes} />
-                </button>
-              )}
-            </div>
+            <input
+              type="text"
+              value={contact.value}
+              onChange={(e) => handleContactChange(index, 'value', e.target.value)}
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+              placeholder={`กรอก${contact.label}`}
+            />
+            
+            {index > 0 && (
+              <button
+                type="button"
+                onClick={() => removeContactField(index)}
+                className="p-3 text-gray-500 hover:text-red-500 transition"
+              >
+                <FontAwesomeIcon icon={faTimes} />
+              </button>
+            )}
           </div>
         ))}
         
-        {contactInfo.length < 5 && (
-          <button
-            type="button"
-            onClick={addContactField}
-            className="mt-1 flex items-center text-sm text-indigo-600 hover:text-indigo-500"
-          >
-            <FontAwesomeIcon icon={faPlus} className="mr-1" />
-            Add another contact method
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={addContactField}
+          className="flex items-center text-sm text-indigo-600 hover:text-indigo-500"
+        >
+          <FontAwesomeIcon icon={faPlus} className="mr-1" />
+          เพิ่มช่องทางการติดต่อ
+        </button>
       </div>
 
       <div>
@@ -292,18 +297,14 @@ const RegisterForm = ({
           htmlFor="register-password"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Password
+          รหัสผ่าน
         </label>
         <PasswordInput
           id="register-password"
-          placeholder="Create a password"
+          value={formData.password}
+          onChange={handleChange}
           showPassword={showPassword}
           setShowPassword={setShowPassword}
-          onChange={(e) => {
-            handlePasswordChange(e);
-            handleChange(e);
-          }}
-          value={formData.password}
         />
         <PasswordStrengthMeter strength={passwordStrength} />
       </div>
@@ -313,43 +314,33 @@ const RegisterForm = ({
           htmlFor="confirm-password"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Confirm Password
+          ยืนยันรหัสผ่าน
         </label>
-        <input
-          type={showPassword ? "text" : "password"}
+        <PasswordInput
           id="confirm-password"
           value={formData.confirmPassword}
           onChange={handleChange}
-          className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-          placeholder="Confirm your password"
+          showPassword={showPassword}
+          setShowPassword={setShowPassword}
         />
       </div>
 
-      <div className="flex items-start">
+      <div className="flex items-center">
         <input
-          type="checkbox"
           id="terms"
+          type="checkbox"
           checked={formData.agreeTerms}
           onChange={handleChange}
-          className="h-4 w-4 mt-1 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
         />
-        <label
-          htmlFor="terms"
-          className="ml-2 block text-sm text-gray-700"
-        >
-          I agree to the{" "}
-          <a
-            href="#"
-            className="text-indigo-600 hover:text-indigo-500"
-          >
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a
-            href="#"
-            className="text-indigo-600 hover:text-indigo-500"
-          >
-            Privacy Policy
+        <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
+          ฉันยอมรับ{' '}
+          <a href="#" className="text-indigo-600 hover:text-indigo-500">
+            เงื่อนไขการใช้งาน
+          </a>{' '}
+          และ{' '}
+          <a href="#" className="text-indigo-600 hover:text-indigo-500">
+            นโยบายความเป็นส่วนตัว
           </a>
         </label>
       </div>
@@ -357,42 +348,44 @@ const RegisterForm = ({
       <button
         type="submit"
         disabled={loading}
-        className={`w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 transition font-medium !rounded-button whitespace-nowrap cursor-pointer ${loading ? 'opacity-70' : ''}`}
+        className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+          loading ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
       >
-        {loading ? "Creating Account..." : "Create Account"}
+        {loading ? 'กำลังลงทะเบียน...' : 'ลงทะเบียน'}
       </button>
 
-      {/* ส่วนที่เหลือคงเหมือนเดิม */}
-      <div className="relative flex items-center justify-center mt-6">
-        <div className="absolute w-full border-t border-gray-300"></div>
-        <div className="relative px-4 bg-white text-sm text-gray-500">
-          Or sign up with
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-white text-gray-500">หรือลงทะเบียนด้วย</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <SocialButton 
-          icon={faGoogle} 
-          platform="Google" 
-          color="text-red-500" 
+      <div className="grid grid-cols-2 gap-3">
+        <SocialButton
+          icon={faGoogle}
+          text="Google"
+          onClick={() => console.log('Google sign up clicked')}
         />
-        <SocialButton 
-          icon={faFacebook} 
-          platform="Facebook" 
-          color="text-blue-600" 
+        <SocialButton
+          icon={faFacebook}
+          text="Facebook"
+          onClick={() => console.log('Facebook sign up clicked')}
+        />
+        <SocialButton
+          icon={faLine}
+          text="LINE"
+          onClick={() => console.log('LINE sign up clicked')}
+        />
+        <SocialButton
+          icon={faTwitter}
+          text="Twitter"
+          onClick={() => console.log('Twitter sign up clicked')}
         />
       </div>
-
-      <p className="text-center text-gray-600 mt-6">
-        Already have an account?
-        <button
-          type="button"
-          className="text-indigo-600 font-medium ml-1 hover:text-indigo-500 cursor-pointer"
-          onClick={() => setActiveTab("login")}
-        >
-          Log In
-        </button>
-      </p>
     </form>
   );
 };
