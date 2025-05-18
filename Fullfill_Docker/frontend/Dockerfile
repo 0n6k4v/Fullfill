@@ -14,6 +14,7 @@ COPY ../../frontend/package.json ./
 COPY ../../frontend/next.config.mjs ./
 COPY ../../frontend/postcss.config.mjs ./
 COPY ../../frontend/eslint.config.mjs ./
+COPY ../../frontend/jsconfig.json ./
 RUN npm run build
 
 FROM base AS runner
