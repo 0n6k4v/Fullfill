@@ -16,7 +16,7 @@ const Header = () => {
               className="flex items-center text-gray-700 hover:text-blue-600 transition-colors cursor-pointer"
             >
               <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-              <span className="font-medium">Back to Home</span>
+              <span className="font-medium">กลับหน้าหลัก</span>
             </Link>
           </div>
           <div className="flex items-center">
