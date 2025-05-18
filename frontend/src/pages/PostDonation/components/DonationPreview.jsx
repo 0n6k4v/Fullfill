@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faTag, faStar, faMapMarkerAlt, faBookmark, 
   faShareAlt, faImage, faPaperPlane, faSave, faThLarge,
   faCouch, faTshirt, faLaptop, faBlender, faBaby,
-  faBook, faUtensils, faFutbol, faHome, faBox
+  faBook, faUtensils, faFutbol, faHome, faBox,
+  faChevronLeft, faChevronRight
 } from '@fortawesome/free-solid-svg-icons';
 
 const DonationPreview = ({ formData, previewImages, categories, getConditionText }) => {
+  const [currentImage, setCurrentImage] = useState(0);
+
   // Helper function to get correct icon
   const getCategoryIcon = (iconName) => {
     switch(iconName) {
@@ -25,6 +28,24 @@ const DonationPreview = ({ formData, previewImages, categories, getConditionText
     }
   };
 
+  if (!previewImages || previewImages.length === 0) {
+    return (
+      <div className="md:w-1/2 relative">
+        <div className="h-96 bg-gray-200 flex items-center justify-center">
+          <p className="text-gray-500">No images available</p>
+        </div>
+      </div>
+    );
+  }
+
+  const handlePrevImage = () => {
+    setCurrentImage((prev) => (prev === 0 ? previewImages.length - 1 : prev - 1));
+  };
+  
+  const handleNextImage = () => {
+    setCurrentImage((prev) => (prev === previewImages.length - 1 ? 0 : prev + 1));
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-md p-6 sticky top-24">
       <h2 className="text-xl font-semibold text-gray-800 mb-4">
@@ -32,17 +53,34 @@ const DonationPreview = ({ formData, previewImages, categories, getConditionText
       </h2>
       <div className="border border-gray-200 rounded-lg overflow-hidden">
         <div className="relative h-48 bg-gray-100">
-          {previewImages.length > 0 ? (
+          <div className="h-96 relative">
             <img
-              src={previewImages[0]}
+              src={previewImages[currentImage]}
               alt="Item preview"
               className="w-full h-full object-cover object-top"
             />
-          ) : (
-            <div className="flex items-center justify-center h-full">
-              <FontAwesomeIcon icon={faImage} className="text-4xl text-gray-300" />
+            <button
+              onClick={handlePrevImage}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 rounded-full p-2 shadow-md hover:bg-white cursor-pointer !rounded-button whitespace-nowrap"
+            >
+              <FontAwesomeIcon icon={faChevronLeft} className="text-gray-700" />
+            </button>
+            <button
+              onClick={handleNextImage}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 rounded-full p-2 shadow-md hover:bg-white cursor-pointer !rounded-button whitespace-nowrap"
+            >
+              <FontAwesomeIcon icon={faChevronRight} className="text-gray-700" />
+            </button>
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+              {previewImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImage(index)}
+                  className={`w-2.5 h-2.5 rounded-full ${currentImage === index ? "bg-indigo-600" : "bg-white/70"} cursor-pointer !rounded-button whitespace-nowrap`}
+                ></button>
+              ))}
             </div>
-          )}
+          </div>
         </div>
         <div className="p-4">
           <h3 className="text-xl font-semibold text-gray-800 mb-2">

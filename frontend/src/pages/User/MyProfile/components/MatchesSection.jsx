@@ -1,32 +1,44 @@
 import React from 'react';
 import MatchCard from './MatchCard';
 
-const MatchesSection = ({ matches }) => {
-  const incomingMatches = matches.filter(match => match.type === 'incoming');
-  const outgoingMatches = matches.filter(match => match.type === 'outgoing');
+const MatchesSection = ({ matches = [] }) => {
+  if (!matches || matches.length === 0) {
+    return (
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-gray-800 mb-6">การจับคู่</h2>
+        <p className="text-gray-500">No matches available</p>
+      </div>
+    );
+  }
+
+  const incomingMatches = matches.filter(match => match.type === 'incoming') || [];
+  const outgoingMatches = matches.filter(match => match.type === 'outgoing') || [];
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
-      <div className="px-6 py-5 border-b border-gray-200">
-        <h3 className="text-lg font-medium leading-6 text-gray-900">My Matches</h3>
-        <p className="mt-1 text-sm text-gray-500">View and manage your donation matches</p>
-      </div>
-      <div className="p-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div>
-            <h4 className="text-base font-medium text-gray-900 mb-4">Incoming Offers</h4>
-            {incomingMatches.map(match => (
-              <MatchCard key={match.id} match={match} />
-            ))}
-          </div>
-          <div>
-            <h4 className="text-base font-medium text-gray-900 mb-4">Outgoing Requests</h4>
-            {outgoingMatches.map(match => (
-              <MatchCard key={match.id} match={match} />
+    <div className="mt-8">
+      <h2 className="text-xl font-bold text-gray-800 mb-6">การจับคู่</h2>
+      
+      {incomingMatches.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-gray-700 mb-4">คำขอที่ได้รับ</h3>
+          <div className="space-y-4">
+            {incomingMatches.map((match, index) => (
+              <MatchCard key={index} match={match} />
             ))}
           </div>
         </div>
-      </div>
+      )}
+      
+      {outgoingMatches.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold text-gray-700 mb-4">คำขอที่ส่ง</h3>
+          <div className="space-y-4">
+            {outgoingMatches.map((match, index) => (
+              <MatchCard key={index} match={match} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

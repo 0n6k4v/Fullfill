@@ -11,45 +11,77 @@ import {
   faTimes, 
   faCheck, 
   faAddressBook, 
-  faRedo 
+  faRedo,
+  faHeart
 } from '@fortawesome/free-solid-svg-icons';
 
-const PostCard = ({ post, activeTab }) => {
+const PostCard = ({ post = {}, activeTab }) => {
+  if (!post || Object.keys(post).length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <p className="text-gray-500 p-4">No post data available</p>
+      </div>
+    );
+  }
+
+  const {
+    image = '',
+    title = '',
+    location = '',
+    distance = '',
+    tags = [],
+    type = '',
+    category = '',
+    postedDate = '',
+    matchedWith = '',
+    receivedBy = '',
+  } = post;
+
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="h-40 bg-gray-200 overflow-hidden">
-        <img
-          src={post.image}
-          alt={post.title}
-          className="w-full h-full object-cover object-top"
-        />
+        <div className="relative">
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover object-top"
+          />
+          <div className="absolute top-3 left-3">
+            <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+              {type}
+            </span>
+          </div>
+          <button className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-sm hover:bg-gray-100 cursor-pointer !rounded-button whitespace-nowrap">
+            <FontAwesomeIcon icon={faHeart} className="text-gray-600" />
+          </button>
+        </div>
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start">
           <div>
-            <h4 className="text-lg font-medium text-gray-900">{post.title}</h4>
+            <h4 className="text-lg font-medium text-gray-900">{title}</h4>
             <div className="mt-1 flex items-center text-sm text-gray-500">
               <FontAwesomeIcon icon={faTag} className="mr-1 text-gray-400" />
-              <span>{post.category}</span>
+              <span>{category}</span>
             </div>
             <div className="mt-1 flex items-center text-sm text-gray-500">
               <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-gray-400" />
-              <span>{post.location}</span>
+              <span>{location} • {distance}</span>
             </div>
             <div className="mt-1 flex items-center text-sm text-gray-500">
               <FontAwesomeIcon icon={faClock} className="mr-1 text-gray-400" />
-              <span>Posted {post.postedDate}</span>
+              <span>Posted {postedDate}</span>
             </div>
             {activeTab === "matched" && (
               <div className="mt-2 flex items-center text-sm text-blue-600">
                 <FontAwesomeIcon icon={faHandshake} className="mr-1" />
-                <span>Matched with {post.matchedWith}</span>
+                <span>Matched with {matchedWith}</span>
               </div>
             )}
             {activeTab === "completed" && (
               <div className="mt-2 flex items-center text-sm text-green-600">
                 <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
-                <span>Received by {post.receivedBy}</span>
+                <span>Received by {receivedBy}</span>
               </div>
             )}
           </div>

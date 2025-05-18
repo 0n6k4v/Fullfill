@@ -9,10 +9,29 @@ import {
   faCheck,
   faTimes,
   faCheckCircle,
-  faInfoCircle
+  faInfoCircle,
+  faMapMarkerAlt,
+  faHeart
 } from '@fortawesome/free-solid-svg-icons';
 
-const MatchCard = ({ match }) => {
+const MatchCard = ({ match = {} }) => {
+  if (!match || Object.keys(match).length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <p className="text-gray-500 p-4">No match data available</p>
+      </div>
+    );
+  }
+
+  const {
+    userAvatar = '',
+    user = '',
+    type = '',
+    item = '',
+    status = '',
+    date = ''
+  } = match;
+
   const getStatusColorClass = (status) => {
     switch (status) {
       case 'Pending': return 'bg-yellow-100 text-yellow-800';
@@ -22,28 +41,37 @@ const MatchCard = ({ match }) => {
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 mb-4 hover:shadow-sm transition-shadow duration-200">
-      <div className="flex items-center">
-        <img 
-          className="h-10 w-10 rounded-full" 
-          src={match.userAvatar} 
-          alt={`${match.user}'s avatar`} 
-        />
-        <div className="ml-3">
-          <p className="text-sm font-medium text-gray-900">{match.user}</p>
-          <p className="text-xs text-gray-500">
-            {match.type === 'incoming' ? 'Offering: ' : 'Item: '}{match.item}
-          </p>
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="p-4">
+        <div className="flex items-center mb-4">
+          <img
+            className="h-10 w-10 rounded-full"
+            src={userAvatar || '/default-avatar.png'}
+            alt={`${user}'s avatar`}
+          />
+          <div className="ml-3">
+            <p className="text-sm font-medium text-gray-900">{user}</p>
+            <p className="text-xs text-gray-500">
+              {type === "incoming" ? "Offering: " : "Item: "}{item}
+            </p>
+          </div>
+          <div className="ml-auto">
+            <span
+              className={`px-2 py-1 text-xs rounded-full ${
+                status === "Pending"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : status === "Accepted"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-gray-100 text-gray-800"
+              }`}
+            >
+              {status}
+            </span>
+          </div>
         </div>
-        <div className="ml-auto flex items-center">
-          <span className={`px-2 py-1 text-xs rounded-full ${getStatusColorClass(match.status)}`}>
-            {match.status}
-          </span>
+        <div className="text-xs text-gray-500">
+          {date}
         </div>
-      </div>
-      
-      <div className="mt-3 text-xs text-gray-500">
-        <FontAwesomeIcon icon={faCalendarAlt} className="mr-1" /> {match.date}
       </div>
       
       <div className="mt-4 flex space-x-3">
@@ -51,7 +79,7 @@ const MatchCard = ({ match }) => {
           <FontAwesomeIcon icon={faAddressBook} className="mr-1" /> View Contact
         </button>
         
-        {match.status === 'Pending' && match.type === 'incoming' ? (
+        {status === 'Pending' && type === 'incoming' ? (
           <>
             <button className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 cursor-pointer !rounded-button whitespace-nowrap">
               <FontAwesomeIcon icon={faCheck} className="mr-1" /> Accept
@@ -60,7 +88,7 @@ const MatchCard = ({ match }) => {
               <FontAwesomeIcon icon={faTimes} className="mr-1" /> Decline
             </button>
           </>
-        ) : match.status === 'Accepted' && match.type === 'outgoing' ? (
+        ) : status === 'Accepted' && type === 'outgoing' ? (
           <button className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 cursor-pointer !rounded-button whitespace-nowrap">
             <FontAwesomeIcon icon={faCheckCircle} className="mr-1" /> Mark as Received
           </button>
