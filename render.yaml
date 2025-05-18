@@ -26,6 +26,14 @@ services:
           property: connectionString
       - key: DEBUG
         value: "False"
+      - key: SECRET_KEY=5bb5c4cd8b578eed918f57dc0bf6ff0966dcd34cbea754c9d8d6a3788afde2a871147c29abfecd03592a0da0bbeaf437626bd9e64782f90a3327e88cb5c534d0
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME=dihpaylwv
+        sync: false
+      - key: CLOUDINARY_API_KEY=231766899436424
+        sync: false
+      - key: CLOUDINARY_API_SECRET=iKfbft75xJOWCwLLWDJYJ6EgP1g
+        sync: false
     healthCheckPath: /docs
     autoDeploy: true
 
