@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserCircle, faStar, faPlus, faHandHoldingHeart, faListAlt, faAddressBook } from '@fortawesome/free-solid-svg-icons';
 
 const UserProfileCard = ({ userProfile = {} }) => {
-  // Ensure userProfile is an object
   const safeUserProfile = typeof userProfile === 'object' && userProfile !== null ? userProfile : {};
 
   const quickActions = [

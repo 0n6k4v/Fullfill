@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext';
 const ProtectedRoute = ({ children }) => {
   const router = useRouter();
 
-  // ใช้ try-catch เพื่อป้องกันกรณีที่ AuthProvider ไม่มีอยู่
   let isAuthenticated = () => false;
   let loading = false;
   try {

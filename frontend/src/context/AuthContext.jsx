@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -18,22 +19,22 @@ export function AuthProvider({ children }) {
     try {
       const token = localStorage.getItem('token');
       if (token) {
-        const response = await fetch('/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
+        // ตั้งค่า token ใน header
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        const response = await api.get('/users/me');
+        if (response.data) {
+          setUser(response.data);
         } else {
           localStorage.removeItem('token');
+          localStorage.removeItem('refresh_token');
           setUser(null);
         }
       }
     } catch (error) {
       console.error('Auth check failed:', error);
       localStorage.removeItem('token');
+      localStorage.removeItem('refresh_token');
       setUser(null);
     } finally {
       setLoading(false);
@@ -42,58 +43,103 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
+      console.log('Attempting login with:', { email });
+
+      const params = new URLSearchParams();
+      params.append('username', email);
+      params.append('password', password);
+
+      const response = await api.post('/auth/login', params, {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({ email, password })
       });
 
-      if (!response.ok) {
-        throw new Error('เข้าสู่ระบบไม่สำเร็จ');
-      }
-
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
-      setUser(data.user);
-      router.push('/dashboard');
+      const { access_token, refresh_token } = response.data;
+      
+      // ตั้งค่า token ใน header
+      api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+      
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('refresh_token', refresh_token);
+      
+      const userResponse = await api.get('/users/me');
+      
+      setUser(userResponse.data);
+      router.push('/User/MyProfile');
       return { success: true };
     } catch (error) {
-      console.error('Login failed:', error);
-      return { success: false, error: error.message };
+      console.error('Login failed with error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers,
+          data: error.config?.data
+        }
+      });
+      
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'เข้าสู่ระบบไม่สำเร็จ' 
+      };
     }
   };
 
   const register = async (userData) => {
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(userData)
-      });
 
-      if (!response.ok) {
-        throw new Error('ลงทะเบียนไม่สำเร็จ');
-      }
+      const response = await api.post('/auth/register', userData);
 
-      const data = await response.json();
-      localStorage.setItem('token', data.token);
-      setUser(data.user);
+      const { access_token, refresh_token } = response.data;
+      
+      // ตั้งค่า token ใน header
+      api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+      
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('refresh_token', refresh_token);
+      
+      const userResponse = await api.get('/users/me');
+      
+      setUser(userResponse.data);
       router.push('/dashboard');
       return { success: true };
     } catch (error) {
-      console.error('Registration failed:', error);
-      return { success: false, error: error.message };
+      console.error('Registration failed with error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        headers: error.response?.headers,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers,
+          data: error.config?.data
+        }
+      });
+
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'ลงทะเบียนไม่สำเร็จ' 
+      };
     }
   };
 
   const logout = () => {
+    // ลบ token จาก header
+    delete api.defaults.headers.common['Authorization'];
+    
     localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
     setUser(null);
     router.push('/');
+  };
+
+  const isAuthenticated = () => {
+    return !!user;
   };
 
   const value = {
@@ -102,7 +148,8 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
-    checkAuth
+    checkAuth,
+    isAuthenticated
   };
 
   return (

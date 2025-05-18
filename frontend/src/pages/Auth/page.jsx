@@ -13,7 +13,6 @@ const AuthPage = () => {
 
   const handlePasswordChange = (e) => {
     const password = e.target.value;
-    // Simple password strength calculator
     let strength = 0;
     if (password.length > 6) strength += 1;
     if (password.match(/[A-Z]/)) strength += 1;
@@ -34,12 +33,12 @@ const AuthPage = () => {
           <div className="w-full md:w-1/2 p-8 md:p-12">
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                {activeTab === "login" ? "Welcome" : "Join Fulfill"}
+                {activeTab === "login" ? "ยินดีต้อนรับ" : "ร่วมเป็นส่วนหนึ่งในการเติมเต็ม"}
               </h2>
               <p className="text-gray-600">
                 {activeTab === "login"
-                  ? "Sign in to continue your donation journey"
-                  : "Create an account to start making a difference"}
+                  ? "ลงชื่อเข้าใช้เพื่อก้าวเข้าสู่โลกแห่งการแบ่งปัน"
+                  : "สร้างบัญชีใหม่เพื่อโลกแห่งการแบ่งปัน"}
               </p>
             </div>
 
