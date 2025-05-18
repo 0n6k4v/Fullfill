@@ -1,6 +1,10 @@
 import React from 'react';
 
-const TabsNavigation = ({ tabs, activeTab, setActiveTab }) => {
+const TabsNavigation = ({ tabs = [], activeTab, setActiveTab }) => {
+  if (!tabs || tabs.length === 0) {
+    return null;
+  }
+
   return (
     <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
       {tabs.map((tab) => (
