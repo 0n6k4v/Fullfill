@@ -2,17 +2,20 @@ import React from 'react';
 import MatchCard from './MatchCard';
 
 const MatchesSection = ({ matches = [] }) => {
-  if (!matches || matches.length === 0) {
+  // Ensure matches is an array
+  const safeMatches = Array.isArray(matches) ? matches : [];
+
+  if (safeMatches.length === 0) {
     return (
       <div className="mt-8">
         <h2 className="text-xl font-bold text-gray-800 mb-6">การจับคู่</h2>
-        <p className="text-gray-500">No matches available</p>
+        <p className="text-gray-500">ไม่พบการจับคู่</p>
       </div>
     );
   }
 
-  const incomingMatches = matches.filter(match => match.type === 'incoming') || [];
-  const outgoingMatches = matches.filter(match => match.type === 'outgoing') || [];
+  const incomingMatches = safeMatches.filter(match => match?.type === 'incoming') || [];
+  const outgoingMatches = safeMatches.filter(match => match?.type === 'outgoing') || [];
 
   return (
     <div className="mt-8">
@@ -22,9 +25,10 @@ const MatchesSection = ({ matches = [] }) => {
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-gray-700 mb-4">คำขอที่ได้รับ</h3>
           <div className="space-y-4">
-            {incomingMatches.map((match, index) => (
-              <MatchCard key={index} match={match} />
-            ))}
+            {incomingMatches.map((match, index) => {
+              if (!match) return null;
+              return <MatchCard key={match?.id || index} match={match} />;
+            })}
           </div>
         </div>
       )}
@@ -33,9 +37,10 @@ const MatchesSection = ({ matches = [] }) => {
         <div>
           <h3 className="text-lg font-semibold text-gray-700 mb-4">คำขอที่ส่ง</h3>
           <div className="space-y-4">
-            {outgoingMatches.map((match, index) => (
-              <MatchCard key={index} match={match} />
-            ))}
+            {outgoingMatches.map((match, index) => {
+              if (!match) return null;
+              return <MatchCard key={match?.id || index} match={match} />;
+            })}
           </div>
         </div>
       )}

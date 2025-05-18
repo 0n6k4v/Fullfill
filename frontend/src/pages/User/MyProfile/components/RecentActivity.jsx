@@ -5,11 +5,40 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGift, faHandHoldingHeart, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const RecentActivity = ({ userActivityData = null, isLoading = false }) => {
-  const [activityFilter, setActivityFilter] = useState('All Activities');
+  const [activityFilter, setActivityFilter] = useState('ทั้งหมด');
   
   const handleFilterChange = (e) => {
     if (!e || !e.target) return;
     setActivityFilter(e.target.value);
+  };
+
+  const getStatusColor = (status) => {
+    if (!status) return 'bg-gray-100 text-gray-800';
+    
+    const statusMap = {
+      'completed': 'bg-green-100 text-green-800',
+      'pending': 'bg-yellow-100 text-yellow-800',
+      'cancelled': 'bg-red-100 text-red-800',
+      'in_progress': 'bg-blue-100 text-blue-800'
+    };
+    
+    return statusMap[status.toLowerCase()] || 'bg-gray-100 text-gray-800';
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'ไม่มีวันที่';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('th-TH', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (err) {
+      return 'วันที่ไม่ถูกต้อง';
+    }
   };
   
   if (isLoading) {
@@ -42,15 +71,20 @@ const RecentActivity = ({ userActivityData = null, isLoading = false }) => {
     
     let activities = [];
     
-    if (activityFilter === 'All Activities' || activityFilter === 'Donations') {
+    if (activityFilter === 'ทั้งหมด' || activityFilter === 'การบริจาค') {
       activities = [...activities, ...(userActivityData.recentDonations || [])];
     }
     
-    if (activityFilter === 'All Activities' || activityFilter === 'Requests') {
+    if (activityFilter === 'ทั้งหมด' || activityFilter === 'คำขอรับบริจาค') {
       activities = [...activities, ...(userActivityData.recentRequests || [])];
     }
     
-    return activities;
+    // Sort activities by date
+    return activities.sort((a, b) => {
+      const dateA = new Date(a.date || 0);
+      const dateB = new Date(b.date || 0);
+      return dateB - dateA;
+    });
   };
 
   const activities = getFilteredActivities();
@@ -62,7 +96,7 @@ const RecentActivity = ({ userActivityData = null, isLoading = false }) => {
           กิจกรรมล่าสุด
         </h3>
         <select 
-          className="text-sm border-gray-300 rounded-md"
+          className="text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
           value={activityFilter}
           onChange={handleFilterChange}
         >
@@ -86,7 +120,7 @@ const RecentActivity = ({ userActivityData = null, isLoading = false }) => {
             return (
               <div
                 key={activity.id || Math.random()}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
               >
                 <div className="flex items-center">
                   <div className={`p-2 ${isDonation ? 'bg-green-100' : 'bg-blue-100'} rounded-lg`}>
@@ -97,25 +131,23 @@ const RecentActivity = ({ userActivityData = null, isLoading = false }) => {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-900">
-                      {activity.title || 'No Title'}
+                      {activity.title || 'ไม่มีชื่อ'}
                     </p>
                     <p className="text-xs text-gray-500">
                       {isDonation 
-                        ? `ถึง: ${activity.recipient || 'Unknown'}` 
-                        : `จาก: ${activity.donor || 'Unknown'}`}
+                        ? `ถึง: ${activity.recipient || 'ไม่ระบุ'}` 
+                        : `จาก: ${activity.donor || 'ไม่ระบุ'}`}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    isDonation 
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                    getStatusColor(activity.status)
                   }`}>
-                    {activity.status || 'Unknown'}
+                    {activity.status || 'ไม่ระบุสถานะ'}
                   </span>
                   <p className="text-xs text-gray-500 mt-1">
-                    {activity.date || 'No Date'}
+                    {formatDate(activity.date)}
                   </p>
                 </div>
               </div>

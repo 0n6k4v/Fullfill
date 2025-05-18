@@ -56,16 +56,16 @@ const Header = () => {
         </div>
         <div className="flex items-center space-x-4">
           <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-            Home
+            หน้าแรก
           </a>
           <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-            Post
+            โพสต์
           </a>
           <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-            Maps
+            แผนที่
           </a>
           <a href="#" className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer">
-            Dashboard
+            แดชบอร์ด
           </a>
           <div className="flex items-center space-x-2">
             <button className="p-1 rounded-full text-gray-500 hover:text-blue-600 transition-colors cursor-pointer focus:outline-none">
@@ -88,26 +88,26 @@ const Header = () => {
                     href="#"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <FontAwesomeIcon icon={faUser} className="mr-2" /> My Profile
+                    <FontAwesomeIcon icon={faUser} className="mr-2" /> โปรไฟล์ของฉัน
                   </a>
                   <a
                     href="#"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <FontAwesomeIcon icon={faGift} className="mr-2" /> My Donations
+                    <FontAwesomeIcon icon={faGift} className="mr-2" /> การบริจาคของฉัน
                   </a>
                   <a
                     href="#"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" /> My Requests
+                    <FontAwesomeIcon icon={faHandHoldingHeart} className="mr-2" /> คำขอของฉัน
                   </a>
                   <div className="border-t border-gray-100"></div>
                   <a
                     href="#"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
-                    <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" /> Logout
+                    <FontAwesomeIcon icon={faSignOutAlt} className="mr-2" /> ออกจากระบบ
                   </a>
                 </div>
               )}

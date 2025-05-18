@@ -14,6 +14,9 @@ const StatCard = ({
   stat = {},
   index = 0
 }) => {
+  // Ensure stat is an object
+  const safeStat = typeof stat === 'object' && stat !== null ? stat : {};
+  
   const {
     title = 'ไม่มีชื่อ',
     value = 0,
@@ -21,12 +24,12 @@ const StatCard = ({
     color = 'bg-blue-500',
     change = 0,
     changeType = 'neutral'
-  } = stat;
+  } = safeStat;
 
   const getChangeColor = (type) => {
     if (!type) return 'text-gray-600';
     
-    switch (type.toLowerCase()) {
+    switch (String(type).toLowerCase()) {
       case 'increase':
         return 'text-green-600';
       case 'decrease':
@@ -37,23 +40,25 @@ const StatCard = ({
   };
 
   const formatValue = (val) => {
-    if (typeof val !== 'number') return '0';
+    if (typeof val !== 'number' || isNaN(val)) return '0';
     return val.toLocaleString('th-TH');
   };
 
   const formatChange = (val) => {
-    if (typeof val !== 'number') return '0';
+    if (typeof val !== 'number' || isNaN(val)) return '0';
     return val > 0 ? `+${val}` : val;
   };
 
-  const getIcon = (index) => {
+  const getIcon = (idx) => {
     const icons = [faHandHoldingHeart, faBoxOpen, faClipboardList, faCheckCircle];
-    return icons[index % icons.length];
+    const safeIndex = typeof idx === 'number' && !isNaN(idx) ? idx : 0;
+    return icons[safeIndex % icons.length];
   };
 
-  const getColor = (index) => {
+  const getColor = (idx) => {
     const colors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500'];
-    return colors[index % colors.length];
+    const safeIndex = typeof idx === 'number' && !isNaN(idx) ? idx : 0;
+    return colors[safeIndex % colors.length];
   };
 
   return (

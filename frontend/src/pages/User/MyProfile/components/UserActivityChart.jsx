@@ -4,7 +4,11 @@ import api from '@/services/api';
 
 const UserActivityChart = () => {
   const chartRef = useRef(null);
-  const [chartData, setChartData] = useState(null);
+  const [chartData, setChartData] = useState({
+    categories: [],
+    donations: [],
+    requests: []
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -15,13 +19,17 @@ const UserActivityChart = () => {
         setError(null);
         const response = await api.get('/users/me/activity/chart');
         if (response?.data) {
-          setChartData(response.data);
+          setChartData({
+            categories: response.data.categories || [],
+            donations: response.data.donations || [],
+            requests: response.data.requests || []
+          });
         } else {
-          throw new Error('Invalid response data');
+          throw new Error('ไม่พบข้อมูลกราฟ');
         }
       } catch (err) {
         console.error("Error fetching chart data:", err);
-        setError(err?.message || 'Failed to fetch chart data');
+        setError(err?.message || 'ไม่สามารถโหลดข้อมูลกราฟได้');
         // Use fallback data if API fails
         setChartData({
           categories: ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค."],
@@ -51,12 +59,16 @@ const UserActivityChart = () => {
             if (!Array.isArray(params)) return '';
             return params.map(param => {
               const value = param.value || 0;
-              return `${param.seriesName}: ${value}`;
+              const seriesName = param.seriesName || '';
+              return `${seriesName}: ${value}`;
             }).join('<br/>');
           }
         },
         legend: {
           data: ["การบริจาค", "คำขอรับบริจาค"],
+          textStyle: {
+            fontFamily: 'Kanit, sans-serif'
+          }
         },
         grid: {
           left: "3%",
@@ -68,10 +80,16 @@ const UserActivityChart = () => {
           type: "category",
           boundaryGap: false,
           data: chartData.categories || [],
+          axisLabel: {
+            fontFamily: 'Kanit, sans-serif'
+          }
         },
         yAxis: {
           type: "value",
-          minInterval: 1
+          minInterval: 1,
+          axisLabel: {
+            fontFamily: 'Kanit, sans-serif'
+          }
         },
         series: [
           {
@@ -79,19 +97,25 @@ const UserActivityChart = () => {
             type: "line",
             data: chartData.donations || [],
             itemStyle: { color: "#10B981" },
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 8
           },
           {
             name: "คำขอรับบริจาค",
             type: "line",
             data: chartData.requests || [],
             itemStyle: { color: "#3B82F6" },
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 8
           },
         ],
       };
       activityChart.setOption(activityOption);
     } catch (err) {
       console.error("Error initializing chart:", err);
-      setError('Failed to initialize chart');
+      setError('ไม่สามารถแสดงกราฟได้');
     }
     
     // Handle resize
@@ -119,10 +143,11 @@ const UserActivityChart = () => {
       {loading ? (
         <div className="h-80 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          <span className="ml-2 text-gray-600">กำลังโหลดข้อมูล...</span>
         </div>
       ) : error ? (
         <div className="h-80 flex items-center justify-center text-red-500">
-          {error}
+          <span className="text-center">{error}</span>
         </div>
       ) : (
         <div className="h-80" ref={chartRef}></div>
