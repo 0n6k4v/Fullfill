@@ -42,3 +42,5 @@ databases:
     databaseName: fullfill
     user: fullfill_user
     plan: free
+    extensions:
+      - postgis
