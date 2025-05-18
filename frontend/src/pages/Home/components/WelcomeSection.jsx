@@ -4,7 +4,10 @@ import { faBell } from '@fortawesome/free-solid-svg-icons';
 import QuickActions from './QuickActions';
 
 const WelcomeSection = ({ user = null }) => {
-  const name = user?.name || 'Guest';
+  // Ensure user is an object
+  const safeUser = typeof user === 'object' && user !== null ? user : {};
+  
+  const name = safeUser?.name || 'ผู้เยี่ยมชม';
   const today = new Date();
   const formattedDate = today.toLocaleDateString('th-TH', {
     month: 'long', 
@@ -23,6 +26,7 @@ const WelcomeSection = ({ user = null }) => {
         <button 
           className="p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
           onClick={() => {/* TODO: Implement notification functionality */}}
+          aria-label="การแจ้งเตือน"
         >
           <FontAwesomeIcon icon={faBell} className="text-xl" />
         </button>

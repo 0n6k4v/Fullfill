@@ -19,7 +19,10 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 const PostCard = ({ post = null }) => {
-  if (!post) {
+  // Ensure post is an object
+  const safePost = typeof post === 'object' && post !== null ? post : {};
+  
+  if (!safePost || Object.keys(safePost).length === 0) {
     return (
       <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm p-4">
         <p className="text-gray-500 text-center">ไม่พบข้อมูลโพสต์</p>
@@ -29,15 +32,15 @@ const PostCard = ({ post = null }) => {
 
   const {
     imageUrl = '/images/default-post.jpg',
-    title = 'No Title',
-    location = 'Unknown Location',
-    distance = '0 km',
+    title = 'ไม่มีชื่อ',
+    location = 'ไม่ระบุตำแหน่ง',
+    distance = '0 กม.',
     tags = [],
-    category = 'Uncategorized',
+    category = 'ไม่ระบุหมวดหมู่',
     postedDate = new Date().toISOString(),
     matchedWith = null,
     receivedBy = null
-  } = post;
+  } = safePost;
 
   const handleHeartClick = (e) => {
     if (!e) return;
@@ -74,6 +77,19 @@ const PostCard = ({ post = null }) => {
     // TODO: Implement post similar functionality
   };
 
+  // Map category names to Thai
+  const categoryNames = {
+    'Furniture': 'เฟอร์นิเจอร์',
+    'Clothing': 'เสื้อผ้า',
+    'Electronics': 'อิเล็กทรอนิกส์',
+    'Appliances': 'เครื่องใช้ไฟฟ้า',
+    'Kids & Toys': 'ของเล่นเด็ก',
+    'Books': 'หนังสือ',
+    'Kitchen': 'เครื่องครัว',
+    'Other': 'อื่นๆ',
+    'Uncategorized': 'ไม่ระบุหมวดหมู่'
+  };
+
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="h-40 bg-gray-200 overflow-hidden">
@@ -101,7 +117,7 @@ const PostCard = ({ post = null }) => {
             <h4 className="text-lg font-medium text-gray-900">{title}</h4>
             <div className="mt-1 flex items-center text-sm text-gray-500">
               <FontAwesomeIcon icon={faTag} className="mr-1 text-gray-400" />
-              <span>{category}</span>
+              <span>{categoryNames[category] || category}</span>
             </div>
             <div className="mt-1 flex items-center text-sm text-gray-500">
               <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-1 text-gray-400" />

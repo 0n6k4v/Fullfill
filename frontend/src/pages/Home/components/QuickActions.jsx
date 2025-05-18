@@ -69,9 +69,13 @@ const QuickActions = ({ onAction = () => {} }) => {
           key={index}
           onClick={() => handleActionClick(action.action)}
           className={`flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${action.color} whitespace-nowrap`}
+          aria-label={action.title}
         >
           <FontAwesomeIcon icon={action.icon} className={`${action.color} p-2 rounded-lg text-white mr-3`} />
-          {action.title}
+          <div className="text-left">
+            <div className="font-medium">{action.title}</div>
+            <div className="text-xs text-gray-500">{action.description}</div>
+          </div>
         </button>
       ))}
     </div>
