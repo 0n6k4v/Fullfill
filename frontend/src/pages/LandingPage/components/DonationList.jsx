@@ -2,18 +2,75 @@
 
 import React, { useState, useEffect } from "react";
 import * as echarts from "echarts";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import DonationCard from "./DonationCard";
 
 const DonationList = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [mode, setMode] = useState('donation');
+  const [donations = [], setDonations] = useState([]);
+  const [loading = false, setLoading] = useState(false);
+  const [error = null, setError] = useState(null);
 
   const toggleMode = () => {
     setMode(mode === 'donation' ? 'request' : 'donation');
   };
 
+  useEffect(() => {
+    fetchDonations();
+  }, []);
+
+  const fetchDonations = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/donations');
+      if (!response.ok) {
+        throw new Error('ไม่สามารถโหลดข้อมูลได้');
+      }
+      const data = await response.json();
+      setDonations(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-500 text-4xl mb-4" />
+        <p className="text-red-600">เกิดข้อผิดพลาด: {error}</p>
+        <button
+          onClick={fetchDonations}
+          className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          aria-label="ลองใหม่อีกครั้ง"
+        >
+          ลองใหม่อีกครั้ง
+        </button>
+      </div>
+    );
+  }
+
+  if (!donations || donations.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">ไม่พบรายการบริจาค</p>
+      </div>
+    );
+  }
+
   // Sample donation data
-  const donations = [
+  const donationsData = [
     {
       id: 1,
       title: "Children's Bicycle",
@@ -299,7 +356,7 @@ const DonationList = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {mode === 'donation' 
             ? donations.map((donation) => (
-                <DonationCard key={donation.id} donation={donation} mode={mode} />
+                <DonationCard key={donation?.id} donation={donation} mode={mode} />
               ))
             : requests.map((request) => (
                 <DonationCard key={request.id} donation={request} mode={mode} />
