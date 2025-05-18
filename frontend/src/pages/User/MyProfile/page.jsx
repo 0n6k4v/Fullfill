@@ -12,6 +12,7 @@ import MatchesSection from "./components/MatchesSection";
 import Footer from "@/components/Footer";
 import api from '@/services/api';
 import { toast } from 'react-hot-toast';
+import PostCard from './components/PostCard';
 
 const MyProfile = () => {
   // States for data
@@ -38,7 +39,7 @@ const MyProfile = () => {
         // Format user profile data from API response
         const userData = response.data;
         setUserProfile({
-          name: userData.full_name || userData.name || 'User',
+          name: userData.username || userData.username,
           email: userData.email,
           role: userData.role || 'Individual Donor',
           joinedDate: userData.created_at || new Date().toISOString(),
@@ -198,6 +199,12 @@ const MyProfile = () => {
     fetchMatches();
   }, []);
 
+  // เพิ่มฟังก์ชันสำหรับจัดการเมื่อโพสต์ถูกลบ
+  const handlePostDeleted = (postId) => {
+    // ลบโพสต์ออกจาก state
+    setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
+  };
+
   if (loading && !userProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -259,7 +266,15 @@ const MyProfile = () => {
         </div>
 
         {/* Posts Section */}
-        <PostsSection posts={posts} isLoading={loading} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {posts.active.map(post => (
+            <PostCard 
+              key={post.id} 
+              post={post} 
+              onPostDeleted={handlePostDeleted} // ส่ง handler ไปยัง PostCard
+            />
+          ))}
+        </div>
 
         {/* Matches Section */}
         <MatchesSection matches={matches} isLoading={loading} />

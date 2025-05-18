@@ -302,7 +302,7 @@ const MyDonation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen overflow-auto bg-gray-50">
       {/* Header */}
       <ProfileHeader user={user} />
       

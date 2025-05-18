@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faTag, 
@@ -13,10 +13,51 @@ import {
   faAddressBook, 
   faRedo 
 } from '@fortawesome/free-solid-svg-icons';
+import { api } from '../../../../services/api'; // ต้องปรับ path ตามโครงสร้างโปรเจคของคุณ
 
-const PostCard = ({ post, activeTab }) => {
+const PostCard = ({ post, activeTab, onPostDeleted }) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState(null);
+
+  // ฟังก์ชันสำหรับลบโพสต์
+  const handleDelete = async () => {
+    // แสดง confirm dialog
+    if (!window.confirm('คุณต้องการลบโพสต์นี้ใช่หรือไม่? การกระทำนี้ไม่สามารถยกเลิกได้')) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+      setError(null);
+      
+      // เรียกใช้ API endpoint สำหรับลบโพสต์
+      await api.delete(`/items/${post.id}`);
+      
+      // แจ้ง parent component ว่าโพสต์ถูกลบแล้ว
+      if (onPostDeleted) {
+        onPostDeleted(post.id);
+      }
+      
+      // แสดงข้อความแจ้งเตือนว่าลบสำเร็จ
+      alert('ลบโพสต์เรียบร้อยแล้ว');
+    } catch (err) {
+      console.error('Error deleting post:', err);
+      setError('ไม่สามารถลบโพสต์ได้ โปรดลองอีกครั้ง');
+      alert('เกิดข้อผิดพลาดในการลบโพสต์: ' + (err.response?.data?.detail || err.message));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // เพิ่ม handler สำหรับปุ่ม Edit
+  const handleEdit = () => {
+    // นำทางไปยังหน้าแก้ไขโพสต์
+    window.location.href = `/EditPostDonation?itemId=${post.id}`;
+  };
+
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+      {/* ส่วนแสดงรูปภาพ */}
       <div className="h-40 bg-gray-200 overflow-hidden">
         <img
           src={post.image}
@@ -24,6 +65,8 @@ const PostCard = ({ post, activeTab }) => {
           className="w-full h-full object-cover object-top"
         />
       </div>
+      
+      {/* ส่วนแสดงข้อมูล */}
       <div className="p-4">
         <div className="flex justify-between items-start">
           <div>
@@ -59,14 +102,24 @@ const PostCard = ({ post, activeTab }) => {
             </button>
           </div>
         </div>
+        
+        {/* ส่วนแสดงปุ่มกดต่างๆ */}
         <div className="mt-4 flex justify-between">
           {activeTab === "active" && (
             <>
-              <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 cursor-pointer !rounded-button whitespace-nowrap">
+              <button 
+                onClick={handleEdit}
+                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 cursor-pointer !rounded-button whitespace-nowrap"
+              >
                 <FontAwesomeIcon icon={faEdit} className="mr-1" /> Edit
               </button>
-              <button className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 cursor-pointer !rounded-button whitespace-nowrap">
-                <FontAwesomeIcon icon={faTimes} className="mr-1" /> Cancel
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 cursor-pointer !rounded-button whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <FontAwesomeIcon icon={faTimes} className="mr-1" /> 
+                {isDeleting ? "กำลังลบ..." : "Cancel"}
               </button>
             </>
           )}
@@ -86,6 +139,13 @@ const PostCard = ({ post, activeTab }) => {
             </button>
           )}
         </div>
+        
+        {/* แสดงข้อความ error หากมี */}
+        {error && (
+          <div className="mt-2 text-sm text-red-600">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   );

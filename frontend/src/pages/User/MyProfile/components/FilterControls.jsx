@@ -1,6 +1,4 @@
 import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDownload } from '@fortawesome/free-solid-svg-icons';
 
 const FilterControls = ({ 
   selectedDateRange, 
@@ -33,10 +31,6 @@ const FilterControls = ({
           <option value="education">Education</option>
         </select>
       </div>
-      <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 !rounded-button whitespace-nowrap cursor-pointer">
-        <FontAwesomeIcon icon={faDownload} className="mr-2" />
-        Export Report
-      </button>
     </div>
   );
 };
