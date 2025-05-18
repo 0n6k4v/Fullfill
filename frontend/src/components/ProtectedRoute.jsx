@@ -1,30 +1,34 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const [isReady, setIsReady] = useState(false);
 
-  useEffect(() => {
-    if (!loading) {
-      if (!isAuthenticated()) {
-        router.push('/Auth');
-      } else {
-        setIsReady(true);
-      }
-    }
-  }, [isAuthenticated, loading, router]);
+  // ใช้ try-catch เพื่อป้องกันกรณีที่ AuthProvider ไม่มีอยู่
+  let isAuthenticated = () => false;
+  let loading = false;
+  try {
+    const auth = useAuth();
+    isAuthenticated = auth.isAuthenticated;
+    loading = auth.loading;
+  } catch (error) {
+    console.log('AuthProvider not available');
+  }
 
-  if (loading || !isReady) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
+  }
+
+  if (!isAuthenticated()) {
+    router.push('/Auth');
+    return null;
   }
 
   return children;

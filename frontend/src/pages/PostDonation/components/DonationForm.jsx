@@ -12,6 +12,7 @@ import {
 import dynamic from 'next/dynamic';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
+import { useRouter } from 'next/navigation';
 
 // Import Leaflet ด้วย dynamic import เพื่อแก้ปัญหา window is not defined
 // โหลดเฉพาะในฝั่ง client
@@ -24,6 +25,7 @@ const LeafletMap = dynamic(
 );
 
 const DonationForm = ({ formData = {}, setFormData = () => {}, previewImages = [], setPreviewImages = () => {}, getConditionText = () => {}, categories = [] }) => {
+  const router = useRouter();
   const { user = null, isAuthenticated = () => false } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
@@ -37,6 +39,8 @@ const DonationForm = ({ formData = {}, setFormData = () => {}, previewImages = [
   const [conditionOptions, setConditionOptions] = useState([]);
   const [addressData, setAddressData] = useState(null);
   const [subdistrictId, setSubdistrictId] = useState(null);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   
   // Set category and condition options from API or props
   useEffect(() => {
@@ -340,470 +344,259 @@ const DonationForm = ({ formData = {}, setFormData = () => {}, previewImages = [
   // Submit form to API
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // ตรวจสอบสถานะการล็อกอินก่อน
-    if (!isAuthenticated()) {
-      setShowLoginModal(true);
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
+    setError('');
+    setIsLoading(true);
+
     try {
-      // Create FormData object
+      if (!isAuthenticated()) {
+        router.push('/Auth');
+        return;
+      }
+
+      // สร้าง FormData object
       const formDataToSend = new FormData();
       
-      // Prepare item data
+      // เพิ่มรูปภาพ
+      if (formData.photos && formData.photos.length > 0) {
+        formData.photos.forEach((file) => {
+          formDataToSend.append('images', file);
+        });
+      }
+
+      // เพิ่มข้อมูลอื่นๆ
       const itemData = {
         name: formData.title,
         category: formData.category,
-        type: "Offer",
+        type: "Donation",
         condition: formData.condition,
         description: formData.description,
         location: formData.location,
-        uploaded_by: user.id,
-        lat: formData.lat,
-        lon: formData.lon,
-        status: "available"
+        uploaded_by: user?.id
       };
-      
-      // ถ้ามี subdistrict_id ให้ใช้ subdistrict_id
-      if (formData.subdistrict_id) {
-        itemData.subdistrict_id = formData.subdistrict_id;
-        console.log("ส่งข้อมูลด้วย subdistrict_id:", formData.subdistrict_id);
-      } 
-      // ถ้าไม่มี ID ให้ส่งข้อมูลชื่อตำบล อำเภอ จังหวัด แทน
-      else if (formData.subdistrict_name) {
-        itemData.location_info = {
-          subdistrict: formData.subdistrict_name,
-          district: formData.district_name,
-          province: formData.province_name
-        };
-        console.log("ส่งข้อมูลด้วย location_info:", itemData.location_info);
-      }
-      
-      // Add photos to FormData
-      if (formData.photos && formData.photos.length > 0) {
-        formData.photos.forEach((file) => {
-          formDataToSend.append(`images`, file);
-        });
-      }
-      
-      // Add item data as JSON string
+
       formDataToSend.append('item_data', JSON.stringify(itemData));
-      
-      // ใช้ api service แทนการเรียก axios โดยตรง
+
+      // ส่งข้อมูลไปยัง API
       const response = await api.post('/items/with-images', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
-      console.log("Item created:", response.data);
-      
-      // Reset form or redirect
-      alert("Item successfully posted!");
-      
-      // Reset form
+
+      if (!response.ok) {
+        throw new Error('เกิดข้อผิดพลาดในการส่งข้อมูล');
+      }
+
+      // รีเซ็ตฟอร์มและ redirect
       setFormData({
-        title: "",
-        category: "",
-        condition: "",
-        description: "",
-        location: "",
-        photos: [],
-        type: "Offer",
-        lat: null,
-        lon: null,
-        subdistrict_id: null,
-        subdistrict_name: null,
-        district_name: null,
-        province_name: null
+        title: '',
+        category: '',
+        condition: '',
+        description: '',
+        location: '',
+        photos: []
       });
       setPreviewImages([]);
       setAddressData(null);
       setSubdistrictId(null);
+      router.push('/');
       
-    } catch (error) {
-      console.error("Error creating item:", error);
-      
-      if (error.response && error.response.status === 401) {
-        setShowLoginModal(true);
-      } else {
-        alert("Failed to create item. Please try again.");
-      }
+    } catch (err) {
+      setError(err.message || 'เกิดข้อผิดพลาดในการส่งข้อมูล');
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
   return (
     <>
-      <form onSubmit={handleSubmit}>
-        {/* ชื่อสิ่งของ */}
-        <div className="mb-6">
-          <label
-            htmlFor="title"
-            className="block text-gray-700 font-medium mb-2"
-          >
-            ชื่อสิ่งของ <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={formData.title || ""}
-            onChange={handleInputChange}
-            placeholder="เช่น โต๊ะอาหารไม้ เสื้อกันหนาว"
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            required
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          บริจาคสิ่งของ
+        </h2>
 
-        {/* หมวดหมู่ */}
-        <div className="mb-6">
-          <label
-            htmlFor="category"
-            className="block text-gray-700 font-medium mb-2"
-          >
-            หมวดหมู่ <span className="text-red-500">*</span>
-          </label>
-          <div className="relative">
-            <button
-              type="button"
-              className="w-full flex items-center justify-between bg-white border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-            >
-              <span className="flex items-center">
-                {formData.category ? (
-                  <>
-                    <FontAwesomeIcon 
-                      icon={getCategoryIcon(categoryOptions.find((c) => c.name === formData.category)?.icon || "fa-th-large")} 
-                      className="mr-2 text-blue-500" 
-                    />
-                    {formData.category}
-                  </>
-                ) : (
-                  "เลือกหมวดหมู่"
-                )}
-              </span>
-              <FontAwesomeIcon 
-                icon={isCategoryDropdownOpen ? faChevronUp : faChevronDown} 
-                className="text-gray-400" 
-              />
-            </button>
-            {isCategoryDropdownOpen && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                {categoryOptions.map((category) => (
-                  <div
-                    key={category.name}
-                    className="px-4 py-2 hover:bg-blue-50 cursor-pointer flex items-center"
-                    onClick={() => handleCategorySelect(category.name)}
-                  >
-                    <FontAwesomeIcon 
-                      icon={getCategoryIcon(category.icon)} 
-                      className="mr-2 text-blue-500 w-5" 
-                    />
-                    {category.name}
-                  </div>
-                ))}
-              </div>
-            )}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+            {error}
           </div>
-        </div>
+        )}
 
-        {/* สภาพสิ่งของ */}
-        <div className="mb-6">
-          <label className="block text-gray-700 font-medium mb-2">
-            สภาพสิ่งของ <span className="text-red-500">*</span>
-          </label>
-          <div className="flex flex-col space-y-2">
-            {conditionOptions.map((condition) => (
-              <div key={condition.value} className="flex items-center">
-                <input
-                  type="radio"
-                  id={`condition-${condition.value}`}
-                  name="condition"
-                  value={condition.value}
-                  checked={formData.condition === condition.value}
-                  onChange={() => handleConditionChange(condition.value)}
-                  className="mr-2"
-                />
-                <label htmlFor={`condition-${condition.value}`} className="text-gray-700">
-                  {condition.text}
-                </label>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* คำอธิบาย */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <label
-              htmlFor="description"
-              className="block text-gray-700 font-medium"
-            >
-              คำอธิบาย <span className="text-red-500">*</span>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+              ชื่อสิ่งของ
             </label>
-            <button
-              type="button"
-              onClick={generateDescription}
-              disabled={isGeneratingDescription}
-              className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
-            >
-              {isGeneratingDescription ? (
-                <>
-                  <FontAwesomeIcon icon={faSpinner} className="fa-spin mr-1" />
-                  กำลังสร้าง...
-                </>
-              ) : (
-                <>
-                  <FontAwesomeIcon icon={faMagic} className="mr-1" />
-                  สร้างด้วย AI
-                </>
-              )}
-            </button>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
           </div>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description || ""}
-            onChange={handleInputChange}
-            placeholder="อธิบายรายละเอียด สภาพ และข้อมูลอื่นๆ ที่เกี่ยวข้อง..."
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-            rows={5}
-            required
-          ></textarea>
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>
-              ให้รายละเอียดที่ชัดเจนเพื่อให้ผู้อื่นเข้าใจสิ่งที่คุณต้องการบริจาค
-            </span>
-            <span>{(formData.description || "").length}/500</span>
-          </div>
-        </div>
 
-        {/* สถานที่ */}
-        <div className="mb-6">
-          <label
-            htmlFor="location"
-            className="block text-gray-700 font-medium mb-2"
-          >
-            สถานที่ <span className="text-red-500">*</span>
-          </label>
-          <div className="flex space-x-2">
-            <div className="relative flex-1">
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={formData.location || ""}
-                onChange={handleInputChange}
-                placeholder="เช่น ตัวเมือง, กรุงเทพฯ"
-                className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                required
-              />
-              <FontAwesomeIcon 
-                icon={faMapMarkerAlt} 
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-red-500" 
-              />
-            </div>
-            <button
-              type="button"
-              onClick={openMapModal}
-              className="flex items-center px-4 py-3 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+          <div>
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+              หมวดหมู่
+            </label>
+            <select
+              id="category"
+              name="category"
+              value={formData.category}
+              onChange={handleInputChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
             >
-              <FontAwesomeIcon icon={faMapLocation} className="mr-2" />
-              เลือกบนแผนที่
-            </button>
+              <option value="">เลือกหมวดหมู่</option>
+              {categoryOptions.map((category) => (
+                <option key={category.name} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
           </div>
-          
-          {addressData && (
-            <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
-              <p><span className="font-medium">ตำแหน่ง:</span> {coordinates && `${coordinates.lat.toFixed(5)}, ${coordinates.lng.toFixed(5)}`}</p>
-              {addressData.subdistrict && (
-                <p>
-                  <span className="font-medium">ที่อยู่:</span> 
-                  {addressData.subdistrict && ` ต.${addressData.subdistrict}`}
-                  {addressData.district && ` อ.${addressData.district}`}
-                  {addressData.province && ` จ.${addressData.province}`}
-                </p>
-              )}
-            </div>
-          )}
-          
-          <p className="text-xs text-gray-500 mt-1">
-            เพื่อความปลอดภัย กรุณาระบุพื้นที่ทั่วไปแทนที่อยู่ที่แน่นอน
-          </p>
-        </div>
 
-        {/* อัพโหลดรูปภาพ */}
-        <div className="mb-6">
-          <label className="block text-gray-700 font-medium mb-2">
-            รูปภาพ <span className="text-gray-500">(สูงสุด 5 รูป)</span>
-          </label>
-          <div
-            className={`border-2 border-dashed rounded-lg p-6 text-center ${dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"}`}
-            onDragOver={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setDragActive(true);
-            }}
-            onDragEnter={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setDragActive(true);
-            }}
-            onDragLeave={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setDragActive(false);
-            }}
-            onDrop={handleDrop}
-            onClick={openFileDialog}
-          >
+          <div>
+            <label htmlFor="condition" className="block text-sm font-medium text-gray-700">
+              สภาพ
+            </label>
+            <select
+              id="condition"
+              name="condition"
+              value={formData.condition}
+              onChange={handleConditionChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            >
+              <option value="">เลือกสภาพ</option>
+              {conditionOptions.map((condition) => (
+                <option key={condition.value} value={condition.value}>
+                  {condition.text}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              รายละเอียด
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              rows={4}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+              สถานที่
+            </label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              value={formData.location}
+              onChange={handleInputChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              รูปภาพ
+            </label>
             <input
               type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
               multiple
               accept="image/*"
-              className="hidden"
+              onChange={(e) => {
+                const files = Array.from(e.target.files);
+                handleFiles(files);
+              }}
+              className="mt-1 block w-full"
             />
-            <FontAwesomeIcon 
-              icon={faCloudUploadAlt} 
-              className="text-4xl text-blue-500 mb-3" 
-            />
-            <p className="text-gray-700 mb-1">
-              ลากและวางรูปภาพที่นี่
+            <p className="mt-1 text-sm text-gray-500">
+              สามารถอัปโหลดได้สูงสุด 5 รูป
             </p>
-            <p className="text-gray-500 text-sm mb-2">
-              หรือคลิกเพื่อเลือกไฟล์
-            </p>
-            <button
-              type="button"
-              className="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-sm hover:bg-blue-200 transition-colors"
-            >
-              เลือกรูปภาพ
-            </button>
           </div>
-
-          {previewImages.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm text-gray-700 mb-2">
-                รูปภาพที่อัพโหลด:
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                {previewImages.map((url, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={url}
-                      alt={`รูปภาพ ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(index)}
-                      className="absolute top-1 right-1 bg-white/80 text-red-500 rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      aria-label="ลบรูปภาพ"
-                    >
-                      <FontAwesomeIcon icon={faTimes} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* ปุ่มส่ง */}
-        <div className="mt-8">
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            ยกเลิก
+          </button>
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:bg-blue-300"
+            disabled={isLoading}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-300"
           >
-            {isSubmitting ? (
+            {isLoading ? (
               <>
                 <FontAwesomeIcon icon={faSpinner} className="fa-spin mr-2" />
                 กำลังส่ง...
               </>
             ) : (
-              "ส่งการบริจาค"
+              'ส่งข้อมูล'
             )}
           </button>
         </div>
-
-        {/* Modal แผนที่ */}
-        {showMapModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-            <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-auto flex flex-col">
-              <div className="p-4 border-b flex justify-between items-center">
-                <h3 className="text-lg font-semibold">เลือกตำแหน่งบนแผนที่</h3>
-                <button 
-                  type="button"
-                  className="text-gray-500 hover:text-gray-700 focus:outline-none"
-                  onClick={() => setShowMapModal(false)}
-                  aria-label="ปิด"
-                >
-                  <FontAwesomeIcon icon={faTimes} />
-                </button>
-              </div>
-              <div className="p-4 flex-1">
-                <LeafletMap onSelectLocation={handleCoordinatesSelected} />
-                
-                {addressData && (
-                  <div className="mt-4 p-3 bg-gray-100 rounded">
-                    <p className="text-sm font-medium">ข้อมูลที่อยู่:</p>
-                    {addressData.placeName && (
-                      <p className="text-gray-700">สถานที่: {addressData.placeName}</p>
-                    )}
-                    {addressData.road && (
-                      <p className="text-gray-700">ถนน: {addressData.road}</p>
-                    )}
-                    <p className="text-gray-700">
-                      {addressData.subdistrict && `ตำบล ${addressData.subdistrict} `}
-                      {addressData.district && `อำเภอ ${addressData.district} `}
-                      {addressData.province && `จังหวัด ${addressData.province}`}
-                    </p>
-                    <p className="text-gray-700">พิกัด: {coordinates && `${coordinates.lat.toFixed(6)}, ${coordinates.lng.toFixed(6)}`}</p>
-                  </div>
-                )}
-              </div>
-              <div className="p-4 border-t">
-                <button
-                  type="button"
-                  className="bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors w-full"
-                  onClick={() => setShowMapModal(false)}
-                >
-                  ยืนยันตำแหน่ง
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </form>
       
-      {/* Modal เข้าสู่ระบบ */}
-      {showLoginModal && (
+      {/* Modal แผนที่ */}
+      {showMapModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-md p-6">
-            <h3 className="text-lg font-semibold mb-3">โปรดเข้าสู่ระบบ</h3>
-            <p className="text-gray-600 mb-4">คุณจำเป็นต้องเข้าสู่ระบบก่อนจึงจะสามารถบริจาคสิ่งของได้</p>
-            <div className="flex space-x-3">
-              <button
+          <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-auto flex flex-col">
+            <div className="p-4 border-b flex justify-between items-center">
+              <h3 className="text-lg font-semibold">เลือกตำแหน่งบนแผนที่</h3>
+              <button 
                 type="button"
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors"
-                onClick={() => window.location.href = '/Auth'}
+                className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                onClick={() => setShowMapModal(false)}
+                aria-label="ปิด"
               >
-                เข้าสู่ระบบ
+                <FontAwesomeIcon icon={faTimes} />
               </button>
+            </div>
+            <div className="p-4 flex-1">
+              <LeafletMap onSelectLocation={handleCoordinatesSelected} />
+              
+              {addressData && (
+                <div className="mt-4 p-3 bg-gray-100 rounded">
+                  <p className="text-sm font-medium">ข้อมูลที่อยู่:</p>
+                  {addressData.placeName && (
+                    <p className="text-gray-700">สถานที่: {addressData.placeName}</p>
+                  )}
+                  {addressData.road && (
+                    <p className="text-gray-700">ถนน: {addressData.road}</p>
+                  )}
+                  <p className="text-gray-700">
+                    {addressData.subdistrict && `ตำบล ${addressData.subdistrict} `}
+                    {addressData.district && `อำเภอ ${addressData.district} `}
+                    {addressData.province && `จังหวัด ${addressData.province}`}
+                  </p>
+                  <p className="text-gray-700">พิกัด: {coordinates && `${coordinates.lat.toFixed(6)}, ${coordinates.lng.toFixed(6)}`}</p>
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t">
               <button
                 type="button"
-                className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded font-medium hover:bg-gray-300 transition-colors"
-                onClick={() => setShowLoginModal(false)}
+                className="bg-blue-600 text-white py-2 px-4 rounded font-medium hover:bg-blue-700 transition-colors w-full"
+                onClick={() => setShowMapModal(false)}
               >
-                ยกเลิก
+                ยืนยันตำแหน่ง
               </button>
             </div>
           </div>
