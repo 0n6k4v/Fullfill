@@ -1,8 +1,16 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faChevronDown, faSlidersH } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faChevronDown, faSlidersH, faFilter } from '@fortawesome/free-solid-svg-icons';
 
-const SearchFilters = ({ searchQuery, setSearchQuery, filterOptions, activeFilter, setActiveFilter }) => {
+const SearchFilters = ({ searchQuery, setSearchQuery, filterOptions, activeFilter, setActiveFilter, filters = [] }) => {
+  if (!filters || filters.length === 0) {
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <p className="text-gray-500">No filters available</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 mb-6">
       <div className="flex-grow relative">

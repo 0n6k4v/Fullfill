@@ -4,15 +4,27 @@ import { faFilter, faPlus, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 import PostCard from './PostCard';
 import EmptyState from './EmptyState';
 
-const PostsSection = ({ posts, isLoading = false }) => {
+const PostsSection = ({ posts = [], tabs = [] }) => {
   const [activeTab, setActiveTab] = useState('active');
 
+  if (!posts || posts.length === 0) {
+    return (
+      <div className="mt-8">
+        <h2 className="text-xl font-bold text-gray-800 mb-6">โพสต์ของฉัน</h2>
+        <p className="text-gray-500">No posts available</p>
+      </div>
+    );
+  }
+
+  const activeTabId = tabs.find(tab => tab?.active)?.id || 'active';
+
   const renderContent = () => {
-    if (isLoading) {
+    if (activeTab === 'active') {
       return (
-        <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-          <span className="ml-3 text-gray-600">Loading posts...</span>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post, index) => (
+            <PostCard key={index} post={post} activeTab={activeTab} />
+          ))}
         </div>
       );
     }
