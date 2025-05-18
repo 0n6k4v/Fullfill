@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
 config.autoAddCss = false;
@@ -9,6 +9,7 @@ import {
   faThLarge, faCouch, faTshirt, faLaptop, faBlender, faBaby, 
   faBook, faUtensils, faMapMarkerAlt, faSearch, faFilter, faChevronUp, faChevronDown
 } from '@fortawesome/free-solid-svg-icons';
+import api from '@/services/api';
 
 const SearchAndFilter = ({
   searchQuery = '',
@@ -25,6 +26,8 @@ const SearchAndFilter = ({
   onSearch = () => {}
 }) => {
   const [showFilters, setShowFilters] = useState(false);
+  const [locations, setLocations] = useState([{ id: "all", name: "ทุกพื้นที่" }]);
+  const [loadingLocations, setLoadingLocations] = useState(false);
 
   const categories = [
     { id: 'all', name: 'ทุกหมวดหมู่' },
@@ -51,15 +54,6 @@ const SearchAndFilter = ({
     { id: 'all', name: 'ทั้งหมด' },
     { id: 'Offer', name: 'การบริจาค' },
     { id: 'Request', name: 'คำขอรับบริจาค' }
-  ];
-
-  const locations = [
-    "ทุกพื้นที่",
-    "กรุงเทพฯ",
-    "ปทุมธานี",
-    "นนทบุรี",
-    "สมุทรปราการ",
-    "อยุธยา"
   ];
 
   const toggleFilters = () => {
@@ -96,6 +90,32 @@ const SearchAndFilter = ({
     if (!e || !e.target) return;
     setLocationFilter(e.target.value);
   };
+
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        setLoadingLocations(true);
+        const response = await api.get('/api/provinces/');
+        const data = response.data;
+        console.log(response.data);
+         
+        
+        setLocations([
+          { id: "all", name: "ทุกพื้นที่" },
+          ...data.map(province => ({
+            id: province.id.toString(),
+            name: province.province_name
+          }))
+        ]);
+      } catch (err) {
+        console.error("Error fetching provinces:", err);
+      } finally {
+        setLoadingLocations(false);
+      }
+    };
+
+    fetchProvinces();
+  }, []);
 
   return (
     <div className="bg-white shadow rounded-lg mb-6 overflow-hidden">
@@ -205,22 +225,27 @@ const SearchAndFilter = ({
             </div>
 
             {/* Location Filter */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-indigo-600 flex items-center">
-                <FontAwesomeIcon icon={faMapMarkerAlt} className="mr-2" /> สถานที่
+            <div className="relative mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                พื้นที่
               </label>
-              <select
-                value={locationFilter || ''}
-                onChange={handleLocationChange}
-                className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                aria-label="เลือกสถานที่"
-              >
-                {locations.map(location => (
-                  <option key={location} value={location === "ทุกพื้นที่" ? "" : location}>
-                    {location}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
+                  className="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                >
+                  {loadingLocations ? (
+                    <option>กำลังโหลดข้อมูล...</option>
+                  ) : (
+                    locations.map((location) => (
+                      <option key={location.id} value={location.id}>
+                        {location.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
             </div>
           </div>
         </div>

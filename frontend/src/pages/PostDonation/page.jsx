@@ -9,23 +9,20 @@ import { useRouter } from 'next/navigation';
 
 const PostDonationPage = () => {  
   const router = useRouter();
-  // Form state ปรับโครงสร้างให้ตรงกับ API
   const [formData, setFormData] = useState({
-    title: "",               // เทียบกับ name ใน API
-    category: "",            // เลือกจาก enum ใน API
-    condition: "",           // เปลี่ยนเป็นค่า string จาก enum แทนตัวเลข
+    title: "",
+    category: "",
+    condition: "",
     description: "",
     location: "",
     photos: [],
-    type: "Offer",           // เพิ่ม default เป็น "Offer"
-    lat: null,               // เพิ่มสำหรับพิกัด
-    lon: null,               // เพิ่มสำหรับพิกัด
+    type: "Offer",
+    lat: null,
+    lon: null,
   });
 
-  // UI state
   const [previewImages, setPreviewImages] = useState([]);
 
-  // ใช้ try-catch เพื่อป้องกันกรณีที่ AuthProvider ไม่มีอยู่
   let isAuthenticated = false;
   try {
     const { useAuth } = require('../../context/AuthContext');
@@ -35,14 +32,12 @@ const PostDonationPage = () => {
     console.log('AuthProvider not available');
   }
 
-  // ถ้าไม่ได้ login ให้ redirect ไปหน้า login
   React.useEffect(() => {
     if (!isAuthenticated) {
       router.push('/Auth');
     }
   }, [isAuthenticated, router]);
 
-  // Categories แก้ให้ตรงกับค่าใน API (lowercase และตัดรายการที่ไม่มีใน API)
   const categories = [
     { name: "furniture", icon: "fa-couch" },
     { name: "clothing", icon: "fa-tshirt" },
@@ -54,7 +49,6 @@ const PostDonationPage = () => {
     { name: "other", icon: "fa-box" },
   ];
 
-  // แก้ไขฟังก์ชัน getConditionText ให้ตรงกับค่า enum ในฐานข้อมูล
   const getConditionText = (conditionValue) => {
     const conditionMap = {
       "Poor": "Poor condition with noticeable wear",
@@ -66,7 +60,6 @@ const PostDonationPage = () => {
     return conditionMap[conditionValue] || "Select condition";
   };
 
-  // Clean up preview URLs when component unmounts
   useEffect(() => {
     return () => {
       previewImages.forEach((url) => URL.revokeObjectURL(url));
