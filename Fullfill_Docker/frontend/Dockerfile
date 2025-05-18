@@ -2,16 +2,18 @@ FROM node:lts-alpine AS base
 
 FROM base AS deps
 WORKDIR /app
-COPY frontend/package.json frontend/package-lock.json* ./
+COPY ../../frontend/package.json ../../frontend/package-lock.json* ./
 RUN npm ci
 
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY frontend/src ./src
-COPY frontend/public ./public
-COPY frontend/package.json ./
-COPY frontend/next.config.js ./
+COPY ../../frontend/src ./src
+COPY ../../frontend/public ./public
+COPY ../../frontend/package.json ./
+COPY ../../frontend/next.config.mjs ./
+COPY ../../frontend/postcss.config.mjs ./
+COPY ../../frontend/eslint.config.mjs ./
 RUN npm run build
 
 FROM base AS runner
